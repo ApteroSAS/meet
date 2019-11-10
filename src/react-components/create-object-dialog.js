@@ -23,6 +23,7 @@ const instructions = "Paste a URL to an image, video, model, scene, or upload.";
 const desktopTips = "Tip: You can paste URLs directly into Hubs with Ctrl+V";
 const references = (
   <span>
+    {/*
     For models, try{" "}
     <a href="https://sketchfab.com/search?features=downloadable&type=models" target="_blank" rel="noopener noreferrer">
       Sketchfab
@@ -33,6 +34,7 @@ const references = (
     <a href="https://sketchfab.com/mozillareality" target="_blank" rel="noopener noreferrer">
       collection
     </a>.
+    */}
   </span>
 );
 

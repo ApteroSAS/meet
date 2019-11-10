@@ -45,8 +45,8 @@ export default class LinkDialog extends Component {
                 <FormattedMessage id="link.in_your_browser" />
               </div>
               <WithHoverSound>
-                <a href="https://hub.link" className={styles.domain} target="_blank" rel="noopener noreferrer">
-                  hub.link
+                <a href="https://hub.aptero.co/link" className={styles.domain} target="_blank" rel="noopener noreferrer">
+                  hub.aptero.co/link
                 </a>
               </WithHoverSound>
               <div>

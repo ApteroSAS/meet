@@ -103,6 +103,15 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
+    result.entries.forEach(entry => {
+      entry.images.preview.url = "https://hubs-upload-cdn.com/files/c9bbf97e-219f-4bc1-a64e-d1f992544ede.jpg";
+      if(window.location.href.startsWith("https://localhost")){
+        entry.url = "/hub.html?hub_id=" + entry.id;
+      }else {
+        entry.url = "/" + entry.id + "/" + entry.name;
+      }
+    });
+
     if (this.requestIndex != currentRequestIndex) return;
 
     this.result = result;

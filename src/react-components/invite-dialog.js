@@ -52,7 +52,7 @@ export default class InviteDialog extends Component {
     const { entryCode, embedUrl } = this.props;
 
     const entryCodeString = pad(entryCode, 6);
-    const shortLinkText = `hub.link/${this.props.hubId}`;
+    const shortLinkText = `hub.aptero.co/${this.props.hubId}`;
     const shortLink = "https://" + shortLinkText;
     const embedText = `<iframe src="${embedUrl}" style="width: 1024px; height: 768px;" allow="microphone; camera; vr; speaker;"></iframe>`;
 
@@ -67,13 +67,7 @@ export default class InviteDialog extends Component {
           </button>
         </WithHoverSound>
         <div>
-          <FormattedMessage id={`invite.enter_via${this.props.isModal ? "_modal" : ""}`} />
-          <WithHoverSound>
-            <a href="https://hub.link" target="_blank" className={styles.hubLinkLink} rel="noopener noreferrer">
-              hub.link
-            </a>
-          </WithHoverSound>
-          <FormattedMessage id="invite.and_enter_code" />
+          <FormattedMessage id="invite.with_code" />
         </div>
         <div className={styles.code}>
           {entryCodeString.split("").map((d, i) => (

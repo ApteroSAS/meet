@@ -195,27 +195,6 @@ class ProfileEntryPanel extends Component {
             <WithHoverSound>
               <input className={styles.formSubmit} type="submit" value={formatMessage({ id: "profile.save" })} />
             </WithHoverSound>
-            <div className={styles.links}>
-              <WithHoverSound>
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href="https://github.com/mozilla/hubs/blob/master/TERMS.md"
-                >
-                  <FormattedMessage id="profile.terms_of_use" />
-                </a>
-              </WithHoverSound>
-
-              <WithHoverSound>
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
-                >
-                  <FormattedMessage id="profile.privacy_notice" />
-                </a>
-              </WithHoverSound>
-            </div>
           </div>
         </form>
         <img className={styles.logo} src={hubLogo} />

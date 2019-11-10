@@ -6,11 +6,7 @@ import en from "react-intl/locale-data/en";
 
 import { lang, messages } from "../utils/i18n";
 import { playVideoWithStopOnBlur } from "../utils/video-utils.js";
-import homeVideoWebM from "../assets/video/home.webm";
-import homeVideoMp4 from "../assets/video/home.mp4";
 import hubLogo from "../assets/images/hub-preview-light-no-shadow.png";
-import discordLogoSmall from "../assets/images/discord-logo-small.png";
-import mozLogo from "../assets/images/moz-logo-black.png";
 import classNames from "classnames";
 import { isLocalClient, createAndRedirectToNewHub, connectToReticulum } from "../utils/phoenix-utils";
 import maskEmail from "../utils/mask-email";
@@ -216,26 +212,6 @@ class HomeRoot extends Component {
                 this.state.signedIn
                   ? this.renderFavoriteHero()
                   : this.renderNonFavoriteHero())}
-              {!this.props.hideHero && (
-                <div className={classNames(styles.heroPanel, styles.rightPanel)}>
-                  {showFTUEVideo && (
-                    <div className={styles.heroVideo}>
-                      <video playsInline muted loop autoPlay>
-                        <source src={homeVideoWebM} type="video/webm" />
-                        <source src={homeVideoMp4} type="video/mp4" />
-                      </video>
-                    </div>
-                  )}
-                  <div>
-                    <div className={styles.secondaryLink}>
-                      <a href="/link">
-                        <FormattedMessage id="home.have_code" />
-                      </a>
-                    </div>
-
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           {this.state.dialog}
@@ -269,15 +245,23 @@ class HomeRoot extends Component {
 
   renderCreateButton() {
     return (
-      <button
-        className={classNames(styles.primaryButton, styles.ctaButton)}
-        onClick={e => {
-          e.preventDefault();
-          createAndRedirectToNewHub(null, process.env.DEFAULT_SCENE_SID, false);
-        }}
-      >
-        <FormattedMessage id="home.create_a_room" />
-      </button>
+      <div>
+        <button
+          className={classNames(styles.primaryButton, styles.ctaButton)}
+          onClick={e => {
+            e.preventDefault();
+            createAndRedirectToNewHub(null, process.env.DEFAULT_SCENE_SID, false);
+          }}
+        >
+          <FormattedMessage id="home.create_a_room"/>
+        </button>
+
+        <div className={styles.secondaryLink}>
+          <a href="/link">
+            <FormattedMessage id="home.have_code"/>
+          </a>
+        </div>
+      </div>
     );
   }
 

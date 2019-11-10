@@ -983,7 +983,6 @@ class UIRoot extends Component {
     return (
       <IntlProvider locale={lang} messages={messages}>
         <div className="exited-panel">
-          <img className="exited-panel__logo" src="../assets/images/logo.svg" />
           <div className="exited-panel__subtitle">{subtitle}</div>
         </div>
       </IntlProvider>
@@ -993,7 +992,6 @@ class UIRoot extends Component {
   renderBotMode = () => {
     return (
       <div className="loading-panel">
-        <img className="loading-panel__logo" src="../assets/images/logo.svg" />
         <input type="file" id="bot-audio-input" accept="audio/*" />
         <input type="file" id="bot-data-input" accept="application/json" />
       </div>
@@ -1461,7 +1459,7 @@ class UIRoot extends Component {
       !this.props.store.state.activity.hasOpenedShare &&
       this.occupantCount() <= 1;
 
-    const showChooseSceneButton =
+    /*const showChooseSceneButton =
       !showVREntryButton &&
       !entered &&
       !embed &&
@@ -1470,7 +1468,8 @@ class UIRoot extends Component {
       !showInviteTip &&
       !this.state.showShareDialog &&
       this.props.hubChannel &&
-      this.props.hubChannel.canOrWillIfCreator("update_hub");
+      this.props.hubChannel.canOrWillIfCreator("update_hub");*/
+    const showChooseSceneButton = false;
 
     const displayNameOverride = this.props.hubIsBound
       ? getPresenceProfileForSession(this.props.presences, this.props.sessionId).displayName
@@ -1861,11 +1860,11 @@ class UIRoot extends Component {
                     <InviteDialog
                       allowShare={!isMobileVR}
                       entryCode={this.props.hubEntryCode}
-                      embedUrl={
+                      /*embedUrl={
                         this.props.embedToken && !isMobilePhoneOrVR
                           ? `${baseUrl}?embed_token=${this.props.embedToken}`
                           : null
-                      }
+                      }*/
                       hasPush={hasPush}
                       isSubscribed={
                         this.state.isSubscribed === undefined ? this.props.initialIsSubscribed : this.state.isSubscribed

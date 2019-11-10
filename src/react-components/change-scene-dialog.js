@@ -46,12 +46,8 @@ export default class ChangeSceneDialog extends Component {
           <div>
             <p>
               Paste a URL to a{" "}
-              <a href="/spoke" target="_blank" rel="noopener noreferrer">
-                Spoke
-              </a>{" "}
-              scene or a URL to a{" "}
               <a href="https://en.wikipedia.org/wiki/GlTF#GLB" target="_blank" rel="noopener noreferrer">
-                GLB
+                GLB File
               </a>.
             </p>
           </div>
@@ -72,14 +68,6 @@ export default class ChangeSceneDialog extends Component {
                 <button className={styles.actionButton}>
                   <FormattedMessage id="change-scene-dialog.change-scene" />
                 </button>
-              </div>
-              <div className={styles.spokeCreate}>
-                <div>
-                  <FormattedMessage id="change-scene-dialog.create-in-spoke" />
-                </div>
-                <a className={styles.spokeLaunch} href="/spoke/new" target="_blank" rel="noopener noreferrer">
-                  <FormattedMessage id="change-scene-dialog.new-spoke-project" />
-                </a>
               </div>
             </div>
           </form>

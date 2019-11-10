@@ -18,6 +18,7 @@ import LeaveRoomDialog from "./leave-room-dialog.js";
 
 import styles from "../assets/stylesheets/settings-menu.scss";
 import rootStyles from "../assets/stylesheets/ui-root.scss";
+import { pushHistoryState } from "../utils/history";
 
 export default class SettingsMenu extends Component {
   static propTypes = {
@@ -121,9 +122,10 @@ export default class SettingsMenu extends Component {
                       this.props.performConditionalSignIn(
                         () => this.props.hubChannel.can("update_hub"),
                         () => {
-                          showFullScreenIfAvailable();
-                          this.props.mediaSearchStore.sourceNavigateWithNoNav("scenes", "use");
-                          this.setState({ expanded: false });
+                          //showFullScreenIfAvailable();
+                          //this.props.mediaSearchStore.sourceNavigateWithNoNav("scenes", "use");
+                          //this.setState({ expanded: false });
+                          pushHistoryState(this.props.history, "modal", "change_scene");
                         },
                         "change-scene"
                       );

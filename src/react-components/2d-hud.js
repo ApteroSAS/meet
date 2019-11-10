@@ -9,6 +9,7 @@ import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { micLevelForVolume } from "../components/audio-feedback";
+import { pushHistoryState } from "../utils/history";
 
 const SPRITESHEET_ICONS = {
   MIC: [
@@ -266,7 +267,8 @@ class TopHUD extends Component {
               })}
               title={`Create${this.state.mediaDisabled ? " Disabled" : ""}`}
               onClick={
-                this.state.mediaDisabled ? noop : () => this.props.mediaSearchStore.sourceNavigateToDefaultSource()
+                //this.state.mediaDisabled ? noop : () => this.props.mediaSearchStore.sourceNavigateToDefaultSource()
+                this.state.mediaDisabled ? noop : () => pushHistoryState(this.props.history, "modal", "create")
               }
             />
             <div
@@ -276,14 +278,6 @@ class TopHUD extends Component {
               })}
               title={`Pen${this.state.penDisabled ? " Disabled" : ""}`}
               onClick={this.state.penDisabled ? noop : this.props.onSpawnPen}
-            />
-            <div
-              className={cx(styles.iconButton, styles.camera, {
-                [styles.active]: this.props.hasActiveCamera,
-                [styles.disabled]: this.state.cameraDisabled
-              })}
-              title={`Camera${this.state.cameraDisabled ? " Disabled" : ""}`}
-              onClick={this.state.cameraDisabled ? noop : this.props.onSpawnCamera}
             />
           </div>
         )}
