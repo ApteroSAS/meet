@@ -260,58 +260,6 @@ export default class SettingsMenu extends Component {
             ) : (
               <div />
             )}
-            <div className={classNames([styles.bottomLinksMain])}>
-              <a href="/whats-new" target="_blank" rel="noreferrer noopener">
-                <FormattedMessage id="settings.whats-new" />
-              </a>
-              <button
-                onClick={e => {
-                  e.preventDefault();
-                  resetTips();
-                  this.setState({ expanded: false });
-                }}
-              >
-                <FormattedMessage id="settings.tips" />
-              </button>
-              <a href="https://github.com/mozilla/hubs/wiki/Hubs-Controls" target="_blank" rel="noreferrer noopener">
-                <FormattedMessage id="settings.controls" />
-              </a>
-            </div>
-            <div className={classNames([styles.bottomLinks])}>
-              <a href="https://github.com/mozilla/hubs/wiki/Hubs-Features" target="_blank" rel="noreferrer noopener">
-                <FormattedMessage id="settings.features" />
-              </a>
-              <a href="https://discord.gg/wHmY4nd" target="_blank" rel="noreferrer noopener">
-                <FormattedMessage id="settings.community" />
-              </a>
-              <button
-                onClick={e => {
-                  e.preventDefault();
-                  this.props.pushHistoryState("modal", "feedback");
-                }}
-              >
-                <FormattedMessage id="settings.send-feedback" />
-              </button>
-              <a className={styles.bottomLink} href="/?report" target="_blank" rel="noreferrer noopener">
-                <FormattedMessage id="settings.report" />
-              </a>
-              <a
-                className={styles.bottomLink}
-                href="https://github.com/mozilla/hubs/blob/master/TERMS.md"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <FormattedMessage id="settings.terms" />
-              </a>
-              <a
-                className={styles.bottomLink}
-                href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <FormattedMessage id="settings.privacy" />
-              </a>
-            </div>
           </div>
         </div>
       </div>

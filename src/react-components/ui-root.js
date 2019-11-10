@@ -2002,19 +2002,6 @@ class UIRoot extends Component {
                     this.setState({ showStreamingTip: false });
                   }}
                 />
-                {!watching && !streaming ? (
-                  <div className={styles.nagCornerButton}>
-                    <button onClick={() => this.pushHistoryState("modal", "feedback")}>
-                      <FormattedMessage id="feedback.prompt" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className={styles.nagCornerButton}>
-                    <button onClick={() => this.setState({ hide: true })}>
-                      <FormattedMessage id="hide-ui.prompt" />
-                    </button>
-                  </div>
-                )}
 
                 {!streaming && (
                   <button

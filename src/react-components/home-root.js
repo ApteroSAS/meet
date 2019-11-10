@@ -180,18 +180,6 @@ class HomeRoot extends Component {
             <div className={styles.headerContent}>
               <div className={styles.titleAndNav} onClick={() => (document.location = "/")}>
                 <div className={styles.links}>
-                  <a href="/whats-new">
-                    <FormattedMessage id="home.whats_new_link" />
-                  </a>
-                  <a href="https://github.com/mozilla/hubs" rel="noreferrer noopener">
-                    <FormattedMessage id="home.source_link" />
-                  </a>
-                  <a href="https://discord.gg/wHmY4nd" rel="noreferrer noopener">
-                    <FormattedMessage id="home.community_link" />
-                  </a>
-                  <a href="/spoke" rel="noreferrer noopener">
-                    Spoke
-                  </a>
                   {this.props.showAdmin && (
                     <a href="/admin" rel="noreferrer noopener">
                       <i>
@@ -245,69 +233,9 @@ class HomeRoot extends Component {
                       </a>
                     </div>
 
-                    <div className={styles.secondaryLink}>
-                      <div>
-                        <FormattedMessage id="home.add_to_discord_1" />
-                      </div>
-                      <img src={discordLogoSmall} />
-                      <a href="/discord">
-                        <FormattedMessage id="home.add_to_discord_2" />
-                      </a>
-                      <div>
-                        <FormattedMessage id="home.add_to_discord_3" />
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
-            </div>
-            <div className={styles.footerContent}>
-              <div className={styles.links}>
-                <div className={styles.top}>
-                  <a
-                    className={styles.link}
-                    rel="noopener noreferrer"
-                    href="#"
-                    onClick={this.onLinkClicked(this.showJoinUsDialog)}
-                  >
-                    <FormattedMessage id="home.join_us" />
-                  </a>
-                  <a
-                    className={styles.link}
-                    rel="noopener noreferrer"
-                    href="#"
-                    onClick={this.onLinkClicked(this.showUpdatesDialog)}
-                  >
-                    <FormattedMessage id="home.get_updates" />
-                  </a>
-                  <a
-                    className={styles.link}
-                    rel="noopener noreferrer"
-                    href="#"
-                    onClick={this.onLinkClicked(this.showReportDialog)}
-                  >
-                    <FormattedMessage id="home.report_issue" />
-                  </a>
-                  <a
-                    className={styles.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://github.com/mozilla/hubs/blob/master/TERMS.md"
-                  >
-                    <FormattedMessage id="home.terms_of_use" />
-                  </a>
-                  <a
-                    className={styles.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
-                  >
-                    <FormattedMessage id="home.privacy_notice" />
-                  </a>
-
-                  <img className={styles.mozLogo} src={mozLogo} />
-                </div>
-              </div>
             </div>
           </div>
           {this.state.dialog}

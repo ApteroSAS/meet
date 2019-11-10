@@ -21,7 +21,7 @@ dayjs.extend(relativeTime);
 
 const PUBLISHER_FOR_ENTRY_TYPE = {
   sketchfab_model: "Sketchfab",
-  poly_model: "Google Poly",
+  poly_model: "Objects",
   twitch_stream: "Twitch"
 };
 

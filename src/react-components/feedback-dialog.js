@@ -8,7 +8,7 @@ export default class FeedbackDialog extends Component {
       <DialogContainer wide={true} title="" {...this.props}>
         <iframe
           className={styles.formFrame}
-          src="https://docs.google.com/forms/d/e/1FAIpQLSe1C-7hCA1XMT8IL8XBnjlxMAU1JXrwAW8YkbmbBJ4B3pDSsw/viewform?embedded=true"
+          src="https://aptero.co/feedback"
           frameBorder="0"
           marginHeight="0"
           marginWidth="0"

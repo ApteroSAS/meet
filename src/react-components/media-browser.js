@@ -323,33 +323,6 @@ class MediaBrowser extends Component {
                   </i>
                 </div>
               )}
-              <div className={styles.engineAttribution}>
-                {!hideSearch &&
-                  urlSource !== "scenes" &&
-                  urlSource !== "avatars" &&
-                  urlSource !== "favorites" && (
-                    <div className={styles.engineAttributionContents}>
-                      <FormattedMessage id={`media-browser.powered_by.${urlSource}`} />
-                      {PRIVACY_POLICY_LINKS[urlSource] && (
-                        <a href={PRIVACY_POLICY_LINKS[urlSource]} target="_blank" rel="noreferrer noopener">
-                          <FormattedMessage id="media-browser.privacy_policy" />
-                        </a>
-                      )}
-                    </div>
-                  )}
-                {urlSource === "scenes" && (
-                  <div className={styles.engineAttributionContents}>
-                    <FormattedMessage id={`media-browser.powered_by.${urlSource}`} />
-                    <a href="/spoke" target="_blank" rel="noreferrer noopener">
-                      <FormattedMessage id="media-browser.spoke" />
-                    </a>
-                    |
-                    <a target="_blank" rel="noopener noreferrer" href="/?report">
-                      <FormattedMessage id="media-browser.report_issue" />
-                    </a>
-                  </div>
-                )}
-              </div>
             </div>
             <div className={styles.headerRight}>
               {showCustomOption && (
