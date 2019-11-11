@@ -11,7 +11,7 @@ import hubLogo from "../assets/images/hub-preview-white.png";
 import { WithHoverSound } from "./wrap-with-audio";
 import { fetchAvatar } from "../utils/avatar-utils";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
-import { replaceHistoryState } from "../utils/history";
+import { pushHistoryState, replaceHistoryState } from "../utils/history";
 import StateLink from "./state-link";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 
@@ -176,8 +176,11 @@ class ProfileEntryPanel extends Component {
                 )}
 
                 <div className={styles.chooseAvatar}>
-                  <a onClick={() => this.props.mediaSearchStore.sourceNavigateWithNoNav("avatars", "use")}>
-                    <FormattedMessage id="profile.choose_avatar" />
+                  <a onClick={() => {
+                    //this.props.mediaSearchStore.sourceNavigateWithNoNav("avatars", "use")
+                    pushHistoryState(this.props.history, "modal", "avatar_url");
+                  }}>
+                    <FormattedMessage id="profile.change_avatar" />
                   </a>
                 </div>
               </div>

@@ -917,23 +917,11 @@ class UIRoot extends Component {
       subtitle = (
         <div>
           Sorry, this room is no longer available.
-          <p />A room may be closed if we receive reports that it violates our{" "}
-          <WithHoverSound>
-            <a target="_blank" rel="noreferrer noopener" href="https://github.com/mozilla/hubs/blob/master/TERMS.md">
-              Terms of Use
-            </a>
-          </WithHoverSound>
-          .<br />
+          <br />
           If you have questions, contact us at{" "}
           <WithHoverSound>
-            <a href="mailto:hubs@mozilla.com">hubs@mozilla.com</a>
+            <a href="mailto:contact@aptero.co">contact@aptero.co</a>
           </WithHoverSound>
-          .<p />
-          If you&apos;d like to run your own server, hubs&apos;s source code is available on{" "}
-          <WithHoverSound>
-            <a href="https://github.com/mozilla/hubs">GitHub</a>
-          </WithHoverSound>
-          .
         </div>
       );
     } else if (this.props.platformUnsupportedReason === "no_data_channels") {

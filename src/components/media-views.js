@@ -554,7 +554,7 @@ AFRAME.registerComponent("media-video", {
         // TODO FF error here if binding mediastream: The captured HTMLMediaElement is playing a MediaStream. Applying volume or mute status is not currently supported -- not an issue since we have no audio atm in shared video.
         texture.audioSource = this.el.sceneEl.audioListener.context.createMediaElementSource(texture.image);
 
-        if (this.data.audioType === "pannernode") {
+        /*if (this.data.audioType === "pannernode") {
           this.audio = new THREE.PositionalAudio(this.el.sceneEl.audioListener);
           this.audio.setDistanceModel(this.data.distanceModel);
           this.audio.setRolloffFactor(this.data.rolloffFactor);
@@ -563,9 +563,9 @@ AFRAME.registerComponent("media-video", {
           this.audio.panner.coneInnerAngle = this.data.coneInnerAngle;
           this.audio.panner.coneOuterAngle = this.data.coneOuterAngle;
           this.audio.panner.coneOuterGain = this.data.coneOuterGain;
-        } else {
+        } else {*/
           this.audio = new THREE.Audio(this.el.sceneEl.audioListener);
-        }
+        //}
 
         this.audio.setNodeSource(texture.audioSource);
         this.el.setObject3D("sound", this.audio);
