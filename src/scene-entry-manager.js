@@ -302,6 +302,7 @@ export default class SceneEntryManager {
     this.scene.addEventListener("action_spawn", () => {
       handleExitTo2DInterstitial(false, () => window.APP.mediaSearchStore.pushExitMediaBrowserHistory());
       window.APP.mediaSearchStore.sourceNavigateToDefaultSource();
+      //pushHistoryState(this.props.history, "modal", "create");
     });
 
     this.scene.addEventListener("action_invite", () => {

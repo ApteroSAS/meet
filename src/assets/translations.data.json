@@ -102,6 +102,7 @@
     "avatar-preview.loading-failed": "Loading failed\nPlease choose another avatar",
     "media-browser.search-placeholder.scenes": "Search Scenes...",
     "media-browser.search-placeholder.avatars": "Search Avatars...",
+    "media-browser.search-placeholder.objects": "Search objects...",
     "media-browser.search-placeholder.videos": "Search the web...",
     "media-browser.search-placeholder.images": "Search the web...",
     "media-browser.search-placeholder.youtube": "Search for videos...",

@@ -248,7 +248,7 @@ class MediaBrowser extends Component {
       !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
-    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes";
+    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects";
 
     // Don't render anything if we just did a feeling lucky query and are waiting on result.
     if (this.state.selectNextResult) return <div />;
@@ -377,7 +377,7 @@ class MediaBrowser extends Component {
               </div>
             )}
 
-          {this.props.mediaSearchStore.isFetching ||
+          {/* {this.props.mediaSearchStore.isFetching ||
           this._sendQueryTimeout ||
           entries.length > 0 ||
           !showEmptyStringOnNoResult ? (
@@ -389,11 +389,11 @@ class MediaBrowser extends Component {
               onCopyAvatar={this.onCopyAvatar}
               handlePager={this.handlePager}
             />
-          ) : (
+          ) : ( */}
             <div className={styles.emptyString}>
               <FormattedMessage id={`media-browser.empty.${urlSource}`} />
             </div>
-          )}
+          {/* )} */}
         </div>
       </div>
     );
