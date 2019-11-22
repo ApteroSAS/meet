@@ -18,7 +18,7 @@ self.addEventListener("push", function(e) {
         if (client.url.indexOf(e.notification.data.hub_id) >= 0) return;
       }
 
-      return self.registration.showNotification("Hubs by Mozilla", {
+      return self.registration.showNotification("ApteroHub", {
         body: "Someone has joined " + payload.hub_name,
         image: payload.image,
         icon: "/favicon.ico",
