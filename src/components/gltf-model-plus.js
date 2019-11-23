@@ -325,9 +325,9 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
     object.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 
     object.material = mapMaterials(object, material => {
-      if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
+      /*if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
         return MobileStandardMaterial.fromStandardMaterial(material);
-      }
+      }*/
 
       return material;
     });
