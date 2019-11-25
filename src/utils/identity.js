@@ -96,7 +96,8 @@ function chooseRandom(arr) {
 }
 
 export function generateRandomName() {
-  return `${chooseRandom(names)}-${Math.floor(10000 + Math.random() * 10000)}`;
+  //return `${chooseRandom(names)}-${Math.floor(10000 + Math.random() * 10000)}`;
+  return "guest";
 }
 
 export async function fetchRandomDefaultAvatarId() {
@@ -108,5 +109,6 @@ export async function fetchRandomDefaultAvatarId() {
     return getAbsoluteHref(location.href, ducky);
   }
   const avatarIds = defaultAvatars.map(avatar => avatar.id);
-  return chooseRandom(avatarIds);
+  //return chooseRandom(avatarIds);
+  return "default";
 }

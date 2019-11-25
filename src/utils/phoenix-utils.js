@@ -45,6 +45,7 @@ export async function getReticulumMeta() {
 
   const qs = new URLSearchParams(location.search);
   const phxHostOverride = qs.get("phx_host");
+  //const phxHostOverride = "reticulum.aptero.co";
 
   if (phxHostOverride) {
     reticulumMeta.phx_host = phxHostOverride;

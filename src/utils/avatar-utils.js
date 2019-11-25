@@ -19,6 +19,12 @@ async function fetchSkinnableAvatar(avatarId) {
 }
 
 export async function fetchAvatar(avatarId) {
+  if(avatarId==="default"){
+    return {
+      avatar_id: avatarId,
+      gltf_url: "https://hub.aptero.co/data/avatar/avatar_1/avatar_suit.glb"
+    }
+  }
   switch (getAvatarType(avatarId)) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchSkinnableAvatar(avatarId);
