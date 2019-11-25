@@ -7,6 +7,7 @@ import { getCustomGLTFParserURLResolver } from "../utils/media-url-utils";
 import { promisifyWorker } from "../utils/promisify-worker.js";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { disposeNode, cloneObject3D } from "../utils/three-utils";
+import StandardMaterial from "../materials/StandardMaterial";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -329,7 +330,9 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
         return MobileStandardMaterial.fromStandardMaterial(material);
       }*/
 
-      return material;
+      //return material;
+
+      return StandardMaterial.fromStandardMaterial(material);
     });
   });
 
