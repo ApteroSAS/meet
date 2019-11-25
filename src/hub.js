@@ -309,7 +309,6 @@ async function updateEnvironmentForHub(hub) {
   let sceneUrl;
   let isLegacyBundle; // Deprecated
 
-  const environmentScene = document.querySelector("#environment-scene");
   const sceneEl = document.querySelector("a-scene");
 
   if (hub.scene) {
@@ -323,7 +322,7 @@ async function updateEnvironmentForHub(hub) {
     const glbAsset = defaultSpaceTopic.assets.find(a => a.asset_type === "glb");
     const bundleAsset = defaultSpaceTopic.assets.find(a => a.asset_type === "gltf_bundle");
     sceneUrl = (glbAsset || bundleAsset).src || loadingEnvironment;
-    const hasExtension = /\.gltf/i.test(sceneUrl) || /\.glb/i.test(sceneUrl);
+    const hasExtension = /\.gltf/i.test(sceneUrl) || /\.glb/i.test(sceneUrl) || /\.mp4/i.test(sceneUrl);
     isLegacyBundle = !(glbAsset || hasExtension);
   }
 
@@ -338,56 +337,102 @@ async function updateEnvironmentForHub(hub) {
   }
 
   console.log(`Scene URL: ${sceneUrl}`);
-
+  //sceneUrl = "https://hub.aptero.co/data/data/video_main.mp4"
   let environmentEl = null;
+  if(sceneUrl.endsWith(".mp4")){
+    const mp4url = sceneUrl;
+    sceneUrl= "https://hub.aptero.co/data/data/VideoConf.glb";
 
-  if (environmentScene.childNodes.length === 0) {
-    const environmentEl = document.createElement("a-entity");
-    environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl, useCache: false, inflate: true });
+    {
+      //remove old element
+      const videoEl = document.querySelector("#video");
+      const videoSphereEl = document.querySelector("#environment-scene-video");
+      if(videoEl && videoSphereEl) {
+        videoEl.parentNode.removeChild(videoEl);
+        videoSphereEl.parentNode.removeChild(videoSphereEl);
+      }
+    }
 
-    environmentScene.appendChild(environmentEl);
 
-    environmentEl.addEventListener(
-      "model-loaded",
-      () => {
-        // Show the canvas once the model has loaded
-        document.querySelector(".a-canvas").classList.remove("a-hidden");
+    const videoEl = document.createElement("video");
+    videoEl.setAttribute("id", "video");
+    videoEl.setAttribute("style", "display:none");
+    videoEl.setAttribute("autoplay","");
+    videoEl.setAttribute("loop","");
+    videoEl.setAttribute("crossorigin","anonymous");
+    videoEl.setAttribute("playsinline","");
+    videoEl.setAttribute("webkit-playsinline","");
 
-        //TODO: check if the environment was made with spoke to determine if a shape should be added
-        traverseMeshesAndAddShapes(environmentEl);
-      },
-      { once: true }
-    );
-  } else {
-    // Change environment
-    environmentEl = environmentScene.childNodes[0];
+    const sourceEl = document.createElement("source");
+    sourceEl.setAttribute("src", mp4url);
+    sourceEl.setAttribute("type", "video/mp4");
+    sourceEl.setAttribute("id", "source");
+    videoEl.appendChild(sourceEl);
 
-    // Clear the three.js image cache and load the loading environment before switching to the new one.
-    THREE.Cache.clear();
+    sceneEl.appendChild(videoEl);
 
-    environmentEl.addEventListener(
-      "model-loaded",
-      () => {
-        environmentEl.addEventListener(
-          "model-loaded",
-          () => {
-            traverseMeshesAndAddShapes(environmentEl);
+    const videosphere = document.createElement("a-videosphere");
+    videosphere.setAttribute("id", "environment-scene-video");
+    videosphere.setAttribute("rotation","0 180 0");
+    videosphere.setAttribute("src","#video");
+    videosphere.setAttribute("play-on-window-click","");
+    videosphere.setAttribute("play-on-vrdisplayactivate-or-enter-vr","");
+    sceneEl.appendChild(videosphere);
 
-            // We've already entered, so move to new spawn point once new environment is loaded
-            if (sceneEl.is("entered")) {
-              document.querySelector("#avatar-rig").components["spawn-controller"].moveToSpawnPoint();
-            }
-          },
-          { once: true }
-        );
+    /*
+    *
+    * */
 
-        environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl });
-      },
-      { once: true }
-    );
-
-    environmentEl.setAttribute("gltf-model-plus", { src: loadingEnvironment });
+    console.log(videoEl);
   }
+    const environmentScene = document.querySelector("#environment-scene");
+    if (environmentScene.childNodes.length === 0) {
+      const environmentEl = document.createElement("a-entity");
+      environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl, useCache: false, inflate: true });
+
+      environmentScene.appendChild(environmentEl);
+
+      environmentEl.addEventListener(
+        "model-loaded",
+        () => {
+          // Show the canvas once the model has loaded
+          document.querySelector(".a-canvas").classList.remove("a-hidden");
+
+          //TODO: check if the environment was made with spoke to determine if a shape should be added
+          traverseMeshesAndAddShapes(environmentEl);
+        },
+        { once: true }
+      );
+    } else {
+      // Change environment
+      environmentEl = environmentScene.childNodes[0];
+
+      // Clear the three.js image cache and load the loading environment before switching to the new one.
+      THREE.Cache.clear();
+
+      environmentEl.addEventListener(
+        "model-loaded",
+        () => {
+          environmentEl.addEventListener(
+            "model-loaded",
+            () => {
+              traverseMeshesAndAddShapes(environmentEl);
+
+              // We've already entered, so move to new spawn point once new environment is loaded
+              if (sceneEl.is("entered")) {
+                document.querySelector("#avatar-rig").components["spawn-controller"].moveToSpawnPoint();
+              }
+            },
+            { once: true }
+          );
+
+          environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl });
+        },
+        { once: true }
+      );
+
+      environmentEl.setAttribute("gltf-model-plus", { src: loadingEnvironment });
+    }
 }
 
 function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data) {
