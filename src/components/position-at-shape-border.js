@@ -1,43 +1,11 @@
-import { getBox } from "../utils/auto-box-collider.js";
 import { getLastWorldPosition } from "../utils/three-utils";
 import { CAMERA_MODE_FIRST_PERSON } from "../systems/camera-system";
+import { getBox } from "../utils/auto-box-collider";
 
-const PI = Math.PI;
-const HALF_PI = PI / 2;
-const THREE_HALF_PI = 3 * HALF_PI;
-const right = new THREE.Vector3(1, 0, 0);
-const forward = new THREE.Vector3(0, 0, 1);
-const left = new THREE.Vector3(-1, 0, 0);
-const back = new THREE.Vector3(0, 0, -1);
-const zero = new THREE.Vector3(0, 0, 0);
-const dirs = {
-  left: {
-    dir: left,
-    rotation: THREE_HALF_PI,
-    halfExtent: "x"
-  },
-  right: {
-    dir: right,
-    rotation: HALF_PI,
-    halfExtent: "x"
-  },
-  forward: {
-    dir: forward,
-    rotation: 0,
-    halfExtent: "z"
-  },
-  back: {
-    dir: back,
-    rotation: PI,
-    halfExtent: "z"
-  }
-};
-
-AFRAME.registerComponent("position-at-box-shape-border", {
+AFRAME.registerComponent("position-at-shape-border", {
   multiple: true,
   schema: {
     target: { type: "string" },
-    dirs: { default: ["left", "right", "forward", "back"] },
     animate: { default: true },
     scale: { default: true }
   },
@@ -55,7 +23,6 @@ AFRAME.registerComponent("position-at-box-shape-border", {
   },
 
   update() {
-    this.dirs = this.data.dirs.map(d => dirs[d]);
   },
 
   _setupTarget() {
@@ -107,77 +74,43 @@ AFRAME.registerComponent("position-at-box-shape-border", {
 
   _updateBox: (function() {
     const camWorldPos = new THREE.Vector3();
+    const objWorldPos = new THREE.Vector3();
     const targetPosition = new THREE.Vector3();
-    const pointOnBoxFace = new THREE.Vector3();
-    const pointOnBoxFaceToCamera = new THREE.Vector3();
-    const boxCenter = new THREE.Vector3();
     const tempParentWorldScale = new THREE.Vector3();
-    const boxFaceNormal = new THREE.Vector3();
-    const min = new THREE.Vector3(0.001, 0.001, 0.001);
+    const targetDir = new THREE.Vector3();
+    const camWorldDirection = new THREE.Vector3();
+    const zero = new THREE.Vector3();
 
     return function(animate, forceNewExtents) {
+      let objectSize =0.5;
       if (forceNewExtents || this.mesh !== this.el.getObject3D("mesh")) {
         this.mesh = this.el.getObject3D("mesh");
-
         const box = getBox(this.el, this.mesh);
-        this.halfExtents = box.min
-          .clone()
-          .negate()
-          .add(box.max)
-          .multiplyScalar(0.65);
-
-        this.halfExtents.max(min);
+        objectSize = zero.distanceTo(box.max);
       }
       if (!this.target) return;
 
       getLastWorldPosition(this.cam, camWorldPos);
 
-      let targetSquareDistance = Infinity;
-      let targetDir = this.dirs[0].dir;
-      let targetHalfExtentStr = this.dirs[0].halfExtent;
-      let targetHalfExtent = this.halfExtents[targetHalfExtentStr];
-      let targetRotation = this.dirs[0].rotation;
-      let targetCameraDot = -1.1;
-
       this.el.object3D.updateMatrices();
 
-      for (let i = 0; i < this.dirs.length; i++) {
-        const dir = this.dirs[i].dir;
-        const halfExtentStr = this.dirs[i].halfExtent;
-        const halfExtent = this.halfExtents[halfExtentStr];
-        pointOnBoxFace.copy(dir).multiplyScalar(halfExtent);
-        boxCenter.copy(zero);
+      this.el.object3D.getWorldPosition(objWorldPos)
+      targetDir.subVectors(camWorldPos,objWorldPos);
+      targetDir.normalize();
+      targetDir.multiplyScalar(objectSize);
 
-        this.el.object3D.localToWorld(pointOnBoxFace);
-        this.el.object3D.localToWorld(boxCenter);
+      /*this.cam.getWorldDirection(camWorldDirection);
+      camWorldDirection.negate();
+      camWorldDirection.normalize();
+      camWorldDirection.multiplyScalar(objectSize);*/
 
-        pointOnBoxFaceToCamera.subVectors(camWorldPos, pointOnBoxFace);
-        pointOnBoxFaceToCamera.normalize();
-
-        boxFaceNormal.subVectors(pointOnBoxFace, boxCenter);
-        boxFaceNormal.normalize();
-
-        // Compute dot between camera + box normal to ensure menus are going to be
-        // somewhat perpendicular to camera frustum
-        const cameraAngleDotBoxNormal = boxFaceNormal.dot(pointOnBoxFaceToCamera);
-
-        const squareDistance = pointOnBoxFace.distanceToSquared(camWorldPos);
-        if (cameraAngleDotBoxNormal > targetCameraDot) {
-          targetSquareDistance = squareDistance;
-          targetDir = dir;
-          targetHalfExtent = halfExtent;
-          targetRotation = this.dirs[i].rotation;
-          targetHalfExtentStr = halfExtentStr;
-          targetCameraDot = cameraAngleDotBoxNormal;
-        }
-      }
-
-      this.target.position.copy(targetPosition.copy(targetDir).multiplyScalar(targetHalfExtent));
-      this.target.rotation.set(0, targetRotation, 0);
+      this.target.position.set(targetDir.x,targetDir.y,targetDir.z);//local to reference this.el.object3D
+      this.target.lookAt(camWorldPos.x,camWorldPos.y,camWorldPos.z);//local to reference this.el.object3D
+      //this.target.rotation.set(0, 0, 0);
 
       tempParentWorldScale.setFromMatrixScale(this.target.parent.matrixWorld);
 
-      const distance = Math.sqrt(targetSquareDistance);
+      const distance = 1;
       const scale = Math.max(this.halfExtents.x, this.halfExtents.z) * distance;
       const targetScale = Math.min(
         this.el.sceneEl.systems["hubs-systems"].cameraSystem.mode === CAMERA_MODE_FIRST_PERSON ? 2.0 : 4.0,
