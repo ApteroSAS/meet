@@ -10,6 +10,7 @@ import loadingEnvironment from "./assets/models/LoadingEnvironment.glb";
 import "aframe";
 import "./utils/logging";
 import { patchWebGLRenderingContext } from "./utils/webgl";
+
 patchWebGLRenderingContext();
 
 import "three/examples/js/loaders/GLTFLoader";
@@ -200,6 +201,7 @@ import { getAvailableVREntryTypes, VR_DEVICE_AVAILABILITY } from "./utils/vr-cap
 import detectConcurrentLoad from "./utils/concurrent-load-detector.js";
 
 import qsTruthy from "./utils/qs_truthy";
+import {video360Service } from "./systems/Video360Service";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -340,100 +342,116 @@ async function updateEnvironmentForHub(hub) {
   console.log(`Scene URL: ${sceneUrl}`);
   //sceneUrl = "https://hub.aptero.co/data/data/video_main.mp4"
   let environmentEl = null;
-  if(sceneUrl.endsWith(".mp4")){
+  if (sceneUrl.endsWith(".mp4")) {
     const mp4url = sceneUrl;
-    sceneUrl= "https://hub.aptero.co/data/data/VideoConf.glb";
+    sceneUrl = "https://hub.aptero.co/data/data/VideoConf.glb";
 
     {
       //remove old element
       const videoEl = document.querySelector("#video");
       const videoSphereEl = document.querySelector("#environment-scene-video");
-      if(videoEl && videoSphereEl) {
+      if (videoEl && videoSphereEl) {
         videoEl.parentNode.removeChild(videoEl);
         videoSphereEl.parentNode.removeChild(videoSphereEl);
       }
     }
+    const addVideo360 = () => {
+      /*const aAssetsEl = document.createElement("a-assets");
+      aAssetsEl.setAttribute("id", "aassets");
+      aAssetsEl.setAttribute("timeout", "4500");*/
 
+      const videoEl = document.createElement("video");
+      videoEl.setAttribute("id", "video");
+      videoEl.setAttribute("style", "display:none");
+      videoEl.setAttribute("autoplay", "");
+      videoEl.setAttribute("loop", "");
+      videoEl.setAttribute("crossorigin", "anonymous");
+      videoEl.setAttribute("playsinline", "");
+      videoEl.setAttribute("webkit-playsinline", "");
+      //videoEl.setAttribute("src", mp4url);
 
-    const videoEl = document.createElement("video");
-    videoEl.setAttribute("id", "video");
-    videoEl.setAttribute("style", "display:none");
-    videoEl.setAttribute("autoplay","");
-    videoEl.setAttribute("loop","");
-    videoEl.setAttribute("crossorigin","anonymous");
-    videoEl.setAttribute("playsinline","");
-    videoEl.setAttribute("webkit-playsinline","");
+      const sourceEl = document.createElement("source");
+      sourceEl.setAttribute("src", mp4url);
+      sourceEl.setAttribute("type", "video/mp4");
+      sourceEl.setAttribute("id", "source");
+      videoEl.appendChild(sourceEl);
 
-    const sourceEl = document.createElement("source");
-    sourceEl.setAttribute("src", mp4url);
-    sourceEl.setAttribute("type", "video/mp4");
-    sourceEl.setAttribute("id", "source");
-    videoEl.appendChild(sourceEl);
+      sceneEl.appendChild(videoEl);
+      //sceneEl.appendChild(aAssetsEl);
+      const makeVideoSphere = ()=>{
+        console.log(videoEl);
+        const videosphere = document.createElement("a-videosphere");
+        videosphere.setAttribute("id", "environment-scene-video");
+        videosphere.setAttribute("rotation", "0 180 0");
+        videosphere.setAttribute("src", "#video");
+        videosphere.setAttribute("play-on-window-click", "");
+        videosphere.setAttribute("play-on-vrdisplayactivate-or-enter-vr", "");
+        sceneEl.appendChild(videosphere);
+        video360Service.enableAndSetVideo(videoEl,videosphere);
+        videoEl.removeEventListener("loadeddata", makeVideoSphere);
+      };
+      videoEl.addEventListener("loadeddata", makeVideoSphere);
 
-    sceneEl.appendChild(videoEl);
-
-    const videosphere = document.createElement("a-videosphere");
-    videosphere.setAttribute("id", "environment-scene-video");
-    videosphere.setAttribute("rotation","0 180 0");
-    videosphere.setAttribute("src","#video");
-    videosphere.setAttribute("play-on-window-click","");
-    videosphere.setAttribute("play-on-vrdisplayactivate-or-enter-vr","");
-    sceneEl.appendChild(videosphere);
-
-    /*
-    *
-    * */
-
-    console.log(videoEl);
-  }
-    const environmentScene = document.querySelector("#environment-scene");
-    if (environmentScene.childNodes.length === 0) {
-      const environmentEl = document.createElement("a-entity");
-      environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl, useCache: false, inflate: true });
-
-      environmentScene.appendChild(environmentEl);
-
-      environmentEl.addEventListener(
-        "model-loaded",
-        () => {
-          // Show the canvas once the model has loaded
-          document.querySelector(".a-canvas").classList.remove("a-hidden");
-
-          //TODO: check if the environment was made with spoke to determine if a shape should be added
-          traverseMeshesAndAddShapes(environmentEl);
-        },
-        { once: true }
-      );
-    } else {
-      // Change environment
-      environmentEl = environmentScene.childNodes[0];
-
-      // Clear the three.js image cache and load the loading environment before switching to the new one.
-      THREE.Cache.clear();
-
-      environmentEl.addEventListener(
-        "model-loaded",
-        () => {
-          environmentEl.addEventListener(
-            "model-loaded",
-            () => {
-              traverseMeshesAndAddShapes(environmentEl);
-
-              // We've already entered, so move to new spawn point once new environment is loaded
-              if (sceneEl.is("entered")) {
-                document.querySelector("#avatar-rig").components["spawn-controller"].moveToSpawnPoint();
-              }
-            },
-            { once: true }
-          );
-
-          environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl });
-        },
-        { once: true }
-      );
-
-      environmentEl.setAttribute("gltf-model-plus", { src: loadingEnvironment });
+      window.removeEventListener("focus", addVideo360);
+    };
+    if(document.hasFocus()){
+      setTimeout(()=>{
+        addVideo360();
+      },5000);
+    }else{
+      window.addEventListener("focus", addVideo360);
     }
+  }else{
+    video360Service.disable();
+  }
+  const environmentScene = document.querySelector("#environment-scene");
+  if (environmentScene.childNodes.length === 0) {
+    const environmentEl = document.createElement("a-entity");
+    environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl, useCache: false, inflate: true });
+
+    environmentScene.appendChild(environmentEl);
+
+    environmentEl.addEventListener(
+      "model-loaded",
+      () => {
+        // Show the canvas once the model has loaded
+        document.querySelector(".a-canvas").classList.remove("a-hidden");
+
+        //TODO: check if the environment was made with spoke to determine if a shape should be added
+        traverseMeshesAndAddShapes(environmentEl);
+      },
+      { once: true }
+    );
+  } else {
+    // Change environment
+    environmentEl = environmentScene.childNodes[0];
+
+    // Clear the three.js image cache and load the loading environment before switching to the new one.
+    THREE.Cache.clear();
+
+    environmentEl.addEventListener(
+      "model-loaded",
+      () => {
+        environmentEl.addEventListener(
+          "model-loaded",
+          () => {
+            traverseMeshesAndAddShapes(environmentEl);
+
+            // We've already entered, so move to new spawn point once new environment is loaded
+            if (sceneEl.is("entered")) {
+              document.querySelector("#avatar-rig").components["spawn-controller"].moveToSpawnPoint();
+            }
+          },
+          { once: true }
+        );
+
+        environmentEl.setAttribute("gltf-model-plus", { src: sceneUrl });
+      },
+      { once: true }
+    );
+
+    environmentEl.setAttribute("gltf-model-plus", { src: loadingEnvironment });
+  }
 }
 
 function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data) {
@@ -614,7 +632,8 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 }
 
 async function runBotMode(scene, entryManager) {
-  const noop = () => {};
+  const noop = () => {
+  };
   scene.renderer = { setAnimationLoop: noop, render: noop };
 
   while (!NAF.connection.isConnected()) await nextTick();

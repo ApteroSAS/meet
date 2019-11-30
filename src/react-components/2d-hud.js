@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { micLevelForVolume } from "../components/audio-feedback";
 import { pushHistoryState } from "../utils/history";
+import { video360Service } from "../systems/Video360Service";
 
 const SPRITESHEET_ICONS = {
   MIC: [
@@ -34,7 +35,8 @@ const SPRITESHEET_ICONS = {
   ]
 };
 
-const noop = () => {};
+const noop = () => {
+};
 
 class TopHUD extends Component {
   static propTypes = {
@@ -87,6 +89,9 @@ class TopHUD extends Component {
   };
 
   componentDidMount = () => {
+    video360Service.eventEmitter.on("change", () => {
+      this.setState({ video360Disable: video360Service.disable() });
+    });
     let max = 0;
     if (this.micUpdateInterval) {
       clearInterval(this.micUpdateInterval);
@@ -122,6 +127,10 @@ class TopHUD extends Component {
       this.props.onShareVideo(source);
       this.setState({ lastActiveMediaSource: source });
     }
+  };
+
+  handleVideoControlClicked = (type) => {
+    video360Service.action(type);
   };
 
   buildVideoSharingButtons = () => {
@@ -204,7 +213,83 @@ class TopHUD extends Component {
     );
   };
 
+  buildVideoControlButtons = () => {
+
+    const showExtrasOnHover = () => {
+      clearTimeout(this.hideVideoControlButtonTimeout);
+      this.setState({ showVideoControlOptions: true });
+    };
+
+    const hideExtrasOnOut = () => {
+      this.hideVideoControlButtonTimeout = setTimeout(() => {
+        this.setState({ showVideoControlOptions: false });
+      }, 250);
+    };
+
+    const maybeHandlePrimaryShare = () => {
+      if (!this.state.showVideoControlOptions) {
+        this.handleVideoControlClicked("play");
+      }
+    };
+
+    return (
+      <>
+        {
+          !this.state.video360Disable &&
+          <div
+            className={cx(styles.iconButton, styles[`share_camera`], {
+              [styles.active]: false,
+              [styles.disabled]: false,
+              [styles.videoShare]: true
+            })}
+            title={"play"}
+            onClick={this.state.mediaDisabled ? noop : maybeHandlePrimaryShare}
+            onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+          >
+
+            {this.state.showVideoControlOptions &&
+            <div className={cx(styles.videoShareExtraOptions)} onMouseOut={hideExtrasOnOut}>
+              <div
+                key={"play"}
+                className={cx(styles.iconButton, styles[`share_camera`], {
+                  [styles.active]: false,
+                  [styles.disabled]: false
+                })}
+                title={"play"}
+                onClick={this.state.mediaDisabled ? noop : () => this.handleVideoControlClicked("play")}
+                onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+              />
+              <div
+                key={"pause"}
+                className={cx(styles.iconButton, styles[`share_screen`], {
+                  [styles.active]: false,
+                  [styles.disabled]: false
+                })}
+                title={"pause"}
+                onClick={this.state.mediaDisabled ? noop : () => this.handleVideoControlClicked("pause")}
+                onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+              />
+              <div
+                key={"restart"}
+                className={cx(styles.iconButton, styles[`share_window`], {
+                  [styles.active]: false,
+                  [styles.disabled]: false
+                })}
+                title={"restart"}
+                onClick={this.state.mediaDisabled ? noop : () => this.handleVideoControlClicked("restart")}
+                onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+              />
+            </div>
+            }
+          </div>
+        }
+      </>
+    );
+  };
+
+
   render() {
+    const videoControlButtons = this.buildVideoControlButtons();
     const videoSharingButtons = this.buildVideoSharingButtons();
     const isMobile = AFRAME.utils.device.isMobile();
     const tipDivForType = (type, cancelFunc) => (
@@ -212,12 +297,12 @@ class TopHUD extends Component {
         {cancelFunc && (
           <button className={styles.tipCancel} onClick={cancelFunc}>
             <i>
-              <FontAwesomeIcon icon={faTimes} />
+              <FontAwesomeIcon icon={faTimes}/>
             </i>
           </button>
         )}
-        {!this.props.frozen && <div className={cx([styles.attachPoint, styles[`attach_${type.split(".")[1]}`]])} />}
-        <FormattedMessage id={`tips.${type}`} />
+        {!this.props.frozen && <div className={cx([styles.attachPoint, styles[`attach_${type.split(".")[1]}`]])}/>}
+        <FormattedMessage id={`tips.${type}`}/>
       </div>
     );
 
@@ -228,13 +313,13 @@ class TopHUD extends Component {
         <div className={cx([styles.topTip, styles.topTipNoHud])}>
           <button className={styles.tipCancel} onClick={() => this.props.onWatchEnded()}>
             <i>
-              <FontAwesomeIcon icon={faTimes} />
+              <FontAwesomeIcon icon={faTimes}/>
             </i>
           </button>
-          <FormattedMessage id={`tips.${isMobile ? "mobile" : "desktop"}.watching`} />
+          <FormattedMessage id={`tips.${isMobile ? "mobile" : "desktop"}.watching`}/>
           {!isMobile && (
             <button className={styles.tipCancelText} onClick={() => this.props.onWatchEnded()}>
-              <FormattedMessage id="tips.watching.back" />
+              <FormattedMessage id="tips.watching.back"/>
             </button>
           )}
         </div>
@@ -255,6 +340,7 @@ class TopHUD extends Component {
         ) : (
           <div className={cx(uiStyles.uiInteractive, styles.panel)}>
             {tip}
+            {videoControlButtons}
             {videoSharingButtons}
             <div
               className={cx(styles.iconButton, micIconClass)}
