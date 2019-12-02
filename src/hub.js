@@ -379,7 +379,7 @@ async function updateEnvironmentForHub(hub) {
       sceneEl.appendChild(videoEl);
       //sceneEl.appendChild(aAssetsEl);
       const makeVideoSphere = ()=>{
-        console.log(videoEl);
+        videoEl.removeEventListener("loadeddata", makeVideoSphere);
         const videosphere = document.createElement("a-videosphere");
         videosphere.setAttribute("id", "environment-scene-video");
         videosphere.setAttribute("rotation", "0 180 0");
@@ -388,7 +388,6 @@ async function updateEnvironmentForHub(hub) {
         videosphere.setAttribute("play-on-vrdisplayactivate-or-enter-vr", "");
         sceneEl.appendChild(videosphere);
         video360Service.enableAndSetVideo(videoEl,videosphere);
-        videoEl.removeEventListener("loadeddata", makeVideoSphere);
       };
       videoEl.addEventListener("loadeddata", makeVideoSphere);
 
@@ -1195,6 +1194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     resolve: null
   };
 
+  video360Service.setPhoenixChannel(hubPhxChannel);
   hubChannel.setPhoenixChannel(hubPhxChannel);
 
   hubPhxChannel
@@ -1302,6 +1302,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     presence: meta.presence,
                     name: meta.profile.displayName
                   });
+                  video360Service.onUserJoin();
                 }
               }
             }
@@ -1436,10 +1437,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const incomingMessage = { name, type, body, maySpawn, sessionId: session_id };
 
+    //TODO hack waitting for server implementation
+    video360Service.processMessage({ session_id, type, body, from });
     if (scene.is("vr-mode")) {
       createInWorldLogMessage(incomingMessage);
     }
-
     addToPresenceLog(incomingMessage);
   });
 

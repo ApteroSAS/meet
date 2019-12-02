@@ -70,7 +70,8 @@ class TopHUD extends Component {
     micLevel: 0,
     cameraDisabled: false,
     penDisabled: false,
-    mediaDisabled: false
+    mediaDisabled: false,
+    video360Disable:true,
   };
 
   constructor(props) {
@@ -90,8 +91,11 @@ class TopHUD extends Component {
 
   componentDidMount = () => {
     video360Service.eventEmitter.on("change", () => {
-      this.setState({ video360Disable: video360Service.disable() });
+      if(this.state.video360Disable!==!video360Service.isEnable() ) {
+        this.setState({ video360Disable: !video360Service.isEnable() });
+      }
     });
+    this.setState({ video360Disable: !video360Service.isEnable() });
     let max = 0;
     if (this.micUpdateInterval) {
       clearInterval(this.micUpdateInterval);
@@ -237,7 +241,7 @@ class TopHUD extends Component {
         {
           !this.state.video360Disable &&
           <div
-            className={cx(styles.iconButton, styles[`share_camera`], {
+            className={cx(styles.iconButton, styles[`video_play`], {
               [styles.active]: false,
               [styles.disabled]: false,
               [styles.videoShare]: true
@@ -251,7 +255,7 @@ class TopHUD extends Component {
             <div className={cx(styles.videoShareExtraOptions)} onMouseOut={hideExtrasOnOut}>
               <div
                 key={"play"}
-                className={cx(styles.iconButton, styles[`share_camera`], {
+                className={cx(styles.iconButton, styles[`video_play`], {
                   [styles.active]: false,
                   [styles.disabled]: false
                 })}
@@ -261,7 +265,7 @@ class TopHUD extends Component {
               />
               <div
                 key={"pause"}
-                className={cx(styles.iconButton, styles[`share_screen`], {
+                className={cx(styles.iconButton, styles[`video_pause`], {
                   [styles.active]: false,
                   [styles.disabled]: false
                 })}
@@ -271,7 +275,7 @@ class TopHUD extends Component {
               />
               <div
                 key={"restart"}
-                className={cx(styles.iconButton, styles[`share_window`], {
+                className={cx(styles.iconButton, styles[`video_restart`], {
                   [styles.active]: false,
                   [styles.disabled]: false
                 })}

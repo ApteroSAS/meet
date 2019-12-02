@@ -347,6 +347,16 @@
   }
 }
 
+:local(.iconButton.video_play) {
+  background-image: url(../video-overlay/play.png);
+}
+:local(.iconButton.video_pause) {
+  background-image: url(../video-overlay/pause.png);
+}
+:local(.iconButton.video_restart) {
+  background-image: url(../video-overlay/seek_back.png);
+}
+
 :local(.iconButton.share_window) {
   background-image: url(../hud/share_window_off.png);
 }

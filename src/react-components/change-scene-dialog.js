@@ -47,7 +47,7 @@ export default class ChangeSceneDialog extends Component {
             <p>
               Paste a URL to a{" "}
               <a href="https://en.wikipedia.org/wiki/GlTF#GLB" target="_blank" rel="noopener noreferrer">
-                GLB File
+                GLB File or a MP4 file for a 360 video
               </a>.
             </p>
           </div>

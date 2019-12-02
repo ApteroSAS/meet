@@ -1,8 +1,3 @@
-import { getAbsoluteHref } from "./utils/media-url-utils";
-import { spawnChatMessage } from "./react-components/chat-message";
-import { SOUND_QUACK, SOUND_SPECIAL_QUACK } from "./systems/sound-effects-system";
-import ducky from "./assets/models/DuckyMesh.glb";
-
 // Handles user-entered messages
 export default class MessageDispatch {
   constructor(scene, entryManager, hubChannel, addToPresenceLog, remountUI, mediaSearchStore) {
@@ -75,14 +70,6 @@ export default class MessageDispatch {
       case "leave":
         this.entryManager.exitScene();
         this.remountUI({ roomUnavailableReason: "left" });
-        break;
-      case "duck":
-        spawnChatMessage(getAbsoluteHref(location.href, ducky));
-        if (Math.random() < 0.01) {
-          this.scene.systems["hubs-systems"].soundEffectsSystem.playSoundOneShot(SOUND_SPECIAL_QUACK);
-        } else {
-          this.scene.systems["hubs-systems"].soundEffectsSystem.playSoundOneShot(SOUND_QUACK);
-        }
         break;
       case "debug":
         physicsSystem = document.querySelector("a-scene").systems["hubs-systems"].physicsSystem;
