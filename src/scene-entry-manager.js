@@ -232,13 +232,13 @@ export default class SceneEntryManager {
           await this._unpinElement(el);
         };
 
-    /*this.performConditionalSignIn(() => this.hubChannel.signedIn, action, pin ? "pin" : "unpin", () => {
+    this.performConditionalSignIn(() => {return true}, action, pin ? "pin" : "unpin", () => {
       // UI pins/un-pins the entity optimistically, so we undo that here.
       // Note we have to disable the sign in flow here otherwise this will recurse.
       this._disableSignInOnPinAction = true;
       el.setAttribute("pinnable", "pinned", !pin);
       this._disableSignInOnPinAction = false;
-    });*/
+    });
   };
 
   _unpinElement = el => {
