@@ -509,7 +509,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   });
 
   // Handle request for user gesture
-  scene.addEventListener("2d-interstitial-gesture-required", () => {
+  /*scene.addEventListener("2d-interstitial-gesture-required", () => {
     remountUI({
       showInterstitialPrompt: true,
       onInterstitialPromptClicked: () => {
@@ -517,7 +517,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
         scene.emit("2d-interstitial-gesture-complete");
       }
     });
-  });
+  });*/
 
   const objectsScene = document.querySelector("#objects-scene");
   const objectsUrl = getReticulumFetchUrl(`/${hub.hub_id}/objects.gltf`);
