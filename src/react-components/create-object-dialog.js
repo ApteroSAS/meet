@@ -20,7 +20,7 @@ const attributionHostnames = {
 
 const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
 const instructions = "Paste a URL to an image, video, model, scene, or upload.";
-const desktopTips = "Tip: You can paste URLs directly into Hubs with Ctrl+V";
+const desktopTips = "Tip: You can paste URLs directly into the app with Ctrl+V";
 const references = (
   <span>
     {/*

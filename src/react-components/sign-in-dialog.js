@@ -63,16 +63,6 @@ export default class SignInDialog extends Component {
             onChange={e => this.setState({ email: e.target.value })}
             className={styles.emailField}
           />
-          <p className={styles.terms}>
-            By proceeding, you agree to the{" "}
-            <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/TERMS.md">
-              terms of use
-            </a>{" "}
-            and{" "}
-            <a rel="noopener noreferrer" target="_blank" href="https://github.com/mozilla/hubs/blob/master/PRIVACY.md">
-              privacy notice
-            </a>.
-          </p>
           <button type="submit" className={styles.nextButton}>
             next
           </button>
