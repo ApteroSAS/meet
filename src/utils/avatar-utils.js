@@ -25,6 +25,18 @@ export async function fetchAvatar(avatarId) {
       gltf_url: "https://hub.aptero.co/data/avatar/avatar_1/avatar_suit.glb"
     }
   }
+  if(avatarId==="SUIT"){
+    return {
+      avatar_id: avatarId,
+      gltf_url: "https://hub.aptero.co/data/avatar/avatar_1/avatar_suit.glb"
+    }
+  }
+  if(avatarId==="DRESS"){
+    return {
+      avatar_id: avatarId,
+      gltf_url: "https://hub.aptero.co/data/avatar/avatar_dress/avatar.glb"
+    }
+  }
   switch (getAvatarType(avatarId)) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchSkinnableAvatar(avatarId);

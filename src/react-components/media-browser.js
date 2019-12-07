@@ -65,9 +65,7 @@ const DEFAULT_FACETS = {
     { text: "Transport", params: { filter: "transport" } }
   ],
   avatars: [
-    { text: "Featured", params: { filter: "featured" } },
-    { text: "My Avatars", params: { filter: "my-avatars" } },
-    { text: "Newest", params: { filter: "" } }
+    { text: "Avatars", params: { filter: "" } }
   ],
   favorites: [],
   scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }]
@@ -92,7 +90,8 @@ class MediaBrowser extends Component {
     this.props.mediaSearchStore.addEventListener("sourcechanged", this.sourceChanged);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+  }
 
   componentWillUnmount() {
     this.props.mediaSearchStore.removeEventListener("statechanged", this.storeUpdated);
@@ -251,7 +250,7 @@ class MediaBrowser extends Component {
     const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects";
 
     // Don't render anything if we just did a feeling lucky query and are waiting on result.
-    if (this.state.selectNextResult) return <div />;
+    if (this.state.selectNextResult) return <div/>;
     const handleCustomClicked = urlSource => {
       const isAvatarApiType = urlSource === "avatars";
       if (isAvatarApiType) {
@@ -274,7 +273,7 @@ class MediaBrowser extends Component {
             <div className={styles.headerLeft}>
               <a onClick={() => this.close()}>
                 <i>
-                  <FontAwesomeIcon icon={faTimes} />
+                  <FontAwesomeIcon icon={faTimes}/>
                 </i>
               </a>
             </div>
@@ -282,15 +281,15 @@ class MediaBrowser extends Component {
               {urlSource === "favorites" && (
                 <div className={styles.favoritesHeader}>
                   <i>
-                    <FontAwesomeIcon icon={faStar} />
+                    <FontAwesomeIcon icon={faStar}/>
                   </i>
-                  <FormattedMessage id="media-browser.favorites-header" />
+                  <FormattedMessage id="media-browser.favorites-header"/>
                 </div>
               )}
               {!hideSearch && (
                 <div className={styles.search}>
                   <i className={styles.searchIcon}>
-                    <FontAwesomeIcon icon={faSearch} />
+                    <FontAwesomeIcon icon={faSearch}/>
                   </i>
                   <input
                     type="text"
@@ -319,7 +318,7 @@ class MediaBrowser extends Component {
                     onChange={e => this.handleQueryUpdated(e.target.value)}
                   />
                   <i className={styles.searchClear} onClick={() => this.handleQueryUpdated("", true)}>
-                    <FontAwesomeIcon icon={faTimes} />
+                    <FontAwesomeIcon icon={faTimes}/>
                   </i>
                 </div>
               )}
@@ -328,7 +327,7 @@ class MediaBrowser extends Component {
               {showCustomOption && (
                 <a onClick={() => handleCustomClicked(urlSource)} className={styles.createButton}>
                   <i>
-                    <FontAwesomeIcon icon={["scenes", "avatars"].includes(urlSource) ? faLink : faCloudUploadAlt} />
+                    <FontAwesomeIcon icon={["scenes", "avatars"].includes(urlSource) ? faLink : faCloudUploadAlt}/>
                   </i>
                 </a>
               )}
@@ -352,32 +351,32 @@ class MediaBrowser extends Component {
                   key={s}
                   className={classNames({ [styles.navSource]: true, [styles.navSourceSelected]: urlSource === s })}
                 >
-                  <FormattedMessage id={`media-browser.nav_title.${s}`} />
+                  <FormattedMessage id={`media-browser.nav_title.${s}`}/>
                 </a>
               ))}
               <div className={styles.navRightPad}>&nbsp;</div>
               <div className={styles.navScrollArrow}>
-                <FontAwesomeIcon icon={faAngleRight} />
+                <FontAwesomeIcon icon={faAngleRight}/>
               </div>
             </div>
           )}
 
           {this.state.facets &&
-            this.state.facets.length > 0 && (
-              <div className={styles.facets}>
-                {this.state.facets.map((s, i) => (
-                  <a
-                    onClick={() => this.handleFacetClicked(s)}
-                    key={i}
-                    className={classNames(styles.facet, { selected: s.params.filter === activeFilter })}
-                  >
-                    {s.text}
-                  </a>
-                ))}
-              </div>
-            )}
+          this.state.facets.length > 0 && (
+            <div className={styles.facets}>
+              {this.state.facets.map((s, i) => (
+                <a
+                  onClick={() => this.handleFacetClicked(s)}
+                  key={i}
+                  className={classNames(styles.facet, { selected: s.params.filter === activeFilter })}
+                >
+                  {s.text}
+                </a>
+              ))}
+            </div>
+          )}
 
-          {/* {this.props.mediaSearchStore.isFetching ||
+          {this.props.mediaSearchStore.isFetching ||
           this._sendQueryTimeout ||
           entries.length > 0 ||
           !showEmptyStringOnNoResult ? (
@@ -389,11 +388,11 @@ class MediaBrowser extends Component {
               onCopyAvatar={this.onCopyAvatar}
               handlePager={this.handlePager}
             />
-          ) : ( */}
+          ) : (
             <div className={styles.emptyString}>
-              <FormattedMessage id={`media-browser.empty.${urlSource}`} />
+              <FormattedMessage id={`media-browser.empty.${urlSource}`}/>
             </div>
-          {/* )} */}
+          )}
         </div>
       </div>
     );

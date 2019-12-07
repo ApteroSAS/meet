@@ -55,7 +55,7 @@ class MediaTiles extends Component {
     return (
       <div className={styles.body}>
         <div className={classNames({ [styles.tiles]: true, [styles.tilesVariable]: isVariableWidth })}>
-          {(urlSource === "avatars" || urlSource === "scenes") && (
+          { /* {(urlSource === "avatars" || urlSource === "scenes") && (
             <div
               style={{ width: `${createTileWidth}px`, height: `${createTileHeight}px` }}
               className={classNames(styles.tile, styles.createTile)}
@@ -82,7 +82,7 @@ class MediaTiles extends Component {
                 </a>
               )}
             </div>
-          )}
+          )} */}
 
           {entries.map(this.entryToTile)}
         </div>
@@ -183,7 +183,7 @@ class MediaTiles extends Component {
             <FontAwesomeIcon icon={faPencilAlt} />
           </StateLink>
         )}
-        {entry.type === "avatar_listing" &&
+        { /* {entry.type === "avatar_listing" &&
           entry.allow_remixing && (
             <StateLink
               className={styles.editAvatar}
@@ -193,7 +193,7 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faClone} />
             </StateLink>
-          )}
+          )} */ }
         {!entry.type.endsWith("_image") && (
           <div className={styles.info}>
             <a

@@ -101,7 +101,7 @@ export default class MediaSearchStore extends EventTarget {
 
     this.isFetching = true;
     this.dispatchEvent(new CustomEvent("statechanged"));
-    const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
+    let result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
     result.entries.forEach(entry => {
       entry.images.preview.url = "https://hubs-upload-cdn.com/files/c9bbf97e-219f-4bc1-a64e-d1f992544ede.jpg";
@@ -113,6 +113,52 @@ export default class MediaSearchStore extends EventTarget {
     });
 
     if (this.requestIndex != currentRequestIndex) return;
+
+    if (source === "avatars" || source === "avatar_listings"){
+      result = {
+        "meta": { "source": "avatar_listings", "next_cursor": 0 },
+        "entries": [{
+          "allow_remixing": true,
+          "attributions": { "creator": "MissLiviRose" },
+          "description": null,
+          "gltfs": {
+            "avatar": "https://hub.aptero.co/data/avatar/avatar_dress/avatar.glb",
+            "base": ""
+          },
+          "id": "DRESS",
+          "images": {
+            "preview": {
+              "height": 535,
+              "url": "https://hub.aptero.co/data/avatar/avatar_dress/preview.png",
+              "width": 281
+            }
+          },
+          "name": "Avatar_1",
+          "type": "avatar_listing",
+          "url": ""
+        }, {
+          "allow_remixing": true,
+          "attributions": { "creator": "" },
+          "description": null,
+          "gltfs": {
+            "avatar": "https://hub.aptero.co/data/avatar/avatar_1/avatar_suit.glb",
+            "base": ""
+          },
+          "id": "SUIT",
+          "images": {
+            "preview": {
+              "height": 602,
+              "url": "https://hub.aptero.co/data/avatar/avatar_1/preview.png",
+              "width": 282
+            }
+          },
+          "name": "Avatar_2",
+          "type": "avatar_listing",
+          "url": ""
+        }],
+        "suggestions": null
+      };
+    }
 
     this.result = result;
     this.nextCursor = this.result && this.result.meta && this.result.meta.next_cursor;

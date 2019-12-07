@@ -177,8 +177,8 @@ class ProfileEntryPanel extends Component {
 
                 <div className={styles.chooseAvatar}>
                   <a onClick={() => {
-                    //this.props.mediaSearchStore.sourceNavigateWithNoNav("avatars", "use")
-                    pushHistoryState(this.props.history, "modal", "avatar_url");
+                    this.props.mediaSearchStore.sourceNavigateWithNoNav("avatars", "use")
+                    //pushHistoryState(this.props.history, "modal", "avatar_url");
                   }}>
                     <FormattedMessage id="profile.change_avatar" />
                   </a>
