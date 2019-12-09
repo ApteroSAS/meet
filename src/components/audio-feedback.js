@@ -5,8 +5,25 @@ import { findAncestorWithComponent } from "../utils/scene-graph";
 // then we continue analysis for at least DISABLE_GRACE_PERIOD_MS and disable doing it every frame if
 // the avatar is quiet during that entire duration (eg they are muted)
 const DISABLE_AT_VOLUME_THRESHOLD = 0.00001;
-const DISABLE_GRACE_PERIOD_MS = 10000;
+const DISABLE_GRACE_PERIOD_MS = 1000;
 const MIN_VOLUME_THRESHOLD = 0.08;
+const EventEmitter = require("eventemitter3");
+
+export const eventEmitter = new EventEmitter();
+eventEmitter.on("speak:local:start",()=>{
+  console.log("speak:local:start")
+  NAF.connection.adapter.enableMicrophone(true);
+});
+eventEmitter.on("speak:local:stop",()=>{
+  console.log("speak:local:stop")
+  NAF.connection.adapter.enableMicrophone(false);
+});
+eventEmitter.on("speak:network:start",()=>{
+  console.log("speak:network:start")
+})
+;eventEmitter.on("speak:network:stop",()=>{
+  console.log("speak:network:stop")
+});
 
 const calculateVolume = (analyser, levels) => {
   // take care with compatibility, e.g. safari doesn't support getFloatTimeDomainData
@@ -92,13 +109,18 @@ AFRAME.registerComponent("networked-audio-analyser", {
 
     if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
       if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
+        if(!this.avatarIsQuiet) {
+          eventEmitter.emit("speak:network:stop",{});
+        }
         this.avatarIsQuiet = true;
       }
     } else {
       if (t) {
         this.lastSeenVolume = t;
       }
-
+      if(this.avatarIsQuiet) {
+        eventEmitter.emit("speak:network:start",{});
+      }
       this.avatarIsQuiet = false;
     }
   }
@@ -133,6 +155,8 @@ AFRAME.registerSystem("local-audio-analyser", {
     this.volume = 0;
     this.loudest = 0;
     this.prevVolume = 0;
+    this.avatarIsQuiet = true;
+    this.lastSeenVolume = 0;
 
     this.el.addEventListener("local-media-stream-created", e => {
       const mediaStream = e.detail.mediaStream;
@@ -147,10 +171,33 @@ AFRAME.registerSystem("local-audio-analyser", {
     });
   },
 
-  tick: function() {
+  tick: function(t) {
+    this._updateAnalysis(t);
+  },
+
+  _updateAnalysis: function(t) {
     if (!this.analyser) return;
+
     updateVolume(this);
+
+    if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
+      if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
+        if(!this.avatarIsQuiet) {
+          eventEmitter.emit("speak:local:stop",{});
+        }
+        this.avatarIsQuiet = true;
+      }
+    } else {
+      if (t) {
+        this.lastSeenVolume = t;
+      }
+      if(this.avatarIsQuiet){
+        eventEmitter.emit("speak:local:start",{});
+      }
+      this.avatarIsQuiet = false;
+    }
   }
+
 });
 
 /**

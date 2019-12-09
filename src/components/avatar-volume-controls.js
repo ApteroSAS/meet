@@ -1,5 +1,5 @@
 import { VOLUME_LABELS } from "./media-views";
-
+import {eventEmitter} from "./audio-feedback"
 AFRAME.registerComponent("avatar-volume-controls", {
   schema: {
     volume: { type: "number", default: 1.0 }
@@ -15,6 +15,20 @@ AFRAME.registerComponent("avatar-volume-controls", {
     this.volumeUpButton.object3D.addEventListener("interact", this.volumeUp);
     this.volumeDownButton.object3D.addEventListener("interact", this.volumeDown);
 
+    this.updateVolumeLabel();
+    eventEmitter.on("speak:local:start",()=>{
+      this.beforeVolumeDecrease = this.data.volume;
+      this.changeVolume(0.3);
+      console.log("volume changed to "+this.data.volume);
+    });
+    eventEmitter.on("speak:local:stop",()=>{
+      this.changeVolume(this.beforeVolumeDecrease);
+      console.log("volume changed to "+this.data.volume);
+    });
+  },
+
+  changeVolume(v) {
+    this.el.setAttribute("avatar-volume-controls", "volume", THREE.Math.clamp(v, 0, 1));
     this.updateVolumeLabel();
   },
 
