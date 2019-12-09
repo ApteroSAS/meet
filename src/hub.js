@@ -72,7 +72,6 @@ import "./components/avatar-volume-controls";
 import "./components/pinch-to-move";
 import "./components/pitch-yaw-rotator";
 import "./components/position-at-box-shape-border";
-import "./components/position-at-shape-border";
 import "./components/pinnable";
 import "./components/pin-networked-object-button";
 import "./components/drop-object-button";

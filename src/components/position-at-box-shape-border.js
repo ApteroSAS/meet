@@ -9,6 +9,8 @@ const right = new THREE.Vector3(1, 0, 0);
 const forward = new THREE.Vector3(0, 0, 1);
 const left = new THREE.Vector3(-1, 0, 0);
 const back = new THREE.Vector3(0, 0, -1);
+const bot = new THREE.Vector3(0, -1, 0);
+const top = new THREE.Vector3(0, 1, 0);
 const zero = new THREE.Vector3(0, 0, 0);
 const dirs = {
   left: {
@@ -30,6 +32,16 @@ const dirs = {
     dir: back,
     rotation: PI,
     halfExtent: "z"
+  },
+  top: {
+    dir: top,
+    rotation: 0,
+    halfExtent: "y"
+  },
+  bot: {
+    dir: bot,
+    rotation: 0,
+    halfExtent: "y"
   }
 };
 
@@ -37,7 +49,7 @@ AFRAME.registerComponent("position-at-box-shape-border", {
   multiple: true,
   schema: {
     target: { type: "string" },
-    dirs: { default: ["left", "right", "forward", "back"] },
+    dirs: { default: ["left", "right", "forward", "back","top","bot"] },
     animate: { default: true },
     scale: { default: true }
   },
@@ -171,9 +183,12 @@ AFRAME.registerComponent("position-at-box-shape-border", {
           targetCameraDot = cameraAngleDotBoxNormal;
         }
       }
-
-      this.target.position.copy(targetPosition.copy(targetDir).multiplyScalar(targetHalfExtent));
-      this.target.rotation.set(0, targetRotation, 0);
+      targetPosition.copy(targetDir);
+      targetPosition.normalize();
+      targetPosition.multiplyScalar(Math.max(0.5 ,targetHalfExtent));
+      this.target.position.copy(targetPosition);
+      //this.target.rotation.set(0, targetRotation, 0);
+      this.target.lookAt(camWorldPos.x,camWorldPos.y,camWorldPos.z);//local to reference this.el.object3D
 
       tempParentWorldScale.setFromMatrixScale(this.target.parent.matrixWorld);
 

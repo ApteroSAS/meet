@@ -216,11 +216,11 @@
                     floaty-object="modifyGravityOnRelease: true; autoLockOnLoad: true;"
                     set-yxz-order
                     matrix-auto-update
-                    position-at-shape-border="target:.freeze-menu;"
+                    position-at-box-shape-border="target:.freeze-menu;"
                     hoverable-visuals
                 >
                     <a-entity class="ui interactable-ui">
-                        <a-entity class="freeze-menu" visibility-while-frozen="withinDistance: 100; withPermission: spawn_and_move_media">
+                        <a-entity class="freeze-menu" visibility-while-frozen="withinDistance: 100">
                             <a-entity
                                 mixin="rounded-text-action-button"
                                 is-remote-hover-target
