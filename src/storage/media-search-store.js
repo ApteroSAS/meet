@@ -122,18 +122,18 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "MissLiviRose" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/avatar_dress/avatar.glb",
+            "avatar": "https://hub.aptero.co/data/avatar/A001/A001.glb",
             "base": ""
           },
-          "id": "DRESS",
+          "id": "A001",
           "images": {
             "preview": {
               "height": 535,
-              "url": "https://hub.aptero.co/data/avatar/avatar_dress/preview.png",
+              "url": "https://hub.aptero.co/data/avatar/A001/preview.png",
               "width": 281
             }
           },
-          "name": "Avatar_1",
+          "name": "Suit 1",
           "type": "avatar_listing",
           "url": ""
         }, {
@@ -141,18 +141,56 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/avatar_1/avatar_suit.glb",
+            "avatar": "https://hub.aptero.co/data/avatar/A002/A002.glb",
             "base": ""
           },
-          "id": "SUIT",
+          "id": "A002",
           "images": {
             "preview": {
               "height": 602,
-              "url": "https://hub.aptero.co/data/avatar/avatar_1/preview.png",
+              "url": "https://hub.aptero.co/data/avatar/A002/preview.png",
               "width": 282
             }
           },
-          "name": "Avatar_2",
+          "name": "Red Dress",
+          "type": "avatar_listing",
+          "url": ""
+        }, {
+          "allow_remixing": true,
+          "attributions": { "creator": "" },
+          "description": null,
+          "gltfs": {
+            "avatar": "https://hub.aptero.co/data/avatar/A004/A004.glb",
+            "base": ""
+          },
+          "id": "A004",
+          "images": {
+            "preview": {
+              "height": 602,
+              "url": "https://hub.aptero.co/data/avatar/A004/preview.png",
+              "width": 282
+            }
+          },
+          "name": "Blue Dress",
+          "type": "avatar_listing",
+          "url": ""
+        }, {
+          "allow_remixing": true,
+          "attributions": { "creator": "" },
+          "description": null,
+          "gltfs": {
+            "avatar": "https://hub.aptero.co/data/avatar/A005/A005.glb",
+            "base": ""
+          },
+          "id": "A005",
+          "images": {
+            "preview": {
+              "height": 602,
+              "url": "https://hub.aptero.co/data/avatar/A005/preview.png",
+              "width": 282
+            }
+          },
+          "name": "Suit 2",
           "type": "avatar_listing",
           "url": ""
         }],
