@@ -529,9 +529,13 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
   // Wait for scene objects to load before connecting, so there is no race condition on network state.
   const connectToScene = async () => {
+    let localHub = hub;
+    console.log(localHub)
+    let janusProtocol = document.location.protocol==="http:"?"ws://":"wss://";
+    let janusURL = janusProtocol+localHub.host+(localHub.port==="80" || localHub.port==="443" ?"":":"+localHub.port);
     scene.setAttribute("networked-scene", {
-      room: hub.hub_id,
-      serverURL: `wss://${hub.host}`,
+      room: localHub.hub_id,
+      serverURL: janusURL,
       debug: !!isDebug
     });
 
@@ -672,7 +676,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  const hubId = qs.get("hub_id") || document.location.pathname.substring(1).split("/")[0];
+  const hubId = qs.get("hub_id") || document.location.pathname.substring(1).split("/")[1];//host/room/id/.*
   console.log(`Hub ID: ${hubId}`);
 
   const subscriptions = new Subscriptions(hubId);

@@ -15,26 +15,32 @@ const resolveUrlCache = new Map();
 export const resolveUrl = async (url, index) => {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
-
-  const resultPromise = fetch(mediaAPIEndpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ media: { url, index } })
-  }).then(async response => {
-    if (!response.ok) {
-      const message = `Error resolving url "${url}":`;
-      try {
-        const body = await response.text();
-        throw new Error(message + " " + body);
-      } catch (e) {
-        throw new Error(message + " " + response.statusText);
-      }
-    }
-    return response.json();
-  });
-
-  resolveUrlCache.set(cacheKey, resultPromise);
-  return resultPromise;
+  if(url.startsWith("https://") && url.endsWith(".png")){
+      return {"meta":{"expected_content_type":"image/png"},"origin":url}
+  }else if(url.startsWith("https://") && (url.endsWith(".jpg")|| url.endsWith(".jpeg"))){
+      return {"meta":{"expected_content_type":"image/jpeg"},"origin":url}
+  }else if(url.startsWith("https://") && url.endsWith(".mp4")){
+      return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
+  }else{
+      const resultPromise = fetch(mediaAPIEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ media: { url, index } })
+      }).then(async response => {
+        if (!response.ok) {
+          const message = `Error resolving url "${url}":`;
+          try {
+            const body = await response.text();
+            throw new Error(message + " " + body);
+          } catch (e) {
+            throw new Error(message + " " + response.statusText);
+          }
+        }
+        return response.json();
+      });
+      resolveUrlCache.set(cacheKey, resultPromise);
+      return resultPromise;
+  }
 };
 
 export const upload = (file, desiredContentType) => {
@@ -329,6 +335,7 @@ export function addAndArrangeMedia(el, media, contentSubtype, snapCount, mirrorO
 export const textureLoader = new HubsTextureLoader().setCrossOrigin("anonymous");
 
 export async function createImageTexture(url) {
+    url = url.replace("http://","https://");
   const texture = new THREE.Texture();
 
   try {

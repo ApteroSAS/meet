@@ -40,7 +40,7 @@ export const scaledThumbnailUrlFor = (url, width, height) => {
     const urlHostname = new URL(url).hostname;
 
     if (process.env.RETICULUM_SERVER) {
-      const retHostname = new URL(`https://${process.env.RETICULUM_SERVER}`).hostname;
+      const retHostname = new URL(`${process.env.RETICULUM_SERVER}`).hostname;
       if (retHostname === urlHostname) return url;
     }
   } catch (e) {

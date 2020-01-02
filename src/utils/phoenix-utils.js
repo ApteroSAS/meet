@@ -10,7 +10,7 @@ export function isLocalClient() {
 const resolverLink = document.createElement("a");
 export function getReticulumFetchUrl(path, absolute = false) {
   if (process.env.RETICULUM_SERVER) {
-    return `https://${process.env.RETICULUM_SERVER}${path}`;
+    return `${process.env.RETICULUM_SERVER}${path}`;
   } else if (absolute) {
     resolverLink.href = path;
     return resolverLink.href;
