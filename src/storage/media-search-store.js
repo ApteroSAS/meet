@@ -122,14 +122,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "MissLiviRose" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/A001/A001.glb",
+            "avatar": window.location.origin+"/data/avatar/A001/A001.glb",
             "base": ""
           },
           "id": "A001",
           "images": {
             "preview": {
               "height": 535,
-              "url": "https://hub.aptero.co/data/avatar/A001/preview.png",
+              "url": window.location.origin+"/data/avatar/A001/preview.png",
               "width": 281
             }
           },
@@ -141,14 +141,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/A002/A002.glb",
+            "avatar": window.location.origin+"/data/avatar/A002/A002.glb",
             "base": ""
           },
           "id": "A002",
           "images": {
             "preview": {
               "height": 602,
-              "url": "https://hub.aptero.co/data/avatar/A002/preview.png",
+              "url": window.location.origin+"/data/avatar/A002/preview.png",
               "width": 282
             }
           },
@@ -160,14 +160,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/A004/A004.glb",
+            "avatar": window.location.origin+"/data/avatar/A004/A004.glb",
             "base": ""
           },
           "id": "A004",
           "images": {
             "preview": {
               "height": 602,
-              "url": "https://hub.aptero.co/data/avatar/A004/preview.png",
+              "url": window.location.origin+"/data/avatar/A004/preview.png",
               "width": 282
             }
           },
@@ -179,14 +179,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": "https://hub.aptero.co/data/avatar/A005/A005.glb",
+            "avatar": window.location.origin+"/data/avatar/A005/A005.glb",
             "base": ""
           },
           "id": "A005",
           "images": {
             "preview": {
               "height": 602,
-              "url": "https://hub.aptero.co/data/avatar/A005/preview.png",
+              "url": window.location.origin+"/data/avatar/A005/preview.png",
               "width": 282
             }
           },

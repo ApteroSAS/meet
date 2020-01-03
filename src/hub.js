@@ -339,11 +339,10 @@ async function updateEnvironmentForHub(hub) {
   }
 
   console.log(`Scene URL: ${sceneUrl}`);
-  //sceneUrl = "https://hub.aptero.co/data/data/video_main.mp4"
   let environmentEl = null;
   if (sceneUrl.endsWith(".mp4")) {
     const mp4url = sceneUrl;
-    sceneUrl = "https://hub.aptero.co/data/data/VideoConf.glb";
+    sceneUrl = window.location.origin+"/data/data/VideoConf.glb";
 
     {
       //remove old element

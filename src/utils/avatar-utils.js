@@ -22,13 +22,13 @@ export async function fetchAvatar(avatarId) {
   if(avatarId==="default"){
     return {
       avatar_id: avatarId,
-      gltf_url: "https://hub.aptero.co/data/avatar/A001/A001.glb"
+      gltf_url: window.location.origin+"/data/avatar/A001/A001.glb"
     }
   }
   if(avatarId.startsWith("A0")){
     return {
       avatar_id: avatarId,
-      gltf_url: "https://hub.aptero.co/data/avatar/"+avatarId+"/"+avatarId+".glb"
+      gltf_url: window.location.origin+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
     }
   }
   switch (getAvatarType(avatarId)) {

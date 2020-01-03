@@ -52,7 +52,7 @@ export default class InviteDialog extends Component {
     const { entryCode, embedUrl } = this.props;
 
     const entryCodeString = pad(entryCode, 6);
-    const shortLinkText = `hub.aptero.co/${this.props.hubId}`;
+    const shortLinkText = window.location.origin+`/room/${this.props.hubId}`;
     const shortLink = "https://" + shortLinkText;
     const embedText = `<iframe src="${embedUrl}" style="width: 1024px; height: 768px;" allow="microphone; camera; vr; speaker;"></iframe>`;
 

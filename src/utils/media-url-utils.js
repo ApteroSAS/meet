@@ -117,7 +117,7 @@ export const guessContentType = url => {
 
 const hubsSceneRegex = /https?:\/\/(hub.aptero.co)\/scenes\/(\w+)\/?\S*/;
 const hubsAvatarRegex = /https?:\/\/(hub.aptero.co)\/avatars\/(?<id>\w+)\/?\S*/;
-const hubsRoomRegex = /(https?:\/\/)?(hub.aptero.co)\/(\w+)\/?\S*/;
+const hubsRoomRegex = /(https?:\/\/)?(hub.aptero.co)\/room\/(\w+)\/?\S*/;
 
 export const isHubsSceneUrl = hubsSceneRegex.test.bind(hubsSceneRegex);
 export const isHubsRoomUrl = url => !isHubsSceneUrl(url) && hubsRoomRegex.test(url);
