@@ -7,10 +7,8 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 
 import giphyLogo from "../assets/images/giphy_logo.png";
 import styles from "../assets/stylesheets/create-object-dialog.scss";
-import ducky from "../assets/models/DuckyMesh.glb";
 import DialogContainer from "./dialog-container.js";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
-import { getAbsoluteHref } from "../utils/media-url-utils";
 import { WithHoverSound } from "./wrap-with-audio";
 
 const attributionHostnames = {
@@ -106,7 +104,7 @@ export default class CreateObjectDialog extends Component {
 
   onCreateClicked = e => {
     e.preventDefault();
-    this.props.onCreate(this.state.file || this.state.url || getAbsoluteHref(location.href, ducky));
+    this.props.onCreate(this.state.file || this.state.url);
     this.props.onClose();
   };
 

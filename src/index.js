@@ -76,10 +76,10 @@ window.addEventListener("beforeinstallprompt", e => {
     favoriteHubsResult = await fetchReticulumAuthenticated(path);
     favoriteHubsResult.entries.forEach(entry => {
       entry.images.preview.url = "https://hubs-upload-cdn.com/files/c9bbf97e-219f-4bc1-a64e-d1f992544ede.jpg";
-      if(window.location.href.startsWith("https://localhost")){
+      if(window.location.href.startsWith(window.location.href.startsWith("https://localhost"))){
         entry.url = "/hub.html?hub_id=" + entry.id;
       }else {
-        entry.url = "/" + entry.id + "/" + entry.name;
+        entry.url = "/room/" + entry.id + "/" + entry.name;
       }
     });
     const retPhxChannel = socket.channel(`ret`, { hub_id: "index", token: store.state.credentials.token });

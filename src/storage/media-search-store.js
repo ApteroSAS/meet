@@ -108,7 +108,7 @@ export default class MediaSearchStore extends EventTarget {
       if(window.location.href.startsWith("https://localhost")){
         entry.url = "/hub.html?hub_id=" + entry.id;
       }else {
-        entry.url = "/" + entry.id + "/" + entry.name;
+        entry.url = "/room/" + entry.id + "/" + entry.name;
       }
     });
 
