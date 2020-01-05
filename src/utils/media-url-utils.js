@@ -32,7 +32,8 @@ const farsparkEncodeUrl = url => {
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
-  const farsparkUrl = `https://${process.env.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(
+  return url;
+  /*const farsparkUrl = `https://${process.env.THUMBNAIL_SERVER}/thumbnail/${farsparkEncodeUrl(
     url
   )}?w=${width}&h=${height}`;
 
@@ -47,7 +48,7 @@ export const scaledThumbnailUrlFor = (url, width, height) => {
     return farsparkUrl;
   }
 
-  return farsparkUrl;
+  return farsparkUrl;*/
 };
 
 export const isNonCorsProxyDomain = hostname => {
