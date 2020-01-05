@@ -75,7 +75,7 @@ window.addEventListener("beforeinstallprompt", e => {
     const path = `/api/v1/media/search?source=favorites&type=hubs&user=${store.credentialsAccountId}`;
     favoriteHubsResult = await fetchReticulumAuthenticated(path);
     favoriteHubsResult.entries.forEach(entry => {
-      entry.images.preview.url = "https://hubs-upload-cdn.com/files/c9bbf97e-219f-4bc1-a64e-d1f992544ede.jpg";
+      entry.images.preview.url = window.location.origin+"/default-room.png";
       if(window.location.href.startsWith(window.location.href.startsWith("https://localhost"))){
         entry.url = "/hub.html?hub_id=" + entry.id;
       }else {

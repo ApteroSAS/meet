@@ -345,6 +345,12 @@ module.exports = (env, argv) => ({
     ]),
     new CopyWebpackPlugin([
       {
+        from: "src/assets/images/default-room.png",
+        to: "default-room.png"
+      }
+    ]),
+    new CopyWebpackPlugin([
+      {
         from: "src/hub.service.js",
         to: "hub.service.js"
       }

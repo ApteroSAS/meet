@@ -104,7 +104,7 @@ export default class MediaSearchStore extends EventTarget {
     let result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
     result.entries.forEach(entry => {
-      entry.images.preview.url = "https://hubs-upload-cdn.com/files/c9bbf97e-219f-4bc1-a64e-d1f992544ede.jpg";
+      entry.images.preview.url = window.location.origin+"/default-room.png";
       if(window.location.href.startsWith("https://localhost")){
         entry.url = "/hub.html?hub_id=" + entry.id;
       }else {

@@ -10,19 +10,17 @@ const MIN_VOLUME_THRESHOLD = 0.08;
 const EventEmitter = require("eventemitter3");
 
 export const eventEmitter = new EventEmitter();
-eventEmitter.on("speak:local:start",()=>{
-  console.log("speak:local:start")
-  NAF.connection.adapter.enableMicrophone(true);
+eventEmitter.on("speak:local:start",(data)=>{
+  console.log("speak:local:start "+data.volume);
 });
-eventEmitter.on("speak:local:stop",()=>{
-  console.log("speak:local:stop")
-  NAF.connection.adapter.enableMicrophone(false);
+eventEmitter.on("speak:local:stop",(data)=>{
+  console.log("speak:local:stop "+data.volume);
 });
-eventEmitter.on("speak:network:start",()=>{
-  console.log("speak:network:start")
+eventEmitter.on("speak:network:start",(data)=>{
+  console.log("speak:network:start "+data.volume);
 })
-;eventEmitter.on("speak:network:stop",()=>{
-  console.log("speak:network:stop")
+;eventEmitter.on("speak:network:stop",(data)=>{
+  console.log("speak:network:stop "+data.volume);
 });
 
 const calculateVolume = (analyser, levels) => {
@@ -110,7 +108,7 @@ AFRAME.registerComponent("networked-audio-analyser", {
     if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
       if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
         if(!this.avatarIsQuiet) {
-          eventEmitter.emit("speak:network:stop",{});
+          eventEmitter.emit("speak:network:stop",{volume:this.volume});
         }
         this.avatarIsQuiet = true;
       }
@@ -119,7 +117,7 @@ AFRAME.registerComponent("networked-audio-analyser", {
         this.lastSeenVolume = t;
       }
       if(this.avatarIsQuiet) {
-        eventEmitter.emit("speak:network:start",{});
+        eventEmitter.emit("speak:network:start",{volume:this.volume});
       }
       this.avatarIsQuiet = false;
     }
@@ -183,7 +181,7 @@ AFRAME.registerSystem("local-audio-analyser", {
     if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
       if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
         if(!this.avatarIsQuiet) {
-          eventEmitter.emit("speak:local:stop",{});
+          eventEmitter.emit("speak:local:stop",{volume:this.volume});
         }
         this.avatarIsQuiet = true;
       }
@@ -192,7 +190,7 @@ AFRAME.registerSystem("local-audio-analyser", {
         this.lastSeenVolume = t;
       }
       if(this.avatarIsQuiet){
-        eventEmitter.emit("speak:local:start",{});
+        eventEmitter.emit("speak:local:start",{volume:this.volume});
       }
       this.avatarIsQuiet = false;
     }
