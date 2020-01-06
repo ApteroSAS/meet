@@ -342,7 +342,7 @@ async function updateEnvironmentForHub(hub) {
   let environmentEl = null;
   if (sceneUrl.endsWith(".mp4")) {
     const mp4url = sceneUrl;
-    sceneUrl = window.location.origin+"/data/data/VideoConf.glb";
+    sceneUrl = process.env.RETICULUM_SERVER+"/data/data/VideoConf.glb";
 
     {
       //remove old element

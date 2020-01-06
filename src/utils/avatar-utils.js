@@ -22,13 +22,13 @@ export async function fetchAvatar(avatarId) {
   if(avatarId==="default"){
     return {
       avatar_id: avatarId,
-      gltf_url: window.location.origin+"/data/avatar/A001/A001.glb"
+      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/A001/A001.glb"
     }
   }
   if(avatarId.startsWith("A0")){
     return {
       avatar_id: avatarId,
-      gltf_url: window.location.origin+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
+      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
     }
   }
   switch (getAvatarType(avatarId)) {
@@ -62,7 +62,7 @@ export async function getAvatarThumbnailUrl(avatarId) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchAvatar(avatarId).then(avatar => avatar.files.thumbnail);
     default:
-      return "https://asset-bundles-prod.reticulum.io/bots/avatar_unavailable.png";
+      return process.env.RETICULUM_SERVER+"/bots/avatar_unavailable.png";
   }
 }
 

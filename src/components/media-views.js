@@ -11,8 +11,7 @@ import { promisifyWorker } from "../utils/promisify-worker.js";
 import pdfjs from "pdfjs-dist";
 
 // Using external CDN to reduce build size
-pdfjs.GlobalWorkerOptions.workerSrc =
-  "https://assets-prod.reticulum.io/assets/js/pdfjs-dist@2.1.266/build/pdf.worker.js";
+pdfjs.GlobalWorkerOptions.workerSrc = process.env.RETICULUM_SERVER+"/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
 
 const ONCE_TRUE = { once: true };
 const TYPE_IMG_PNG = { type: "image/png" };
@@ -900,7 +899,8 @@ AFRAME.registerComponent("media-pdf", {
     let ratio = 1;
 
     try {
-      const { src, index } = this.data;
+      let { src } = this.data;
+      const { index } = this.data;
       if (!src) return;
 
       if (this.renderTask) {

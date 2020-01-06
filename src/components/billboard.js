@@ -30,7 +30,7 @@ AFRAME.registerComponent("billboard", {
     const boxTemp = new THREE.Box3();
 
     const expandBox = o => {
-      if (o.geometry) {
+      if (o.geometry && o.geometry.attributes && o.geometry.attributes.position) {
         o.updateMatrices();
         o.geometry.computeBoundingBox();
         boxTemp.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);

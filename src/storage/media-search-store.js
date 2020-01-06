@@ -104,7 +104,7 @@ export default class MediaSearchStore extends EventTarget {
     let result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
     result.entries.forEach(entry => {
-      entry.images.preview.url = window.location.origin+"/default-room.png";
+      entry.images.preview.url = process.env.RETICULUM_SERVER+"/default-room.png";
       if(window.location.href.startsWith("https://localhost")){
         entry.url = "/hub.html?hub_id=" + entry.id;
       }else {
@@ -122,14 +122,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "MissLiviRose" },
           "description": null,
           "gltfs": {
-            "avatar": window.location.origin+"/data/avatar/A001/A001.glb",
+            "avatar": process.env.RETICULUM_SERVER+"/data/avatar/A001/A001.glb",
             "base": ""
           },
           "id": "A001",
           "images": {
             "preview": {
               "height": 535,
-              "url": window.location.origin+"/data/avatar/A001/preview.png",
+              "url": process.env.RETICULUM_SERVER+"/data/avatar/A001/preview.png",
               "width": 281
             }
           },
@@ -141,14 +141,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": window.location.origin+"/data/avatar/A002/A002.glb",
+            "avatar": process.env.RETICULUM_SERVER+"/data/avatar/A002/A002.glb",
             "base": ""
           },
           "id": "A002",
           "images": {
             "preview": {
               "height": 602,
-              "url": window.location.origin+"/data/avatar/A002/preview.png",
+              "url": process.env.RETICULUM_SERVER+"/data/avatar/A002/preview.png",
               "width": 282
             }
           },
@@ -160,14 +160,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": window.location.origin+"/data/avatar/A004/A004.glb",
+            "avatar": process.env.RETICULUM_SERVER+"/data/avatar/A004/A004.glb",
             "base": ""
           },
           "id": "A004",
           "images": {
             "preview": {
               "height": 602,
-              "url": window.location.origin+"/data/avatar/A004/preview.png",
+              "url": process.env.RETICULUM_SERVER+"/data/avatar/A004/preview.png",
               "width": 282
             }
           },
@@ -179,14 +179,14 @@ export default class MediaSearchStore extends EventTarget {
           "attributions": { "creator": "" },
           "description": null,
           "gltfs": {
-            "avatar": window.location.origin+"/data/avatar/A005/A005.glb",
+            "avatar": process.env.RETICULUM_SERVER+"/data/avatar/A005/A005.glb",
             "base": ""
           },
           "id": "A005",
           "images": {
             "preview": {
               "height": 602,
-              "url": window.location.origin+"/data/avatar/A005/preview.png",
+              "url": process.env.RETICULUM_SERVER+"/data/avatar/A005/preview.png",
               "width": 282
             }
           },

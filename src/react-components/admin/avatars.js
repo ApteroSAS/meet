@@ -70,7 +70,7 @@ export const AvatarList = props => (
         <OwnedFileImage
           source="thumbnail_owned_file_id"
           aspect="tall"
-          defaultImage="https://asset-bundles-prod.reticulum.io/bots/avatar_unavailable.png"
+          defaultImage="/bots/avatar_unavailable.png"
         />
       </ConditionalReferenceField>
       <ConditionalReferenceField label="live preview" reference="avatar_listings" source="avatar_listing_id">
@@ -84,7 +84,7 @@ export const AvatarList = props => (
         label="thumbnail"
         source="thumbnail_owned_file_id"
         aspect="tall"
-        defaultImage="https://asset-bundles-prod.reticulum.io/bots/avatar_unavailable.png"
+        defaultImage="/bots/avatar_unavailable.png"
       />
       <Preview label="preview" />
       <TextField source="name" />

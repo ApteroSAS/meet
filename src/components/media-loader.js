@@ -240,7 +240,8 @@ AFRAME.registerComponent("media-loader", {
 
   async update(oldData) {
     try {
-      const { src, contentSubtype } = this.data;
+      let { src } = this.data;
+      const { contentSubtype } = this.data;
 
       if (src !== oldData.src && !this.showLoaderTimeout) {
         this.showLoaderTimeout = setTimeout(this.showLoader, 100);
@@ -252,6 +253,10 @@ AFRAME.registerComponent("media-loader", {
       let accessibleUrl = src;
       let contentType = this.data.contentType;
       let thumbnail;
+
+      if(!src.startsWith("http")){
+        src = window.location.origin+"/"+src;
+      }
 
       const parsedUrl = new URL(src);
 

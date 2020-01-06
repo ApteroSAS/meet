@@ -15,12 +15,21 @@ const resolveUrlCache = new Map();
 export const resolveUrl = async (url, index) => {
   const cacheKey = `${url}|${index}`;
   if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
-  if(url.startsWith("https://") && url.endsWith(".png")){
+  if(url.startsWith("http://")){
+    //auto promote anythings to https since we cannot serve on http
+    url = url.replace("http://","https://");
+  }
+  const urlWithoutParams = url.split("?")[0];
+  if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".png")){
       return {"meta":{"expected_content_type":"image/png"},"origin":url}
-  }else if(url.startsWith("https://") && (url.endsWith(".jpg")|| url.endsWith(".jpeg"))){
+  }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".jpg")|| urlWithoutParams.endsWith(".jpeg"))){
       return {"meta":{"expected_content_type":"image/jpeg"},"origin":url}
-  }else if(url.startsWith("https://") && url.endsWith(".mp4")){
+  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".mp4")){
       return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
+  }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".glb")|| urlWithoutParams.endsWith(".gltf"))){
+    return {"meta":{"expected_content_type":"model/gltf-binary"},"origin":url}
+  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".pdf")){
+    return {"meta":{"expected_content_type":"application/pdf"},"origin":url}
   }else{
       const resultPromise = fetch(mediaAPIEndpoint, {
         method: "POST",
@@ -154,6 +163,10 @@ export const addMedia = (
 
     upload(src, desiredContentType)
       .then(response => {
+        if(!response.origin.startsWith("https://") && response.origin.startsWith("http://")){
+          //upgrade url to https in anycases
+          response.origin = response.origin.replace("http://","https://");
+        }
         const srcUrl = new URL(proxiedUrlFor(response.origin));
         srcUrl.searchParams.set("token", response.meta.access_token);
         entity.setAttribute("media-loader", { resolve: false, src: srcUrl.href, fileId: response.file_id });

@@ -351,6 +351,18 @@ module.exports = (env, argv) => ({
     ]),
     new CopyWebpackPlugin([
       {
+        from: "src/workers/pdfjs-dist@2.1.266/build/pdf.worker.js",
+        to: "workers/pdfjs-dist@2.1.266/build/pdf.worker.js"
+      }
+    ]),
+    new CopyWebpackPlugin([
+      {
+        from: "src/assets/models/DrawingPen.glb",
+        to: "assets/models/DrawingPen.glb"
+      }
+    ]),
+    new CopyWebpackPlugin([
+      {
         from: "src/hub.service.js",
         to: "hub.service.js"
       }
