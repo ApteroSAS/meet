@@ -9,13 +9,14 @@ import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons/faExternalLinkAlt";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
-import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
-import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+//import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
+//import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 
 import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
+import GLTFPreview from "./gltf-preview";
 
 dayjs.extend(relativeTime);
 
@@ -42,9 +43,10 @@ class MediaTiles extends Component {
   };
 
   render() {
-    const { urlSource, result } = this.props;
+    //const { urlSource, result } = this.props;
+    const {result } = this.props;
     const entries = (result && result.entries) || [];
-    const [createTileWidth, createTileHeight] = this.getTileDimensions(false, urlSource === "avatars");
+    //const [createTileWidth, createTileHeight] = this.getTileDimensions(false, urlSource === "avatars");
     const searchParams = new URLSearchParams((this.props.history ? this.props.history.location : location).search);
     const hasMeta = !!(result && result.meta);
     const apiSource = (hasMeta && result.meta.source) || null;
@@ -88,24 +90,24 @@ class MediaTiles extends Component {
         </div>
 
         {result &&
-          (hasNext || hasPrevious) &&
-          this.props.handlePager && (
-            <div className={styles.pager}>
-              <a
-                className={classNames({ [styles.previousPage]: true, [styles.pagerButtonDisabled]: !hasPrevious })}
-                onClick={() => this.props.handlePager(-1)}
-              >
-                <FontAwesomeIcon icon={faAngleLeft} />
-              </a>
-              <div className={styles.pageNumber}>{result.meta.page}</div>
-              <a
-                className={classNames({ [styles.nextPage]: true, [styles.pagerButtonDisabled]: !hasNext })}
-                onClick={() => this.props.handlePager(1)}
-              >
-                <FontAwesomeIcon icon={faAngleRight} />
-              </a>
-            </div>
-          )}
+        (hasNext || hasPrevious) &&
+        this.props.handlePager && (
+          <div className={styles.pager}>
+            <a
+              className={classNames({ [styles.previousPage]: true, [styles.pagerButtonDisabled]: !hasPrevious })}
+              onClick={() => this.props.handlePager(-1)}
+            >
+              <FontAwesomeIcon icon={faAngleLeft}/>
+            </a>
+            <div className={styles.pageNumber}>{result.meta.page}</div>
+            <a
+              className={classNames({ [styles.nextPage]: true, [styles.pagerButtonDisabled]: !hasNext })}
+              onClick={() => this.props.handlePager(1)}
+            >
+              <FontAwesomeIcon icon={faAngleRight}/>
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -132,7 +134,8 @@ class MediaTiles extends Component {
   entryToTile = (entry, idx) => {
     const imageSrc = entry.images.preview.url;
     const creator = entry.attributions && entry.attributions.creator;
-    const isImage = entry.type.endsWith("_image");
+    const isImage = entry.type.endsWith("_image") || entry.type.startsWith("image");
+    const isModel = entry.type.startsWith("model/gltf-binary");
     const isAvatar = ["avatar", "avatar_listing"].includes(entry.type);
     const isHub = ["hub"].includes(entry.type);
     const imageAspect = entry.images.preview.width / entry.images.preview.height;
@@ -141,20 +144,26 @@ class MediaTiles extends Component {
 
     // Inline mp4s directly since far/nearspark cannot resize them.
     const thumbnailElement =
-      entry.images.preview.type === "mp4" ? (
-        <video
-          className={classNames(styles.tileContent, styles.avatarTile)}
-          style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-          muted
-          autoPlay
-          src={proxiedUrlFor(imageSrc)}
-        />
+      isModel ? (
+          <GLTFPreview
+            className={classNames(styles.tileContent, styles.avatarTile)}
+            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+            gltfGltfUrl={entry.url} />
       ) : (
-        <img
-          className={classNames(styles.tileContent, styles.avatarTile)}
-          style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-          src={scaledThumbnailUrlFor(imageSrc, imageWidth, imageHeight)}
-        />
+        entry.images.preview.type === "mp4" ? (
+          <video
+            className={classNames(styles.tileContent, styles.avatarTile)}
+            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+            muted
+            autoPlay
+            src={proxiedUrlFor(imageSrc)}
+          />
+        ) : (
+          <img
+            className={classNames(styles.tileContent, styles.avatarTile)}
+            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+            src={scaledThumbnailUrlFor(imageSrc, imageWidth, imageHeight)}
+          />)
       );
 
     const publisherName =
@@ -172,6 +181,7 @@ class MediaTiles extends Component {
         >
           {thumbnailElement}
         </a>
+
         {entry.type === "avatar" && (
           <StateLink
             className={styles.editAvatar}
@@ -180,7 +190,7 @@ class MediaTiles extends Component {
             stateDetail={{ avatarId: entry.id }}
             history={this.props.history}
           >
-            <FontAwesomeIcon icon={faPencilAlt} />
+            <FontAwesomeIcon icon={faPencilAlt}/>
           </StateLink>
         )}
         { /* {entry.type === "avatar_listing" &&
@@ -193,8 +203,8 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faClone} />
             </StateLink>
-          )} */ }
-        {!entry.type.endsWith("_image") && (
+          )} */}
+        {(!isImage && !isModel) && (
           <div className={styles.info}>
             <a
               href={entry.url}
@@ -205,35 +215,35 @@ class MediaTiles extends Component {
               {entry.name || "\u00A0"}
             </a>
             {!isAvatar &&
-              !isHub && (
-                <div className={styles.attribution}>
-                  <div className={styles.creator}>
-                    {creator && creator.name === undefined && <span>{creator}</span>}
-                    {creator && creator.name && !creator.url && <span>{creator.name}</span>}
-                    {creator &&
-                      creator.name &&
-                      creator.url && (
-                        <a href={creator.url} target="_blank" rel="noopener noreferrer">
-                          {creator.name}
-                        </a>
-                      )}
-                  </div>
-                  {publisherName && (
-                    <div className={styles.publisher}>
-                      <i>
-                        <FontAwesomeIcon icon={faExternalLinkAlt} />
-                      </i>
-                      &nbsp;<a href={entry.url} target="_blank" rel="noopener noreferrer">
-                        {publisherName}
-                      </a>
-                    </div>
+            !isHub && (
+              <div className={styles.attribution}>
+                <div className={styles.creator}>
+                  {creator && creator.name === undefined && <span>{creator}</span>}
+                  {creator && creator.name && !creator.url && <span>{creator.name}</span>}
+                  {creator &&
+                  creator.name &&
+                  creator.url && (
+                    <a href={creator.url} target="_blank" rel="noopener noreferrer">
+                      {creator.name}
+                    </a>
                   )}
                 </div>
-              )}
+                {publisherName && (
+                  <div className={styles.publisher}>
+                    <i>
+                      <FontAwesomeIcon icon={faExternalLinkAlt}/>
+                    </i>
+                    &nbsp;<a href={entry.url} target="_blank" rel="noopener noreferrer">
+                    {publisherName}
+                  </a>
+                  </div>
+                )}
+              </div>
+            )}
             {isHub && (
               <div className={styles.attribution}>
                 <div className={styles.lastJoined}>
-                  <FormattedMessage id="media-browser.hub.joined-prefix" />
+                  <FormattedMessage id="media-browser.hub.joined-prefix"/>
                   {dayjs(entry.last_activated_at).fromNow()}
                 </div>
               </div>
@@ -244,4 +254,5 @@ class MediaTiles extends Component {
     );
   };
 }
+
 export default MediaTiles;

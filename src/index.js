@@ -75,11 +75,13 @@ window.addEventListener("beforeinstallprompt", e => {
     const path = `/api/v1/media/search?source=favorites&type=hubs&user=${store.credentialsAccountId}`;
     favoriteHubsResult = await fetchReticulumAuthenticated(path);
     favoriteHubsResult.entries.forEach(entry => {
-      entry.images.preview.url = process.env.RETICULUM_SERVER+"/assets/images/default-room.png";
-      if(window.location.href.startsWith(window.location.href.startsWith("https://localhost"))){
-        entry.url = "/hub.html?hub_id=" + entry.id;
-      }else {
-        entry.url = "/room/" + entry.id + "/" + entry.name;
+      if(entry.type==="hub") {
+        entry.images.preview.url = process.env.RETICULUM_SERVER + "/assets/images/default-room.png";
+        if (window.location.href.startsWith(window.location.href.startsWith("https://localhost"))) {
+          entry.url = "/hub.html?hub_id=" + entry.id;
+        } else {
+          entry.url = "/room/" + entry.id + "/" + entry.name;
+        }
       }
     });
     const retPhxChannel = socket.channel(`ret`, { hub_id: "index", token: store.state.credentials.token });

@@ -357,8 +357,8 @@ class TopHUD extends Component {
               })}
               title={`Create${this.state.mediaDisabled ? " Disabled" : ""}`}
               onClick={
-                //this.state.mediaDisabled ? noop : () => this.props.mediaSearchStore.sourceNavigateToDefaultSource()
-                this.state.mediaDisabled ? noop : () => pushHistoryState(this.props.history, "modal", "create")
+                this.state.mediaDisabled ? noop : () => this.props.mediaSearchStore.sourceNavigateToDefaultSource()
+                //this.state.mediaDisabled ? noop : () => pushHistoryState(this.props.history, "modal", "create")
               }
             />
             <div

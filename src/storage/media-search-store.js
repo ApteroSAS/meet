@@ -7,6 +7,7 @@ export const SOURCES = ["objects"];
 const EMPTY_RESULT = { entries: [], meta: {} };
 
 const URL_SOURCE_TO_TO_API_SOURCE = {
+  objects: "objects",
   scenes: "scene_listings",
   images: "bing_images",
   videos: "bing_videos",
@@ -64,7 +65,12 @@ export default class MediaSearchStore extends EventTarget {
     const currentRequestIndex = this.requestIndex;
     const searchParams = new URLSearchParams();
     const locationSearchParams = new URLSearchParams(location.search);
-    const isMy = locationSearchParams.get("filter") && locationSearchParams.get("filter").startsWith("my-");
+    let filter = locationSearchParams.get("filter");
+    if(urlSource==="objects"){
+      filter="my-objects";
+      searchParams.set("filter","model/gltf-binary");// filter in request
+    }
+    const isMy = filter && filter.startsWith("my-");
 
     for (const param of SEARCH_CONTEXT_PARAMS) {
       if (!urlParams.get(param)) continue;
@@ -85,7 +91,7 @@ export default class MediaSearchStore extends EventTarget {
 
     let fetch = true;
 
-    if (source === "avatars" || source === "scenes" || source === "favorites") {
+    if (source === "avatars" || source === "scenes" || source === "favorites" || source === "objects") {
       if (isMy) {
         if (window.APP.store.credentialsAccountId) {
           searchParams.set("user", window.APP.store.credentialsAccountId);
@@ -104,11 +110,16 @@ export default class MediaSearchStore extends EventTarget {
     let result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
     result.entries.forEach(entry => {
-      entry.images.preview.url = process.env.RETICULUM_SERVER+"/default-room.png";
-      if(window.location.href.startsWith("https://localhost")){
-        entry.url = "/hub.html?hub_id=" + entry.id;
-      }else {
-        entry.url = "/room/" + entry.id + "/" + entry.name;
+      if(!entry.url.startsWith("https://") && entry.url.startsWith("http://")){
+        entry.url = entry.url.replace("http://","https://");//promote insecure content
+      }
+      if(entry.type==="hub") {
+        entry.images.preview.url = process.env.RETICULUM_SERVER + "/assets/images/default-room.png";
+        if (window.location.href.startsWith("https://localhost")) {
+          entry.url = "/hub.html?hub_id=" + entry.id;
+        } else {
+          entry.url = "/room/" + entry.id + "/" + entry.name;
+        }
       }
     });
 
