@@ -15,7 +15,7 @@ import { pushHistoryPath, pushHistoryState, sluglessPath } from "../utils/histor
 import { SOURCES } from "../storage/media-search-store";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
 import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
-import MediaTiles from "./media-tiles";
+import MediaTiles from "./media-tiles-aframe";
 
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();

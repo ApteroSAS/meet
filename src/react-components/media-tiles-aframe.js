@@ -16,8 +16,7 @@ import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
-//import GLTFPreview from "./gltf-preview";
-const GLTFPreview = <div></div>;
+import GLTFPreview from "./gltf-preview";
 
 dayjs.extend(relativeTime);
 
