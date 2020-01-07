@@ -254,7 +254,7 @@ AFRAME.registerComponent("media-loader", {
       let contentType = this.data.contentType;
       let thumbnail;
 
-      if(!src.startsWith("http")){
+      if(!src.startsWith("http") && src!=="error"){
         src = window.location.origin+"/"+src;
       }
 

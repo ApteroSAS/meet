@@ -227,6 +227,8 @@ module.exports = (env, argv) => ({
   },
 
   optimization: {
+    // We no not want to minimize our code. //TODO activate for prod => minimize: true
+    minimize: false,
     splitChunks: {
       cacheGroups: {
         admindeps: {
@@ -346,7 +348,7 @@ module.exports = (env, argv) => ({
     new CopyWebpackPlugin([
       {
         from: "src/assets/images/default-room.png",
-        to: "default-room.png"
+        to: "assets/images/default-room.png"
       }
     ]),
     new CopyWebpackPlugin([
