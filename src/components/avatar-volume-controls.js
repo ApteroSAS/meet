@@ -26,7 +26,7 @@ AFRAME.registerComponent("avatar-volume-controls", {
     eventEmitter.on("speak:local:start", () => {
       //we try to prevent echo by diminishing the sound when we speak
       this.beforeVolumeDecrease = this.data.volume;
-      this.changeVolume(0.5);
+      this.changeVolume(0.4);
       console.log("volume changed to " + this.data.volume);
     });
 
