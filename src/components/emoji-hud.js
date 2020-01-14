@@ -4,7 +4,8 @@ const totalSize = emojiSize + margin;
 
 AFRAME.registerComponent("emoji-hud", {
   init() {
-    const emojis = Array.from(this.el.querySelectorAll("[data-emoji]"));
+    let emojis = Array.from(this.el.querySelectorAll("[data-emoji]"));
+    emojis = []; // deactivate emojis
 
     const totalWidth = totalSize * emojis.length;
     const offset = totalSize / 2;

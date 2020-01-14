@@ -763,6 +763,7 @@ AFRAME.registerComponent("deserialize-drawing-button", {
       if (!NAF.utils.isMine(this.targetEl) && !NAF.utils.takeOwnership(this.targetEl)) return;
 
       const finishDrawing = () => {
+        console.log("here");
         drawingManager.drawing.deserializeDrawing(this.networkedDrawingBuffer.data.buffer);
         addMeshScaleAnimation(drawingManager.drawing.el.object3DMap.mesh, { x: 0.001, y: 0.001, z: 0.001 });
 

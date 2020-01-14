@@ -1771,7 +1771,9 @@ class UIRoot extends Component {
                 <FormattedMessage id="entry.leave-room"/>
               </button>
             )}
-            {this.state.frozen && (
+            {/*
+            deactivate emoji
+            this.state.frozen && (
               <div className={cx(styles.uiInteractive, emojiStyles.emojiPanel)}>
                 <EmojiButton type="smile" state={this.state.emojiState} onClick={this.changeEmoji}/>
                 <EmojiButton type="happy" state={this.state.emojiState} onClick={this.changeEmoji}/>
@@ -1782,7 +1784,7 @@ class UIRoot extends Component {
                 <EmojiButton type="eww" state={this.state.emojiState} onClick={this.changeEmoji}/>
                 <EmojiButton type="hearts" state={this.state.emojiState} onClick={this.changeEmoji}/>
               </div>
-            )}
+            )*/}
             {!this.state.frozen &&
             !watching &&
             !preload && (

@@ -3,6 +3,7 @@ const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
 AFRAME.registerComponent("drop-object-button", {
   init() {
     this.onClick = () => {
+      console.log("drop");
       if (!NAF.utils.isMine(this.targetEl) && !NAF.utils.takeOwnership(this.targetEl)) return;
 
       this.targetEl.setAttribute("floaty-object", { modifyGravityOnRelease: false });
