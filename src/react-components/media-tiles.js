@@ -9,15 +9,11 @@ import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons/faExternalLinkAlt";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
-//import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
-//import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 
 import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
-//import GLTFPreview from "./gltf-preview";
-const GLTFPreview = <div></div>;
 
 dayjs.extend(relativeTime);
 
@@ -27,7 +23,10 @@ const PUBLISHER_FOR_ENTRY_TYPE = {
   twitch_stream: "Twitch"
 };
 
+const sessionCache = {};
+
 class MediaTiles extends Component {
+  state = {thumbnailCache:{...sessionCache},thumbnailInProgress:{}};
   static propTypes = {
     result: PropTypes.object,
     history: PropTypes.object,
@@ -45,7 +44,7 @@ class MediaTiles extends Component {
 
   render() {
     //const { urlSource, result } = this.props;
-    const {result } = this.props;
+    const { result } = this.props;
     const entries = (result && result.entries) || [];
     //const [createTileWidth, createTileHeight] = this.getTileDimensions(false, urlSource === "avatars");
     const searchParams = new URLSearchParams((this.props.history ? this.props.history.location : location).search);
@@ -131,7 +130,7 @@ class MediaTiles extends Component {
 
     return [imageWidth, imageHeight];
   };
-
+  thumbnailRenderer = null;
   entryToTile = (entry, idx) => {
     const imageSrc = entry.images.preview.url;
     const creator = entry.attributions && entry.attributions.creator;
@@ -143,29 +142,31 @@ class MediaTiles extends Component {
 
     const [imageWidth, imageHeight] = this.getTileDimensions(isImage, isAvatar, imageAspect);
 
+    const thumbnailElementMP4Img = (
+      entry.images.preview.type === "mp4" ? (
+        <video
+          className={classNames(styles.tileContent, styles.avatarTile)}
+          style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+          muted
+          autoPlay
+          src={proxiedUrlFor(imageSrc)}
+        />
+      ) : (
+        <img
+          className={classNames(styles.tileContent, styles.avatarTile)}
+          style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+          src={scaledThumbnailUrlFor(imageSrc, imageWidth, imageHeight)}
+        />));
+
+    const thumbnailElementModel = (this.state.thumbnailCache[entry.url] && !this.state.thumbnailInProgress[entry.url] ? <img
+      className={classNames(styles.tileContent, styles.avatarTile)}
+      style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+      src={this.state.thumbnailCache[entry.url]}
+    /> : <div></div>)
+
     // Inline mp4s directly since far/nearspark cannot resize them.
     const thumbnailElement =
-      isModel ? (
-          <GLTFPreview
-            className={classNames(styles.tileContent, styles.avatarTile)}
-            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-            gltfGltfUrl={entry.url} />
-      ) : (
-        entry.images.preview.type === "mp4" ? (
-          <video
-            className={classNames(styles.tileContent, styles.avatarTile)}
-            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-            muted
-            autoPlay
-            src={proxiedUrlFor(imageSrc)}
-          />
-        ) : (
-          <img
-            className={classNames(styles.tileContent, styles.avatarTile)}
-            style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-            src={scaledThumbnailUrlFor(imageSrc, imageWidth, imageHeight)}
-          />)
-      );
+      isModel ? thumbnailElementModel : thumbnailElementMP4Img;
 
     const publisherName =
       (entry.attributions && entry.attributions.publisher && entry.attributions.publisher.name) ||
