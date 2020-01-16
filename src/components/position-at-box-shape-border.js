@@ -125,6 +125,11 @@ AFRAME.registerComponent("position-at-box-shape-border", {
     const boxCenter = new THREE.Vector3();
     const tempParentWorldScale = new THREE.Vector3();
     const boxFaceNormal = new THREE.Vector3();
+    const m1 = new THREE.Matrix4();
+    const q1 = new THREE.Quaternion();
+    const eulerAngle = new THREE.Euler( 0, 0, 0, 'XYZ' );
+    const target = new THREE.Vector3();
+    const position = new THREE.Vector3();
     const min = new THREE.Vector3(0.001, 0.001, 0.001);
 
     return function(animate, forceNewExtents) {
@@ -185,10 +190,30 @@ AFRAME.registerComponent("position-at-box-shape-border", {
       }
       targetPosition.copy(targetDir);
       targetPosition.normalize();
-      targetPosition.multiplyScalar(Math.max(0.5 ,targetHalfExtent));
+      targetPosition.multiplyScalar(Math.max(0.02 ,targetHalfExtent));
       this.target.position.copy(targetPosition);
       //this.target.rotation.set(0, targetRotation, 0);
-      this.target.lookAt(camWorldPos.x,camWorldPos.y,camWorldPos.z);//local to reference this.el.object3D
+      if(targetHalfExtent>0.2){
+        this.target.lookAt(camWorldPos.x,camWorldPos.y,camWorldPos.z);//local to reference this.el.object3D
+      }else{
+        /*target.set(camWorldPos.x,camWorldPos.y,camWorldPos.z);
+        this.target.updateMatrices();
+        position.setFromMatrixPosition(this.target.matrixWorld);
+        m1.lookAt(target, position, this.target.up);
+        ///this.target.quaternion.setFromRotationMatrix(m1);
+        this.target.quaternion.setFromRotationMatrix(m1);
+        eulerAngle.setFromQuaternion(this.target.quaternion);
+        eulerAngle.x=0;
+        eulerAngle.y=0;
+        this.target.quaternion.setFromEuler(eulerAngle);
+        //parent
+        if(this.target.parent) {
+          m1.extractRotation(this.target.parent.matrixWorld);
+          q1.setFromRotationMatrix(m1);
+          this.target.quaternion.premultiply(q1.inverse());
+        }*/
+        this.target.rotation.set(0, targetRotation, 0);
+      }
 
       tempParentWorldScale.setFromMatrixScale(this.target.parent.matrixWorld);
 
