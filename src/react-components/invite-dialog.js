@@ -52,7 +52,7 @@ export default class InviteDialog extends Component {
     const { entryCode, embedUrl } = this.props;
 
     const entryCodeString = pad(entryCode, 6);
-    const shortLinkText = window.location.origin+`/room/${this.props.hubId}`;
+    const shortLinkText = window.location.host+`/room/${this.props.hubId}`;
     const shortLink = "https://" + shortLinkText;
     const embedText = `<iframe src="${embedUrl}" style="width: 1024px; height: 768px;" allow="microphone; camera; vr; speaker;"></iframe>`;
 
@@ -96,14 +96,14 @@ export default class InviteDialog extends Component {
                 </button>
               </WithHoverSound>
             )}
-          {this.props.allowShare &&
+          {/*this.props.allowShare &&
             !canShare() && (
               <WithHoverSound>
                 <button className={styles.linkButton} onClick={this.shareClicked.bind(this, shortLink)}>
                   <FormattedMessage id="invite.tweet" />
                 </button>
               </WithHoverSound>
-            )}
+            )*/}
         </div>
         {embedUrl && (
           <div className={styles.embed}>

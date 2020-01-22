@@ -22,7 +22,7 @@ export async function fetchAvatar(avatarId) {
   if(avatarId==="default"){
     return {
       avatar_id: avatarId,
-      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/A001/A001.glb"
+      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/A005/A005.glb"
     }
   }
   if(avatarId.startsWith("A0")){

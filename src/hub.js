@@ -146,6 +146,33 @@ import "./gltf-component-mappings";
 
 import { App } from "./App";
 
+let PEER_CONNECTION_CONFIG = {
+  iceServers: [
+    {"urls":"stun:stun.l.google.com:19302"},
+    {"urls":"stun:stun1.l.google.com:19302"},
+    {"urls":"stun:stun2.l.google.com:19302"},
+    {"urls":"stun:stun3.l.google.com:19302"},
+    {
+      "urls":"turn:167.71.58.80:3478",
+      "username":"coturn",
+      "credential":"coturnaptero"
+    },
+    {
+      "urls":"turn:167.71.58.80:3478?transport=tcp",
+      "username":"coturn",
+      "credential":"coturnaptero"
+    },
+    // {
+    //   "url":"turn:[ADDRESS]:[PORT][?transport=tcp]",
+    //   "username":"[USERNAME]",
+    //   "credential":"[CREDENTIAL]"
+    // }
+  ]
+};
+
+import * as JanusAdapter from "naf-janus-adapter";
+JanusAdapter.setGlobalPeerConnectionConfig(PEER_CONNECTION_CONFIG);
+
 window.APP = new App();
 window.APP.RENDER_ORDER = {
   HUD_BACKGROUND: 1,
@@ -528,10 +555,10 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
   // Wait for scene objects to load before connecting, so there is no race condition on network state.
   const connectToScene = async () => {
-    let localHub = hub;
+    const localHub = hub;
     console.log(localHub)
-    let janusProtocol = document.location.protocol==="http:"?"ws://":"wss://";
-    let janusURL = janusProtocol+localHub.host+(localHub.port==="80" || localHub.port==="443" ?"":":"+localHub.port);
+    const janusProtocol = document.location.protocol==="http:"?"ws://":"wss://";
+    const janusURL = janusProtocol+localHub.host+(localHub.port==="80" || localHub.port==="443" ?"":":"+localHub.port);
     scene.setAttribute("networked-scene", {
       room: localHub.hub_id,
       serverURL: janusURL,
@@ -595,7 +622,9 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
       scene.components["networked-scene"]
         .connect()
-        .then(() => scene.emit("didConnectToNetworkedScene"))
+        .then(() =>{
+          scene.emit("didConnectToNetworkedScene");
+        })
         .catch(connectError => {
           // hacky until we get return codes
           const isFull = connectError.error && connectError.error.msg.match(/\bfull\b/i);

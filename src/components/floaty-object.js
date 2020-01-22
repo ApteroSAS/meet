@@ -4,10 +4,10 @@ const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
 AFRAME.registerComponent("floaty-object", {
   schema: {
     // Make the object locked/kinematic upon load
-    autoLockOnLoad: { default: false },
+    autoLockOnLoad: { default: true },
 
     // Make the object kinematic immediately upon release
-    autoLockOnRelease: { default: false },
+    autoLockOnRelease: { default: true },
 
     // On release, modify the gravity based upon gravitySpeedLimit. If less than this, let the object float
     // otherwise apply releaseGravity.
