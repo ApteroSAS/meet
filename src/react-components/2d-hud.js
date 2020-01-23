@@ -369,6 +369,14 @@ class TopHUD extends Component {
               title={`Pen${this.state.penDisabled ? " Disabled" : ""}`}
               onClick={this.state.penDisabled ? noop : this.props.onSpawnPen}
             />
+            <div
+              className={cx(styles.iconButton, styles.camera, {
+                [styles.active]: this.props.hasActiveCamera,
+                [styles.disabled]: this.state.cameraDisabled
+              })}
+              title={`Camera${this.state.cameraDisabled ? " Disabled" : ""}`}
+              onClick={this.state.cameraDisabled ? noop : this.props.onSpawnCamera}
+            />
           </div>
         )}
       </div>
