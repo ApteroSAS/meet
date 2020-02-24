@@ -7,6 +7,7 @@ import { getCustomGLTFParserURLResolver } from "../utils/media-url-utils";
 import { promisifyWorker } from "../utils/promisify-worker.js";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { disposeNode, cloneObject3D } from "../utils/three-utils";
+import ImprovedStandardMaterial from "../materials/ImprovedStandardMaterial";
 import StandardMaterial from "../materials/StandardMaterial";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -51,6 +52,7 @@ class GLTFCache {
     }
   }
 }
+
 const gltfCache = new GLTFCache();
 const inflightGltfs = new Map();
 
@@ -331,8 +333,12 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
       }*/
 
       //return material;
-
-      return StandardMaterial.fromStandardMaterial(material);
+      if (material.name.startsWith("PBR_")) {
+        return ImprovedStandardMaterial.fromStandardMaterial(material);
+      } else {
+        console.log("load material standard");
+        return StandardMaterial.fromStandardMaterial(material);
+      }
     });
   });
 

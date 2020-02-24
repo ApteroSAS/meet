@@ -1,4 +1,4 @@
-import { Color, MeshBasicMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial } from "three";
+import { Color, MeshPhongMaterial, MeshPhysicalMaterial } from "three";
 
 export default class StandardMaterial extends THREE.ShaderMaterial {
   type = "StandardMaterial";
@@ -31,6 +31,7 @@ export default class StandardMaterial extends THREE.ShaderMaterial {
     //const mobileMaterial = new MeshBasicMaterial(parameters); //not working
     const mobileMaterial = new MeshPhongMaterial(parameters); //13fps
     //const mobileMaterial = new MeshLambertMaterial(parameters); // 9-19 fps
+    //const mobileMaterial = new MeshPhysicalMaterial(parameters);
 
     mobileMaterial.color = material.color;
     mobileMaterial.map = material.map;
