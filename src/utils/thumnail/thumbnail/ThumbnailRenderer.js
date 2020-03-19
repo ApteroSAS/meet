@@ -5,6 +5,8 @@ import { loadGLTF } from "../../../components/gltf-model-plus";
 import { findNode } from "../../three-utils";
 import { createDefaultEnvironmentMap } from "../../../components/environment-map";
 
+import axios from "axios";
+
 const ORBIT_ANGLE = new THREE.Euler(-30 * THREE.Math.DEG2RAD, 30 * THREE.Math.DEG2RAD, 0);
 const DEFAULT_MARGIN = 1;
 const TEXTURE_PROPS = {
@@ -16,8 +18,7 @@ const TEXTURE_PROPS = {
 
 export default class ThumbnailRenderer {
   constructor() {
-    this.renderer = makeRenderer(512, 512);
-    this.available = true;
+    this.available = false;
   }
 
   getFreeRenderer(){
@@ -61,6 +62,35 @@ export default class ThumbnailRenderer {
       });
     })
   }
+
+
+  generateThumbnailFromUrlRemote = async (glbFileUrl) => {
+    return new Promise((resolve, reject) => {
+      axios.post(process.env.RETICULUM_SERVER+"/thumbnail/compute/hash",{url:glbFileUrl}).then(data => {
+        const res = data.data;
+        const hash = res.hash;
+        axios.post(process.env.RETICULUM_SERVER+"/thumbnail/get",{hash:hash}).then(data => {
+          const res = data.data;
+          const imageUrl = res.url;
+          if(imageUrl&&imageUrl!=="NO_CACHE"){
+            resolve(imageUrl);
+          }else{
+            axios.post(process.env.RETICULUM_SERVER+"/thumbnail/generate",{url:glbFileUrl}).then(data => {
+              const res = data.data;
+              const imageUrl = res.url;
+              resolve(imageUrl);
+            }).catch(reason => {
+              reject(reason);
+            });
+          }
+        }).catch(reason => {
+          reject(reason);
+        });
+      }).catch(reason => {
+        reject(reason);
+      });
+    })
+  };
 
   generateThumbnail = async (glb, width = 256, height = 256) => {
     const renderer = this.getFreeRenderer();

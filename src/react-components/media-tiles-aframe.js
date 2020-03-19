@@ -155,7 +155,7 @@ class MediaTiles extends Component {
           newstate.thumbnailInProgress[entry.url] = true;
           return newstate;
         });
-        this.thumbnailRenderer.generateThumbnailFromUrl(entry.url).then(dataurl => {
+        this.thumbnailRenderer.generateThumbnailFromUrlRemote(entry.url).then(dataurl => {
           this.setState((prevState) => {
             const newstate = { ...prevState };
             newstate.thumbnailCache[entry.url] = dataurl;
