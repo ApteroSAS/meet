@@ -56,7 +56,7 @@ export const isNonCorsProxyDomain = hostname => {
 };
 
 export const proxiedUrlFor = url => {
-  if (!(url.startsWith("http:") || url.startsWith("https:"))) return url;
+  if (url.startsWith("https:")) return url;
 
   // Skip known domains that do not require CORS proxying.
   try {

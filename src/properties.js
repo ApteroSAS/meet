@@ -14,10 +14,6 @@ const properties = {
   // See here for the server code: https://github.com/MozillaReality/farspark or https://github.com/MozillaReality/nearspark
   THUMBNAIL_SERVER: "nearspark-dev.reticulum.io",
 
-  // The root URL under which Hubs expects environment GLTF bundles to be served.
-  //ASSET_BUNDLE_SERVER="hub.aptero.co"
-  ASSET_BUNDLE_SERVER: "alphahub.aptero.co",
-
   // Comma-separated list of domains which are known to not need CORS proxying
   NON_CORS_PROXY_DOMAINS: "aptero.local,hubs.local,dev.reticulum.io,hub.aptero.co,reticulum.aptero.co,alphahub.aptero.co",
 

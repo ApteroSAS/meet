@@ -107,7 +107,7 @@ module.exports = (env, argv) => ({
   },
   output: {
     filename: "assets/js/[name]-[chunkhash].js",
-    publicPath: process.env.BASE_ASSETS_PATH || ""
+    publicPath: process.env.BASE_ASSETS_PATH || "/"
   },
   devtool: argv.mode === "production" ? "source-map" : "inline-source-map",
   devServer: {

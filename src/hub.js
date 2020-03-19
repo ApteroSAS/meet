@@ -1,5 +1,7 @@
 import "@babel/polyfill";
 import "./utils/debug-log";
+import { registerProperties } from "./properties";
+registerProperties();
 
 console.log(`Hubs version: ${process.env.BUILD_VERSION || "?"}`);
 
