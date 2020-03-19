@@ -6,7 +6,6 @@ dotenv.config({ path: ".env.defaults" });
 const fs = require("fs");
 const path = require("path");
 const selfsigned = require("selfsigned");
-const webpack = require("webpack");
 const cors = require("cors");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -371,6 +370,12 @@ module.exports = (env, argv) => ({
     ]),
     new CopyWebpackPlugin([
       {
+        from: "src/properties.js",
+        to: "properties.js"
+      }
+    ]),
+    new CopyWebpackPlugin([
+      {
         from: "src/assets/manifest.webmanifest",
         to: "manifest.webmanifest"
       }
@@ -380,21 +385,5 @@ module.exports = (env, argv) => ({
       filename: "assets/stylesheets/[name]-[contenthash].css",
       disable: argv.mode !== "production"
     }),
-    // Define process.env variables in the browser context.
-    new webpack.DefinePlugin({
-      "process.env": JSON.stringify({
-        NODE_ENV: argv.mode,
-        DEFAULT_SCENE_SID: process.env.DEFAULT_SCENE_SID,
-        RETICULUM_SERVER: process.env.RETICULUM_SERVER,
-        RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
-        THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
-        CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
-        NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,
-        BUILD_VERSION: process.env.BUILD_VERSION,
-        SENTRY_DSN: process.env.SENTRY_DSN,
-        GA_TRACKING_ID: process.env.GA_TRACKING_ID,
-        POSTGREST_SERVER: process.env.POSTGREST_SERVER
-      })
-    })
   ]
 });

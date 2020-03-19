@@ -1,3 +1,7 @@
+
+import { registerProperties } from "./properties";
+registerProperties();
+
 import React from "react";
 import ReactDOM from "react-dom";
 
