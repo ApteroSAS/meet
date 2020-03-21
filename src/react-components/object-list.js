@@ -4,32 +4,27 @@ import classNames from "classnames";
 import rootStyles from "../assets/stylesheets/ui-root.scss";
 import styles from "../assets/stylesheets/presence-list.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxes } from "@fortawesome/free-solid-svg-icons/faBoxes";
-import { faBox } from "@fortawesome/free-solid-svg-icons/faBox";
+import { faCubes } from "@fortawesome/free-solid-svg-icons/faCubes";
+import { faCube } from "@fortawesome/free-solid-svg-icons/faCube";
 import { faVideo } from "@fortawesome/free-solid-svg-icons/faVideo";
+import { faMusic } from "@fortawesome/free-solid-svg-icons/faMusic";
 import { faImage } from "@fortawesome/free-solid-svg-icons/faImage";
 import { faNewspaper } from "@fortawesome/free-solid-svg-icons/faNewspaper";
 import { faQuestion } from "@fortawesome/free-solid-svg-icons/faQuestion";
-
-const SORT_ORDER_VIDEO = 0;
-const SORT_ORDER_IMAGE = 1;
-const SORT_ORDER_PDF = 2;
-const SORT_ORDER_MODEL = 3;
-const SORT_ORDER_UNIDENTIFIED = 4;
-function mediaSortOrder(el) {
-  if (el.components["media-video"]) return SORT_ORDER_VIDEO;
-  if (el.components["media-image"]) return SORT_ORDER_IMAGE;
-  if (el.components["media-pdf"]) return SORT_ORDER_PDF;
-  if (el.components["gltf-model-plus"]) return SORT_ORDER_MODEL;
-  return SORT_ORDER_UNIDENTIFIED;
-}
-
-function mediaSort(el1, el2) {
-  return mediaSortOrder(el1) - mediaSortOrder(el2);
-}
+import {
+  SORT_ORDER_VIDEO,
+  SORT_ORDER_AUDIO,
+  SORT_ORDER_IMAGE,
+  SORT_ORDER_PDF,
+  SORT_ORDER_MODEL,
+  SORT_ORDER_UNIDENTIFIED,
+  mediaSortOrder,
+  mediaSort
+} from "../utils/media-sorting.js";
 
 const THUMBNAIL_TITLE = new Map([
   [SORT_ORDER_VIDEO, "Video"],
+  [SORT_ORDER_AUDIO, "Audio"],
   [SORT_ORDER_IMAGE, "Image"],
   [SORT_ORDER_PDF, "PDF"],
   [SORT_ORDER_UNIDENTIFIED, "Unknown Media Type"],
@@ -38,14 +33,17 @@ const THUMBNAIL_TITLE = new Map([
 
 const DISPLAY_IMAGE = new Map([
   [SORT_ORDER_VIDEO, faVideo],
+  [SORT_ORDER_AUDIO, faMusic],
   [SORT_ORDER_IMAGE, faImage],
   [SORT_ORDER_PDF, faNewspaper],
   [SORT_ORDER_UNIDENTIFIED, faQuestion],
-  [SORT_ORDER_MODEL, faBox]
+  [SORT_ORDER_MODEL, faCube]
 ]);
 
 function getDisplayString(el) {
-  const url = el.components["media-loader"].data.src;
+  // Having a listed-media component does not guarantee the existence of a media-loader component,
+  // so don't crash if there isn't one.
+  const url = (el.components["media-loader"] && el.components["media-loader"].data.src) || "";
   const split = url.split("/");
   const resourceName = split[split.length - 1].split("?")[0];
   let httpIndex = -1;
@@ -87,7 +85,7 @@ export default class ObjectList extends Component {
 
   state = {
     inspecting: false,
-    filteredEntities: []
+    mediaEntities: []
   };
 
   componentDidMount() {
@@ -96,33 +94,19 @@ export default class ObjectList extends Component {
         this.props.onExpand(false, true);
       }
     });
-    this.updateFilteredEntities = this.updateFilteredEntities.bind(this);
-    this.observer = new MutationObserver(this.updateFilteredEntities);
-    this.observer.observe(this.props.scene, { childList: true, attributes: true, subtree: true });
-    this.updateFilteredEntities();
+    this.updateMediaEntities = this.updateMediaEntities.bind(this);
+    this.updateMediaEntities();
+    this.props.scene.addEventListener("listed_media_changed", () => setTimeout(() => this.updateMediaEntities(), 0));
+    // HACK: The listed-media component exists before the media-loader component does, in cases where an entity is created from a network template because of an incoming message, so don't updateMediaEntities right away.
+    // Sorry in advance for the day this comment is out of date.
   }
 
-  updateFilteredEntities() {
-    const filteredEntities = Object.keys(NAF.entities.entities)
-      .filter(id => {
-        return (
-          NAF.entities.entities[id] &&
-          NAF.entities.entities[id].components &&
-          NAF.entities.entities[id].components.networked &&
-          NAF.entities.entities[id].components.networked.data &&
-          NAF.entities.entities[id].components.networked.data.template === "#interactable-media"
-        );
-      })
-      .map(id => {
-        return NAF.entities.entities[id];
-      })
-      .sort(mediaSort);
-    if (this.state.filteredEntities.length !== filteredEntities.length) {
-      this.setState({
-        filteredEntities
-      });
-    }
+  updateMediaEntities() {
+    const mediaEntities = [...this.props.scene.systems["listed-media"].els];
+    mediaEntities.sort(mediaSort);
+    this.setState({ mediaEntities });
   }
+
   componentDidUpdate() {}
 
   domForEntity(el, i) {
@@ -132,7 +116,7 @@ export default class ObjectList extends Component {
         className={styles.rowNoMargin}
         onMouseDown={() => {
           this.props.onExpand(false, false);
-          this.props.onInspectObject(el, el.components["media-loader"].data.src);
+          this.props.onInspectObject(el);
         }}
         onMouseOut={() => {
           if (this.props.expanded && !AFRAME.utils.device.isMobileVR()) {
@@ -160,7 +144,7 @@ export default class ObjectList extends Component {
     return (
       <div className={styles.presenceList}>
         <div className={styles.contents}>
-          <div className={styles.rows}>{this.state.filteredEntities.map(this.domForEntity.bind(this))}</div>
+          <div className={styles.rows}>{this.state.mediaEntities.map(this.domForEntity.bind(this))}</div>
         </div>
       </div>
     );
@@ -173,7 +157,7 @@ export default class ObjectList extends Component {
           title={"Media"}
           onClick={() => {
             this.props.onExpand(
-              !this.props.expanded && this.state.filteredEntities.length > 0,
+              !this.props.expanded && this.state.mediaEntities.length > 0,
               !AFRAME.utils.device.isMobileVR()
             );
           }}
@@ -182,8 +166,8 @@ export default class ObjectList extends Component {
             [rootStyles.presenceInfoSelected]: this.props.expanded
           })}
         >
-          <FontAwesomeIcon icon={faBoxes} />
-          <span className={rootStyles.occupantCount}>{this.state.filteredEntities.length}</span>
+          <FontAwesomeIcon icon={faCubes} />
+          <span className={rootStyles.occupantCount}>{this.state.mediaEntities.length}</span>
         </div>
         {this.props.expanded && this.renderExpandedList()}
       </div>

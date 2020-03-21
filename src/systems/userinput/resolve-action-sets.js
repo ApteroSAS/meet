@@ -1,6 +1,8 @@
 import { sets } from "./sets";
 import { isUI } from "./../interactions";
 import { CAMERA_MODE_INSPECT } from "../camera-system";
+import qsTruthy from "../../utils/qs_truthy";
+const debugUserInput = qsTruthy("dui");
 
 let leftTeleporter, rightTeleporter;
 
@@ -100,16 +102,16 @@ export function resolveActionSets() {
   userinput.toggleSet(
     sets.leftHandHoveringOnInteractable,
     !leftHand.held &&
-      (leftHand.hovered &&
-        ((leftHand.hovered.components.tags && leftHand.hovered.components.tags.data.offersRemoteConstraint) ||
-          leftHand.hovered.components["super-spawner"]))
+      leftHand.hovered &&
+      ((leftHand.hovered.components.tags && leftHand.hovered.components.tags.data.offersHandConstraint) ||
+        leftHand.hovered.components["super-spawner"])
   );
   userinput.toggleSet(
     sets.rightHandHoveringOnInteractable,
     !rightHand.held &&
-      (rightHand.hovered &&
-        ((rightHand.hovered.components.tags && rightHand.hovered.components.tags.data.offersRemoteConstraint) ||
-          rightHand.hovered.components["super-spawner"]))
+      rightHand.hovered &&
+      ((rightHand.hovered.components.tags && rightHand.hovered.components.tags.data.offersHandConstraint) ||
+        rightHand.hovered.components["super-spawner"])
   );
   userinput.toggleSet(
     sets.leftCursorHoveringOnInteractable,
@@ -118,6 +120,7 @@ export function resolveActionSets() {
       !leftRemote.held &&
       leftRemote.hovered &&
       ((leftRemote.hovered.components.tags && leftRemote.hovered.components.tags.data.offersRemoteConstraint) ||
+        (leftRemote.hovered.components.tags && leftRemote.hovered.components.tags.data.togglesHoveredActionSet) ||
         leftRemote.hovered.components["super-spawner"])
   );
   userinput.toggleSet(
@@ -127,6 +130,7 @@ export function resolveActionSets() {
       !rightRemote.held &&
       rightRemote.hovered &&
       ((rightRemote.hovered.components.tags && rightRemote.hovered.components.tags.data.offersRemoteConstraint) ||
+        (rightRemote.hovered.components.tags && rightRemote.hovered.components.tags.data.togglesHoveredActionSet) ||
         rightRemote.hovered.components["super-spawner"])
   );
 
@@ -228,6 +232,8 @@ export function resolveActionSets() {
       document.activeElement.nodeName === "TEXTAREA" ||
       document.activeElement.contentEditable === "true"
   );
+
+  userinput.toggleSet(sets.debugUserInput, debugUserInput);
 
   if (AFRAME.scenes[0] && AFRAME.scenes[0].systems["hubs-systems"]) {
     userinput.toggleSet(

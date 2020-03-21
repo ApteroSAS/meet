@@ -1,6 +1,7 @@
 import { getBox } from "../utils/auto-box-collider.js";
 import { getLastWorldPosition } from "../utils/three-utils";
 import { CAMERA_MODE_FIRST_PERSON } from "../systems/camera-system";
+import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 const PI = Math.PI;
 const HALF_PI = PI / 2;
@@ -60,6 +61,8 @@ AFRAME.registerComponent("position-at-box-shape-border", {
     this._setupTarget = this._setupTarget.bind(this);
     this.halfExtents = new THREE.Vector3();
     this.el.sceneEl.systems["frame-scheduler"].schedule(this._updateBox, "media-components");
+
+    this._setupTarget();
   },
 
   remove() {
@@ -70,13 +73,10 @@ AFRAME.registerComponent("position-at-box-shape-border", {
     this.dirs = this.data.dirs.map(d => dirs[d]);
   },
 
-  _setupTarget() {
-    this.targetEl = this.el.querySelector(this.data.target);
-    if (!this.targetEl) {
-      console.warn(`Race condition on position-at-box-shape-border on selector ${this.data.target}`);
-      return;
-    }
+  async _setupTarget() {
+    await waitForDOMContentLoaded();
 
+    this.targetEl = this.el.querySelector(this.data.target);
     this.target = this.targetEl.object3D;
 
     this.targetEl.addEventListener("animationcomplete", () => {
@@ -88,10 +88,7 @@ AFRAME.registerComponent("position-at-box-shape-border", {
   },
 
   tick() {
-    if (!this.target) {
-      this._setupTarget();
-      return;
-    }
+    if (!this.target) return;
 
     if (!this.el.getObject3D("mesh")) {
       return;
@@ -135,6 +132,7 @@ AFRAME.registerComponent("position-at-box-shape-border", {
     return function(animate, forceNewExtents) {
       if (forceNewExtents || this.mesh !== this.el.getObject3D("mesh")) {
         this.mesh = this.el.getObject3D("mesh");
+        if (!this.mesh) return;
 
         const box = getBox(this.el, this.mesh);
         this.halfExtents = box.min
@@ -145,6 +143,7 @@ AFRAME.registerComponent("position-at-box-shape-border", {
 
         this.halfExtents.max(min);
       }
+
       if (!this.target) return;
 
       getLastWorldPosition(this.cam, camWorldPos);

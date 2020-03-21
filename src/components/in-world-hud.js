@@ -15,6 +15,7 @@ AFRAME.registerComponent("in-world-hud", {
     this.mic = this.el.querySelector(".mic");
     this.spawn = this.el.querySelector(".spawn");
     this.pen = this.el.querySelector(".penhud");
+    //this.cameraBtn = this.el.querySelector(".camera-btn");
     this.inviteBtn = this.el.querySelector(".invite-btn");
     this.background = this.el.querySelector(".bg");
 
@@ -26,9 +27,11 @@ AFRAME.registerComponent("in-world-hud", {
     this.updateButtonStates = () => {
       this.mic.setAttribute("mic-button", "active", this.el.sceneEl.is("muted"));
       this.pen.setAttribute("icon-button", "active", this.el.sceneEl.is("pen"));
+      //this.cameraBtn.setAttribute("icon-button", "active", this.el.sceneEl.is("camera"));
       if (window.APP.hubChannel) {
         this.spawn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_and_move_media"));
         this.pen.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_drawing"));
+        //this.cameraBtn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_camera"));
       }
 
       const active = video360Service.isEnable();
@@ -99,6 +102,7 @@ AFRAME.registerComponent("in-world-hud", {
     this.mic.object3D.addEventListener("interact", this.onMicClick);
     this.spawn.object3D.addEventListener("interact", this.onSpawnClick);
     this.pen.object3D.addEventListener("interact", this.onPenClick);
+    //this.cameraBtn.object3D.addEventListener("interact", this.onCameraClick);
     this.inviteBtn.object3D.addEventListener("interact", this.onInviteClick);
   },
 
@@ -116,6 +120,7 @@ AFRAME.registerComponent("in-world-hud", {
     this.mic.object3D.removeEventListener("interact", this.onMicClick);
     this.spawn.object3D.removeEventListener("interact", this.onSpawnClick);
     this.pen.object3D.removeEventListener("interact", this.onPenClick);
+    //this.cameraBtn.object3D.removeEventListener("interact", this.onCameraClick);
     this.inviteBtn.object3D.removeEventListener("interact", this.onInviteClick);
   }
 });

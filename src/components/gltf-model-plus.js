@@ -2,7 +2,7 @@ import nextTick from "../utils/next-tick";
 import { mapMaterials } from "../utils/material-utils";
 import SketchfabZipWorker from "../workers/sketchfab-zip.worker.js";
 import MobileStandardMaterial from "../materials/MobileStandardMaterial";
-import { textureLoader } from "../utils/media-utils";
+import { textureLoader, basisTextureLoader } from "../utils/media-utils";
 import { getCustomGLTFParserURLResolver } from "../utils/media-url-utils";
 import { promisifyWorker } from "../utils/promisify-worker.js";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
@@ -198,6 +198,10 @@ const inflateEntities = function(indexToEntityMap, node, templates, isRoot, mode
     node.parent.animations = node.animations;
   }
 
+  if (node.morphTargetInfluences) {
+    node.parent.morphTargetInfluences = node.morphTargetInfluences;
+  }
+
   const gltfIndex = node.userData.gltfIndex;
   if (gltfIndex !== undefined) {
     indexToEntityMap[gltfIndex] = el;
@@ -206,8 +210,20 @@ const inflateEntities = function(indexToEntityMap, node, templates, isRoot, mode
   return el;
 };
 
-function inflateComponents(inflatedEntity, indexToEntityMap) {
-  inflatedEntity.object3D.traverse(object3D => {
+async function inflateComponents(inflatedEntity, indexToEntityMap) {
+  let isFirstInflation = true;
+  const objectInflations = [];
+
+  inflatedEntity.object3D.traverse(async object3D => {
+    const objectInflation = {};
+    objectInflation.promise = new Promise(resolve => (objectInflation.resolve = resolve));
+    objectInflations.push(objectInflation);
+
+    if (!isFirstInflation) {
+      await objectInflations.shift().promise;
+    }
+    isFirstInflation = false;
+
     const entityComponents = getHubsComponents(object3D);
     const el = object3D.el;
 
@@ -215,11 +231,15 @@ function inflateComponents(inflatedEntity, indexToEntityMap) {
       for (const prop in entityComponents) {
         if (entityComponents.hasOwnProperty(prop) && AFRAME.GLTFModelPlus.components.hasOwnProperty(prop)) {
           const { componentName, inflator } = AFRAME.GLTFModelPlus.components[prop];
-          inflator(el, componentName, entityComponents[prop], entityComponents, indexToEntityMap);
+          await inflator(el, componentName, entityComponents[prop], entityComponents, indexToEntityMap);
         }
       }
     }
+
+    objectInflation.resolve();
   });
+
+  await objectInflations.shift().promise;
 }
 
 function attachTemplate(root, name, templateRoot) {
@@ -238,23 +258,55 @@ function attachTemplate(root, name, templateRoot) {
   }
 }
 
+function getHubsComponentsExtension(node) {
+  if (node.extensions && node.extensions.MOZ_hubs_components) {
+    return node.extensions.MOZ_hubs_components;
+  } else if (node.extensions && node.extensions.HUBS_components) {
+    return node.extensions.HUBS_components;
+  } else if (node.extras && node.extras.gltfExtensions && node.extras.gltfExtensions.MOZ_hubs_components) {
+    return node.extras.gltfExtensions.MOZ_hubs_components;
+  }
+}
+
+// Versions are documented here: https://github.com/mozilla/hubs/wiki/MOZ_hubs_components-Changelog
+// Make sure to update the wiki and Spoke when bumping a version
 function runMigration(version, json) {
   if (version < 2) {
     //old heightfields will be on the same node as the nav-mesh, delete those
     const oldHeightfieldNode = json.nodes.find(node => {
-      let components = null;
-      if (node.extensions && node.extensions.MOZ_hubs_components) {
-        components = node.extensions.MOZ_hubs_components;
-      } else if (node.extensions && node.extensions.HUBS_components) {
-        components = node.extensions.HUBS_components;
-      }
+      const components = getHubsComponentsExtension(node);
       return components && components.heightfield && components["nav-mesh"];
     });
     if (oldHeightfieldNode) {
-      if (oldHeightfieldNode.extensions.MOZ_hubs_components) {
+      if (oldHeightfieldNode.extensions && oldHeightfieldNode.extensions.MOZ_hubs_components) {
         delete oldHeightfieldNode.extensions.MOZ_hubs_components.heightfield;
-      } else if (oldHeightfieldNode.extensions.HUBS_components) {
+      } else if (oldHeightfieldNode.extensions && oldHeightfieldNode.extensions.HUBS_components) {
         delete oldHeightfieldNode.extensions.HUBS_components.heightfield;
+      } else if (
+        oldHeightfieldNode.extras &&
+        oldHeightfieldNode.extras.gltfExtensions &&
+        oldHeightfieldNode.extras.gltfExtensions.MOZ_hubs_components
+      ) {
+        delete oldHeightfieldNode.extras.gltfExtensions.MOZ_hubs_components;
+      }
+    }
+  }
+
+  if (version < 4) {
+    // Lights prior to version 4 should treat range === 0 as if it has zero decay
+    if (json.nodes) {
+      for (const node of json.nodes) {
+        const components = getHubsComponentsExtension(node);
+
+        if (!components) {
+          continue;
+        }
+
+        const light = components["spot-light"] || components["point-light"];
+
+        if (light && light.range === 0) {
+          light.decay = 0;
+        }
       }
     }
   }
@@ -272,6 +324,7 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
   const loadingManager = new THREE.LoadingManager();
   loadingManager.setURLModifier(getCustomGLTFParserURLResolver(gltfUrl));
   const gltfLoader = new THREE.GLTFLoader(loadingManager);
+  gltfLoader.setBasisTextureLoader(basisTextureLoader);
 
   const parser = await new Promise((resolve, reject) => gltfLoader.createParser(gltfUrl, resolve, onProgress, reject));
 
@@ -489,12 +542,14 @@ AFRAME.registerComponent("gltf-model-plus", {
         this.el.appendChild(this.inflatedEl);
 
         object3DToSet = this.inflatedEl.object3D;
+        object3DToSet.visible = false;
+
         // TODO: Still don't fully understand the lifecycle here and how it differs between browsers, we should dig in more
         // Wait one tick for the appended custom elements to be connected before attaching templates
         await nextTick();
         if (src != this.lastSrc) return; // TODO: there must be a nicer pattern for this
 
-        inflateComponents(this.inflatedEl, indexToEntityMap);
+        await inflateComponents(this.inflatedEl, indexToEntityMap);
 
         for (const name in this.templates) {
           attachTemplate(this.el, name, this.templates[name]);
@@ -528,6 +583,7 @@ AFRAME.registerComponent("gltf-model-plus", {
 
       rewires.forEach(f => f());
 
+      object3DToSet.visible = true;
       this.el.emit("model-loaded", { format: "gltf", model: this.model });
     } catch (e) {
       gltfCache.release(src);

@@ -1,20 +1,35 @@
 import { objectTypeForOriginAndContentType } from "../object-types";
-import { getReticulumFetchUrl } from "./phoenix-utils";
+import { getReticulumFetchUrl, getDirectReticulumFetchUrl } from "./phoenix-utils";
+import { ObjectContentOrigins } from "../object-types";
 import mediaHighlightFrag from "./media-highlight-frag.glsl";
 import { mapMaterials } from "./material-utils";
 import HubsTextureLoader from "../loaders/HubsTextureLoader";
 import { validMaterials } from "../components/hoverable-visuals";
-import { proxiedUrlFor } from "../utils/media-url-utils";
+import { proxiedUrlFor, guessContentType } from "../utils/media-url-utils";
+import Linkify from "linkify-it";
+import tlds from "tlds";
 
 import anime from "animejs";
 
+const linkify = Linkify();
+linkify.tlds(tlds);
+
 const mediaAPIEndpoint = getReticulumFetchUrl("/api/v1/media");
+const getDirectMediaAPIEndpoint = () => getDirectReticulumFetchUrl("/api/v1/media");
+
+const isMobile = AFRAME.utils.device.isMobile();
+const isMobileVR = AFRAME.utils.device.isMobile();
 
 // Map<String, Promise<Object>
 const resolveUrlCache = new Map();
-export const resolveUrl = async (url, index) => {
-  const cacheKey = `${url}|${index}`;
-  if (resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
+export const getDefaultResolveQuality = (is360 = false) => {
+  const useLowerQuality = isMobile || isMobileVR;
+  return !is360 ? (useLowerQuality ? "low" : "high") : useLowerQuality ? "low_360" : "high_360";
+};
+
+export const resolveUrl = async (url, quality = null, version = 1, bustCache) => {
+  const cacheKey = `${url}_${version}`;
+  if (!bustCache && resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
   if(url.startsWith("http://")){
     //auto promote anythings to https since we cannot serve on http
     url = url.replace("http://","https://");
@@ -34,7 +49,7 @@ export const resolveUrl = async (url, index) => {
       const resultPromise = fetch(mediaAPIEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ media: { url, index } })
+    body: JSON.stringify({ media: { url, quality: quality || getDefaultResolveQuality() }, version })
       }).then(async response => {
         if (!response.ok) {
           const message = `Error resolving url "${url}":`;
@@ -61,7 +76,9 @@ export const upload = (file, desiredContentType) => {
     formData.append("desired_content_type", desiredContentType);
   }
 
-  return fetch(mediaAPIEndpoint, {
+  // To eliminate the extra hop and avoid proxy timeouts, upload files directly
+  // to a reticulum host.
+  return fetch(getDirectMediaAPIEndpoint(), {
     method: "POST",
     body: formData
   }).then(r => r.json());
@@ -106,47 +123,85 @@ function getOrientation(file, callback) {
   reader.readAsArrayBuffer(file);
 }
 
+function getLatestMediaVersionOfSrc(src) {
+  const els = document.querySelectorAll("[media-loader]");
+  let version = 1;
+
+  for (const el of els) {
+    const loader = el.components["media-loader"];
+
+    if (loader.data && loader.data.src === src) {
+      version = Math.max(version, loader.data.version);
+    }
+  }
+
+  return version;
+}
+
+export function coerceToUrl(urlOrText) {
+  if (!linkify.test(urlOrText)) return urlOrText;
+
+  // See: https://github.com/Soapbox/linkifyjs/blob/master/src/linkify.js#L52
+  return urlOrText.indexOf("://") >= 0 ? urlOrText : `https://${urlOrText}`;
+}
+
 export const addMedia = (
   src,
   template,
   contentOrigin,
   contentSubtype = null,
   resolve = false,
-  resize = false,
-  animate = true
+  fitToBox = false,
+  animate = true,
+  mediaOptions = {},
+  networked = true,
+  parentEl = null,
+  linkedEl = null
 ) => {
   const scene = AFRAME.scenes[0];
 
   const entity = document.createElement("a-entity");
-  entity.setAttribute("networked", { template: template });
+
+  if (networked) {
+    entity.setAttribute("networked", { template: template });
+  } else {
+    const templateBody = document
+      .importNode(document.body.querySelector(template).content, true)
+      .firstElementChild.cloneNode(true);
+    const elAttrs = templateBody.attributes;
+
+    // Merge root element attributes with this entity
+    for (let attrIdx = 0; attrIdx < elAttrs.length; attrIdx++) {
+      entity.setAttribute(elAttrs[attrIdx].name, elAttrs[attrIdx].value);
+    }
+
+    // Append all child elements
+    while (templateBody.firstElementChild) {
+      entity.appendChild(templateBody.firstElementChild);
+    }
+  }
+
   const needsToBeUploaded = src instanceof File;
+
+  // If we're re-pasting an existing src in the scene, we should use the latest version
+  // seen across any other entities. Otherwise, start with version 1.
+  const version = getLatestMediaVersionOfSrc(src);
+
   entity.setAttribute("media-loader", {
-    resize,
+    fitToBox,
     resolve,
     animate,
-    src: typeof src === "string" ? src : "",
+    src: typeof src === "string" ? coerceToUrl(src) || src : "",
+    version,
     contentSubtype,
-    fileIsOwned: !needsToBeUploaded
+    fileIsOwned: !needsToBeUploaded,
+    linkedEl,
+    mediaOptions
   });
 
   entity.object3D.matrixNeedsUpdate = true;
 
-  scene.appendChild(entity);
-
-  const fireLoadingTimeout = setTimeout(() => {
-    scene.emit("media-loading", { src: src });
-  }, 100);
-
-  ["model-loaded", "video-loaded", "image-loaded", "pdf-loaded"].forEach(eventName => {
-    entity.addEventListener(
-      eventName,
-      async () => {
-        clearTimeout(fireLoadingTimeout);
-        scene.emit("media-loaded", { src: src });
-      },
-      { once: true }
-    );
-  });
+  (parentEl || scene).appendChild(entity);
 
   const orientation = new Promise(function(resolve) {
     if (needsToBeUploaded) {
@@ -159,7 +214,7 @@ export const addMedia = (
   });
   if (needsToBeUploaded) {
     // Video camera videos are converted to mp4 for compatibility
-    const desiredContentType = contentSubtype === "video-camera" ? "video/mp4" : null;
+    const desiredContentType = contentSubtype === "video-camera" ? "video/mp4" : src.type || guessContentType(src.name);
 
     upload(src, desiredContentType)
       .then(response => {
@@ -192,6 +247,28 @@ export const addMedia = (
   return { entity, orientation };
 };
 
+export const cloneMedia = (sourceEl, template, src = null, networked = true, link = false, parentEl = null) => {
+  if (!src) {
+    ({ src } = sourceEl.components["media-loader"].data);
+  }
+
+  const { contentSubtype, fitToBox, mediaOptions } = sourceEl.components["media-loader"].data;
+
+  return addMedia(
+    src,
+    template,
+    ObjectContentOrigins.URL,
+    contentSubtype,
+    true,
+    fitToBox,
+    false,
+    mediaOptions,
+    networked,
+    parentEl,
+    link ? sourceEl : null
+  );
+};
+
 export function injectCustomShaderChunks(obj) {
   const vertexRegex = /\bskinning_vertex\b/;
   const fragRegex = /\bgl_FragColor\b/;
@@ -203,6 +280,7 @@ export function injectCustomShaderChunks(obj) {
     if (!object.material) return;
 
     object.material = mapMaterials(object, material => {
+      if (material.hubs_InjectedCustomShaderChunks) return material;
       if (!validMaterials.includes(material.type)) {
         return material;
       }
@@ -219,7 +297,9 @@ export function injectCustomShaderChunks(obj) {
         return material;
 
       // Used when the object is batched
-      batchManagerSystem.meshToEl.set(object, obj.el);
+      if (batchManagerSystem.batchingEnabled) {
+        batchManagerSystem.meshToEl.set(object, obj.el);
+      }
 
       const newMaterial = material.clone();
       // This will not run if the object is never rendered unbatched, since its unbatched shader will never be compiled
@@ -242,7 +322,7 @@ export function injectCustomShaderChunks(obj) {
           // Used in the fragment shader below.
           hubs_WorldPosition = wt.xyz;
         }
-      `;
+        `;
 
         const vlines = shader.vertexShader.split("\n");
         const vindex = vlines.findIndex(line => vertexRegex.test(line));
@@ -270,6 +350,7 @@ export function injectCustomShaderChunks(obj) {
         shaderUniforms.push(shader.uniforms);
       };
       newMaterial.needsUpdate = true;
+      newMaterial.hubs_InjectedCustomShaderChunks = true;
       return newMaterial;
     });
   });
@@ -283,7 +364,7 @@ export function getPromotionTokenForFile(fileId) {
 
 const mediaPos = new THREE.Vector3();
 
-export function addAndArrangeMedia(el, media, contentSubtype, snapCount, mirrorOrientation = false) {
+export function addAndArrangeMedia(el, media, contentSubtype, snapCount, mirrorOrientation = false, distance = 0.75) {
   const { entity, orientation } = addMedia(media, "#interactable-media", undefined, contentSubtype, false);
 
   const pos = el.object3D.position;
@@ -300,8 +381,8 @@ export function addAndArrangeMedia(el, media, contentSubtype, snapCount, mirrorO
   const idx = (snapCount % 6) + 3;
 
   mediaPos.set(
-    Math.cos(Math.PI * 2 * (idx / 6.0)) * 0.75,
-    Math.sin(Math.PI * 2 * (idx / 6.0)) * 0.75,
+    Math.cos(Math.PI * 2 * (idx / 6.0)) * distance,
+    Math.sin(Math.PI * 2 * (idx / 6.0)) * distance,
     -0.05 + idx * 0.001
   );
 
@@ -347,20 +428,62 @@ export function addAndArrangeMedia(el, media, contentSubtype, snapCount, mirrorO
 
 export const textureLoader = new HubsTextureLoader().setCrossOrigin("anonymous");
 
-export async function createImageTexture(url) {
+export async function createImageTexture(url, filter) {
+  let texture;
     url = url.replace("http://","https://");
-  const texture = new THREE.Texture();
+  if (filter) {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    const load = new Promise(res => image.addEventListener("load", res, { once: true }));
+    image.src = url;
+    await load;
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    await filter(ctx, image.width, image.height);
 
-  try {
-    await textureLoader.loadTextureAsync(texture, url);
-  } catch (e) {
-    throw new Error(`'${url}' could not be fetched (Error code: ${e.status}; Response: ${e.statusText})`);
+    texture = new THREE.CanvasTexture(canvas);
+  } else {
+    texture = new THREE.Texture();
+
+    try {
+      await textureLoader.loadTextureAsync(texture, url);
+    } catch (e) {
+      throw new Error(`'${url}' could not be fetched (Error code: ${e.status}; Response: ${e.statusText})`);
+    }
   }
 
   texture.encoding = THREE.sRGBEncoding;
   texture.anisotropy = 4;
 
   return texture;
+}
+
+import HubsBasisTextureLoader from "../loaders/HubsBasisTextureLoader";
+export const basisTextureLoader = new HubsBasisTextureLoader();
+
+export function createBasisTexture(url) {
+  return new Promise((resolve, reject) => {
+    basisTextureLoader.load(
+      url,
+      function(texture) {
+        texture.encoding = THREE.sRGBEncoding;
+        texture.onUpdate = function() {
+          // Delete texture data once it has been uploaded to the GPU
+          texture.mipmaps.length = 0;
+        };
+        // texture.anisotropy = 4;
+        resolve(texture);
+      },
+      undefined,
+      function(error) {
+        console.error(error);
+        reject(new Error(`'${url}' could not be fetched (Error: ${error}`));
+      }
+    );
+  });
 }
 
 export function addMeshScaleAnimation(mesh, initialScale, onComplete) {
@@ -408,4 +531,26 @@ export function addMeshScaleAnimation(mesh, initialScale, onComplete) {
   mesh.matrixNeedsUpdate = true;
 
   return anime(config);
+}
+
+export function closeExistingMediaMirror() {
+  const mirrorTarget = document.querySelector("#media-mirror-target");
+
+  // Remove old mirror target media element
+  if (mirrorTarget.firstChild) {
+    mirrorTarget.firstChild.setAttribute("animation__remove", {
+      property: "scale",
+      dur: 200,
+      to: { x: 0.01, y: 0.01, z: 0.01 },
+      easing: "easeInQuad"
+    });
+
+    return new Promise(res => {
+      mirrorTarget.firstChild.addEventListener("animationcomplete", () => {
+        mirrorTarget.removeChild(mirrorTarget.firstChild);
+        mirrorTarget.parentEl.object3D.visible = false;
+        res();
+      });
+    });
+  }
 }

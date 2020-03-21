@@ -12,6 +12,8 @@ const rotatePitchAndYaw = (function() {
   const UP = new THREE.Vector3(0, 1, 0);
 
   return function rotatePitchAndYaw(o, p, y) {
+    o.parent.updateMatrices();
+    o.updateMatrices();
     o.parent.getWorldQuaternion(opq);
     o.getWorldQuaternion(owq);
     oq.copy(o.quaternion);
@@ -22,6 +24,7 @@ const rotatePitchAndYaw = (function() {
     right.set(1, 0, 0).applyQuaternion(owq);
     pq.setFromAxisAngle(right, p);
     yq.setFromAxisAngle(UP, y);
+
     q.copy(owq)
       .premultiply(pq)
       .premultiply(yq)
@@ -37,15 +40,18 @@ const rotatePitchAndYaw = (function() {
     } else {
       o.quaternion.copy(q);
       o.matrixNeedsUpdate = true;
+      o.updateMatrices();
     }
   };
 })();
 
+let uiRoot;
+let scenePreviewNode;
 AFRAME.registerComponent("pitch-yaw-rotator", {
   init() {
     this.pendingXRotation = 0;
     this.el.sceneEl.addEventListener("rotateX", e => {
-      this.pendingXRotation += e.detail.value * 0.03;
+      this.pendingXRotation += e.detail;
     });
     this.on = true;
   },
@@ -54,13 +60,19 @@ AFRAME.registerComponent("pitch-yaw-rotator", {
     if (this.on) {
       const scene = AFRAME.scenes[0];
       const userinput = scene.systems.userinput;
-      const cameraDelta = userinput.get(
-        scene.is("entered") ? paths.actions.cameraDelta : paths.actions.lobbyCameraDelta
-      );
+      uiRoot = uiRoot || document.getElementById("ui-root");
+      scenePreviewNode = scenePreviewNode || document.getElementById("scene-preview-node");
+      const lobby = !scene.is("entered");
+      const isGhost = lobby && uiRoot && uiRoot.firstChild && uiRoot.firstChild.classList.contains("isGhost");
+      const cameraDelta = userinput.get(lobby ? paths.actions.cameraDelta : paths.actions.lobbyCameraDelta);
       if (cameraDelta) {
-        rotatePitchAndYaw(this.el.object3D, this.pendingXRotation + cameraDelta[1], cameraDelta[0]);
+        rotatePitchAndYaw(
+          lobby && !isGhost ? scenePreviewNode.object3D : this.el.object3D,
+          this.pendingXRotation + cameraDelta[1],
+          cameraDelta[0]
+        );
       } else if (this.pendingXRotation) {
-        rotatePitchAndYaw(this.el.object3D, this.pendingXRotation, 0);
+        rotatePitchAndYaw(lobby && !isGhost ? scenePreviewNode.object3D : this.el.object3D, this.pendingXRotation, 0);
       }
     }
     this.pendingXRotation = 0;

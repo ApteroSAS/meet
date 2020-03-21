@@ -2,39 +2,18 @@
 <html>
 
 <head>
+    <!-- DO NOT REMOVE/EDIT THIS COMMENT - META_TAGS -->
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" sizes="16x16 24x24 32x32 48x48 64x64" href="/favicon.ico">
     <link rel="manifest" href="/manifest.webmanifest">
     <!-- iOS (for "Add to Homescreen") -->
     <meta name="mobile-web-app-capable" content="yes">
-    <!-- Microsoft Edge (Windows) -->
-    <meta name="application-name" content="Hubs">
     <!-- Web-App Manifest (https://w3c.github.io/manifest/) -->
     <title>Enter Code</title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <script>
-      // HACK Chrome on iOS breaks completely if we don't do this because a-frame's webvr-polyfill doesn't recognize
-      // Google Chrome on iOS correctly. We can remove this when we upgrade a-frame past 0.8.2.
-      if (!window.WebVRConfig) { window.WebVRConfig = {}; }
-    </script>
-    <script>
-      /*
-      HACK Another hack to fix a-frame's device detection in Chrome when WebXR or WebVR flags are enabled in
-      chrome://flags. See https://github.com/mozilla/hubs/issues/892
-      */
-      if (!/Oculus/.test(navigator.userAgent) && navigator.xr && !navigator.xr.requestDevice) {
-        navigator.xr.requestDevice = () => Promise.reject({message: "Hubs: requestDevice not supported."});
-      }
-      /*
-      Call getVRDisplays to force Oculus Browser to use WebVR, which in turn disables the WebXR API.
-      */
-      if (/Oculus/.test(navigator.userAgent)) {
-        navigator.getVRDisplays();
-      }
-    </script>
     <!-- Google Analytics -->
     <!-- NOTE GA tracking is disabled by default. You'll need to set the GA_TRACKING_ID build variable to enable it. -->
     <script>

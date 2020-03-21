@@ -32,7 +32,7 @@ const isMobileVR = AFRAME.utils.device.isMobileVR();
 const VIEWFINDER_FPS = 6;
 const VIDEO_FPS = 25;
 // Prefer h264 if available due to faster decoding speec on most platforms
-const videoCodec = ["h264", "vp9", "vp8"].find(
+const videoCodec = ["h264", "vp9,opus", "vp8,opus", "vp9", "vp8"].find(
   codec => window.MediaRecorder && MediaRecorder.isTypeSupported(`video/webm; codecs=${codec}`)
 );
 const videoMimeType = videoCodec ? `video/webm; codecs=${videoCodec}` : null;
@@ -44,7 +44,7 @@ const CAPTURE_HEIGHT = isMobileVR ? 360 : 720;
 const RENDER_WIDTH = 1280;
 const RENDER_HEIGHT = 720;
 const CAPTURE_DURATIONS = [3, 7, 15, 30, 60, Infinity];
-const DEFAULT_CAPTURE_DURATION = 3;
+const DEFAULT_CAPTURE_DURATION = 7;
 const COUNTDOWN_DURATION = 3;
 const VIDEO_LOOPS = 3; // Number of times to loop the videos we spawn before stopping them (for perf)
 const MAX_DURATION_TO_LIMIT_LOOPS = 31; // Max duration for which we limit loops (eg GIFs vs long form videos)
@@ -212,7 +212,6 @@ AFRAME.registerComponent("camera-tool", {
       this.durationLabel.object3D.visible = false;
 
       this.snapMenu = this.el.querySelector(".camera-snap-menu");
-      this.playerCamera = document.getElementById("viewing-camera").getObject3D("camera");
       this.snapButton = this.el.querySelector(".snap-button");
       this.recordButton = this.el.querySelector(".record-button");
 
@@ -238,6 +237,10 @@ AFRAME.registerComponent("camera-tool", {
 
       this.cameraSystem = this.el.sceneEl.systems["camera-tools"];
       this.cameraSystem.register(this.el);
+
+      waitForDOMContentLoaded().then(() => {
+        this.playerCamera = document.getElementById("viewing-camera").getObject3D("camera");
+      });
     });
   },
 
@@ -372,6 +375,19 @@ AFRAME.registerComponent("camera-tool", {
     const stream = new MediaStream();
     const track = this.videoCanvas.captureStream(VIDEO_FPS).getVideoTracks()[0];
 
+    // HACK: FF 73+ seems to fail to decode videos with no audio track, so we always include a silent track.
+    // Note that chrome won't generate the video without some data flowing to the track, hence the oscillator.
+    const attachBlankAudio = () => {
+      const context = THREE.AudioContext.getContext();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const destination = context.createMediaStreamDestination();
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      oscillator.connect(destination);
+      gain.connect(destination);
+      stream.addTrack(destination.stream.getAudioTracks()[0]);
+    };
+
     if (this.data.captureAudio) {
       const selfAudio = await NAF.connection.adapter.getMediaStream(NAF.clientId, "audio");
 
@@ -391,7 +407,11 @@ AFRAME.registerComponent("camera-tool", {
 
         const audio = destination.stream.getAudioTracks()[0];
         stream.addTrack(audio);
+      } else {
+        attachBlankAudio();
       }
+    } else {
+      attachBlankAudio();
     }
 
     stream.addTrack(track);
@@ -549,8 +569,6 @@ AFRAME.registerComponent("camera-tool", {
   },
 
   tock: (function() {
-    const tempHeadScale = new THREE.Vector3();
-
     return function tock() {
       const sceneEl = this.el.sceneEl;
       const renderer = this.renderer || sceneEl.renderer;
@@ -575,11 +593,7 @@ AFRAME.registerComponent("camera-tool", {
         this.takeSnapshotNextTick ||
         (this.updateRenderTargetNextTick && (this.viewfinderInViewThisFrame || this.videoRecorder))
       ) {
-        let tempHeadVisible;
         if (playerHead) {
-          tempHeadVisible = playerHead.visible;
-          tempHeadScale.copy(playerHead.scale);
-
           // We want to scale our own head in between frames now that we're taking a video/photo.
           let scale = 1;
           // TODO: The local-audio-analyser has the non-networked media stream, which is active
@@ -603,7 +617,17 @@ AFRAME.registerComponent("camera-tool", {
           playerHudWasVisible = this.playerHud.visible;
           this.playerHud.visible = false;
           if (this.el.sceneEl.systems["hubs-systems"]) {
-            this.el.sceneEl.systems["hubs-systems"].spriteSystem.mesh.visible = false;
+            for (const mesh of Object.values(this.el.sceneEl.systems["hubs-systems"].spriteSystem.meshes)) {
+              mesh.visible = false;
+            }
+          }
+        }
+
+        const bubbleSystem = this.el.sceneEl.systems["personal-space-bubble"];
+
+        if (bubbleSystem) {
+          for (let i = 0, l = bubbleSystem.invaders.length; i < l; i++) {
+            bubbleSystem.invaders[i].disable();
           }
         }
 
@@ -635,17 +659,27 @@ AFRAME.registerComponent("camera-tool", {
         renderer.vr.enabled = tmpVRFlag;
         sceneEl.object3D.onAfterRender = tmpOnAfterRender;
         if (playerHead) {
-          playerHead.visible = tempHeadVisible;
-          playerHead.scale.copy(tempHeadScale);
+          playerHead.visible = false;
+          playerHead.scale.set(0.00000001, 0.00000001, 0.00000001);
           playerHead.updateMatrices(true, true);
           playerHead.updateMatrixWorld(true, true);
         }
+
         if (this.playerHud) {
           this.playerHud.visible = playerHudWasVisible;
           if (this.el.sceneEl.systems["hubs-systems"]) {
-            this.el.sceneEl.systems["hubs-systems"].spriteSystem.mesh.visible = true;
+            for (const mesh of Object.values(this.el.sceneEl.systems["hubs-systems"].spriteSystem.meshes)) {
+              mesh.visible = true;
+            }
           }
         }
+
+        if (bubbleSystem) {
+          for (let i = 0, l = bubbleSystem.invaders.length; i < l; i++) {
+            bubbleSystem.invaders[i].enable();
+          }
+        }
+
         this.lastUpdate = now;
 
         if (this.videoRecorder) {
@@ -742,6 +776,7 @@ AFRAME.registerComponent("camera-tool", {
     const cameraForwardPoint = new THREE.Vector3();
     const cameraForwardWorld = new THREE.Vector3();
     return function() {
+      if (!this.playerCamera) return;
       this.el.object3D.getWorldPosition(cameraWorld);
       this.playerCamera.getWorldPosition(playerWorld);
       playerToCamera.subVectors(playerWorld, cameraWorld);

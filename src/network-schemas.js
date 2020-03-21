@@ -35,7 +35,10 @@ function registerNetworkSchemas() {
         component: "rotation",
         requiresNetworkUpdate: vectorRequiresUpdate(0.5)
       },
-      "scale",
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
       "player-info",
       "networked-avatar",
       {
@@ -90,7 +93,10 @@ function registerNetworkSchemas() {
         component: "rotation",
         requiresNetworkUpdate: vectorRequiresUpdate(0.5)
       },
-      "scale",
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
       // TODO: Optimize checking mediaOptions with requiresNetworkUpdate.
       "media-loader",
       {
@@ -119,6 +125,38 @@ function registerNetworkSchemas() {
       {
         component: "media-pager",
         property: "index"
+      }
+    ]
+  });
+
+  NAF.schemas.add({
+    template: "#interactable-emoji",
+    components: [
+      {
+        component: "position",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      {
+        component: "rotation",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.5)
+      },
+      {
+        component: "emoji",
+        property: "emitEndTime"
+      },
+      {
+        component: "emoji",
+        property: "particleEmitterConfig"
+      },
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      "media-loader",
+      "pinnable",
+      {
+        selector: ".particle-emitter",
+        component: "particle-emitter"
       }
     ]
   });
@@ -186,7 +224,10 @@ function registerNetworkSchemas() {
         component: "rotation",
         requiresNetworkUpdate: vectorRequiresUpdate(0.5)
       },
-      "scale",
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
       "networked-drawing"
     ]
   });
@@ -212,6 +253,40 @@ function registerNetworkSchemas() {
   });
 
   NAF.schemas.add({
+    template: "#template-waypoint-avatar",
+    components: [
+      {
+        component: "position",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      {
+        component: "rotation",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.5)
+      },
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      "waypoint"
+    ],
+    nonAuthorizedComponents: [
+      {
+        component: "position",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      {
+        component: "rotation",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.5)
+      },
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
+      "waypoint"
+    ]
+  });
+
+  NAF.schemas.add({
     template: "#interactable-pen",
     components: [
       {
@@ -222,7 +297,10 @@ function registerNetworkSchemas() {
         component: "rotation",
         requiresNetworkUpdate: vectorRequiresUpdate(0.5)
       },
-      "scale",
+      {
+        component: "scale",
+        requiresNetworkUpdate: vectorRequiresUpdate(0.001)
+      },
       {
         selector: "#pen",
         component: "pen",
@@ -246,7 +324,7 @@ function registerNetworkSchemas() {
       {
         selector: "#pen",
         component: "pen-laser",
-        property: "remoteLaserVisible"
+        property: "laserVisible"
       },
       {
         selector: "#pen",

@@ -1,9 +1,16 @@
+// Brief overview of client authorization can be found in the wiki:
+// https://github.com/mozilla/hubs/wiki/Hubs-authorization
 export function showHoverEffect(el) {
   const isFrozen = el.sceneEl.is("frozen");
   const isPinned = el.components.pinnable && el.components.pinnable.data.pinned;
   const isSpawner = !!el.components["super-spawner"];
+  const isEmojiSpawner = isSpawner && el.components["super-spawner"].data.template === "#interactable-emoji";
+  const isEmoji = !!el.components.emoji;
   const canMove =
-    window.APP.hubChannel.can("spawn_and_move_media") && (!isPinned || window.APP.hubChannel.can("pin_objects"));
+    (isEmoji || isEmojiSpawner
+      ? window.APP.hubChannel.can("spawn_emoji")
+      : window.APP.hubChannel.can("spawn_and_move_media")) &&
+    (!isPinned || window.APP.hubChannel.can("pin_objects"));
   return (isSpawner || !isPinned || isFrozen) && canMove;
 }
 
@@ -12,11 +19,19 @@ export function canMove(entity) {
   const networkedTemplate = entity && entity.components.networked && entity.components.networked.data.template;
   const isCamera = networkedTemplate === "#interactable-camera";
   const isPen = networkedTemplate === "#interactable-pen";
+  const spawnerTemplate =
+    entity && entity.components["super-spawner"] && entity.components["super-spawner"].data.template;
+  const isEmojiSpawner = spawnerTemplate === "#interactable-emoji";
+  const isEmoji = !!entity.components.emoji;
+  const isHoldableButton = entity.components.tags && entity.components.tags.data.holdableButton;
   return (
-    window.APP.hubChannel.can("spawn_and_move_media") &&
-    (!isPinned || window.APP.hubChannel.can("pin_objects")) &&
-    (!isCamera || window.APP.hubChannel.can("spawn_camera")) &&
-    (!isPen || window.APP.hubChannel.can("spawn_drawing"))
+    isHoldableButton ||
+    ((isEmoji || isEmojiSpawner
+      ? window.APP.hubChannel.can("spawn_emoji")
+      : window.APP.hubChannel.can("spawn_and_move_media")) &&
+      (!isPinned || window.APP.hubChannel.can("pin_objects")) &&
+      (!isCamera || window.APP.hubChannel.can("spawn_camera")) &&
+      (!isPen || window.APP.hubChannel.can("spawn_drawing")))
   );
 }
 
@@ -71,7 +86,9 @@ function authorizeEntityManipulation(entityMetadata, sender, senderPermissions) 
   const { template, creator, isPinned } = entityMetadata;
   const isCreator = sender === creator;
 
-  if (template.endsWith("-avatar")) {
+  if (template.endsWith("-waypoint-avatar")) {
+    return true;
+  } else if (template.endsWith("-avatar")) {
     return isCreator;
   } else if (template.endsWith("-media")) {
     return (!isPinned || senderPermissions.pin_objects) && (isCreator || senderPermissions.spawn_and_move_media);
@@ -79,6 +96,8 @@ function authorizeEntityManipulation(entityMetadata, sender, senderPermissions) 
     return isCreator || senderPermissions.spawn_camera;
   } else if (template.endsWith("-pen") || template.endsWith("-drawing")) {
     return isCreator || senderPermissions.spawn_drawing;
+  } else if (template.endsWith("-emoji")) {
+    return isCreator || senderPermissions.spawn_emoji;
   } else {
     return false;
   }
@@ -116,6 +135,28 @@ function authorizeOrSanitizeMessageData(data, sender, senderPermissions) {
   }
 }
 
+// If we receive a sync from a persistent object that we don't have an entity for yet, it must be a scene-owned object
+// (since we guarantee that pinned objects are loaded before connecting NAF).
+// Since we need to get metadata (the template id in particular) from the entity, we must stash these messages until
+// the scene has loaded.
+// Components which require this data must call applyPersistentSync after they are initialized
+const persistentSyncs = {};
+function stashPersistentSync(message, entityData) {
+  if (!persistentSyncs[entityData.networkId]) {
+    persistentSyncs[entityData.networkId] = {
+      dataType: "u",
+      data: entityData,
+      clientId: message.clientId,
+      from_session_id: message.from_session_id
+    };
+  } else {
+    const currentData = persistentSyncs[entityData.networkId].data;
+    const currentComponents = currentData.components;
+    Object.assign(currentData, entityData);
+    currentData.components = Object.assign(currentComponents, entityData.components);
+  }
+}
+
 const emptyObject = {};
 export function authorizeOrSanitizeMessage(message) {
   const { dataType, from_session_id } = message;
@@ -137,30 +178,39 @@ export function authorizeOrSanitizeMessage(message) {
 
   if (dataType === "um") {
     let sanitizedAny = false;
+    let stashedAny = false;
     for (const index in message.data.d) {
       if (!message.data.d.hasOwnProperty(index)) continue;
-      const authorizedOrSanitized = authorizeOrSanitizeMessageData(
-        message.data.d[index],
-        from_session_id,
-        senderPermissions
-      );
-      if (!authorizedOrSanitized) {
+      const entityData = message.data.d[index];
+      if (entityData.persistent && !NAF.entities.getEntity(entityData.networkId)) {
+        stashPersistentSync(message, entityData);
         message.data.d[index] = null;
-        sanitizedAny = true;
+        stashedAny = true;
+      } else {
+        const authorizedOrSanitized = authorizeOrSanitizeMessageData(entityData, from_session_id, senderPermissions);
+        if (!authorizedOrSanitized) {
+          message.data.d[index] = null;
+          sanitizedAny = true;
+        }
       }
     }
 
-    if (sanitizedAny) {
+    if (sanitizedAny || stashedAny) {
       message.data.d = message.data.d.filter(x => x != null);
     }
 
     return message;
   } else if (dataType === "u") {
-    const authorizedOrSanitized = authorizeOrSanitizeMessageData(message.data, from_session_id, senderPermissions);
-    if (authorizedOrSanitized) {
-      return message;
-    } else {
+    if (message.data.persistent && !NAF.entities.getEntity(message.data.networkId)) {
+      persistentSyncs[message.data.networkId] = message;
       return emptyObject;
+    } else {
+      const authorizedOrSanitized = authorizeOrSanitizeMessageData(message.data, from_session_id, senderPermissions);
+      if (authorizedOrSanitized) {
+        return message;
+      } else {
+        return emptyObject;
+      }
     }
   } else if (dataType === "r") {
     const entityMetadata = getPendingOrExistingEntityMetadata(message.data.networkId);
@@ -174,4 +224,11 @@ export function authorizeOrSanitizeMessage(message) {
     // Fall through for other data types. Namely, "drawing-<networkId>" messages at the moment.
     return message;
   }
+}
+
+const PHOENIX_RELIABLE_NAF = "phx-reliable";
+export function applyPersistentSync(networkId) {
+  if (!persistentSyncs[networkId]) return;
+  NAF.connection.adapter.onData(authorizeOrSanitizeMessage(persistentSyncs[networkId]), PHOENIX_RELIABLE_NAF);
+  delete persistentSyncs[networkId];
 }

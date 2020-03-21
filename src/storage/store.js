@@ -20,7 +20,7 @@ export const SCHEMA = {
       type: "object",
       additionalProperties: false,
       properties: {
-        displayName: { type: "string", pattern: "^[A-Za-z0-9-]{3,32}$" },
+        displayName: { type: "string", pattern: "^[A-Za-z0-9 -]{3,32}$" },
         avatarId: { type: "string" },
         // personalAvatarId is obsolete, but we need it here for backwards compatibility.
         personalAvatarId: { type: "string" }
@@ -59,6 +59,29 @@ export const SCHEMA = {
       additionalProperties: false,
       properties: {
         lastUsedMicDeviceId: { type: "string" }
+      }
+    },
+
+    preferences: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        muteMicOnEntry: { type: "bool" },
+        enableOnScreenJoystickLeft: { type: "bool" },
+        enableOnScreenJoystickRight: { type: "bool" },
+        onlyShowNametagsInFreeze: { type: "bool" },
+        allowMultipleHubsInstances: { type: "bool" },
+        maxResolutionWidth: { type: "number" },
+        maxResolutionHeight: { type: "number" },
+        globalVoiceVolume: { type: "number" },
+        globalMediaVolume: { type: "number" },
+        snapRotationDegrees: { type: "number" },
+        materialQualitySetting: { type: "string" },
+        disableMovement: { type: "bool" },
+        disableBackwardsMovement: { type: "bool" },
+        disableStrafing: { type: "bool" },
+        disableTeleporter: { type: "bool" },
+        disableAutoPixelRatio: { type: "bool" }
       }
     },
 
@@ -129,6 +152,7 @@ export const SCHEMA = {
     credentials: { $ref: "#/definitions/credentials" },
     activity: { $ref: "#/definitions/activity" },
     settings: { $ref: "#/definitions/settings" },
+    preferences: { $ref: "#/definitions/preferences" },
     confirmedDiscordRooms: { $ref: "#/definitions/confirmedDiscordRooms" }, // Legacy
     confirmedBroadcastedRooms: { $ref: "#/definitions/confirmedBroadcastedRooms" },
     uploadPromotionTokens: { $ref: "#/definitions/uploadPromotionTokens" },
@@ -165,7 +189,8 @@ export default class Store extends EventTarget {
       uploadPromotionTokens: [],
       creatorAssignmentTokens: [],
       embedTokens: [],
-      onLoadActions: []
+      onLoadActions: [],
+      preferences: {}
     });
 
     this._shouldResetAvatarOnInit = false;
@@ -176,7 +201,18 @@ export default class Store extends EventTarget {
       this._shouldResetAvatarOnInit = true;
       Cookies.remove(OAUTH_FLOW_CREDENTIALS_KEY);
     }
+
+    this._signOutOnExpiredAuthToken();
   }
+
+  _signOutOnExpiredAuthToken = () => {
+    if (!this.state.credentials.token) return;
+
+    const expiry = jwtDecode(this.state.credentials.token).exp * 1000;
+    if (expiry <= Date.now()) {
+      this.update({ credentials: { token: null, email: null } });
+    }
+  };
 
   initProfile = async () => {
     if (this._shouldResetAvatarOnInit) {

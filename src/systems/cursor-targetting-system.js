@@ -1,5 +1,23 @@
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 
+const noop = function() {};
+AFRAME.registerComponent("overwrite-raycast-as-noop", {
+  init() {
+    this.el.object3D.raycast = noop;
+    this.mesh = this.el.getObject3D("mesh");
+    if (this.mesh) {
+      this.mesh.raycast = noop;
+    } else {
+      this.el.addEventListener("model-loaded", () => {
+        this.mesh = this.el.getObject3D("mesh");
+        if (this.mesh) {
+          this.mesh.raycast = noop;
+        }
+      });
+    }
+  }
+});
+
 export class CursorTargettingSystem {
   constructor() {
     this.targets = [];
@@ -28,14 +46,22 @@ export class CursorTargettingSystem {
       this.populateEntities(this.targets);
       this.dirty = false;
     }
-    this.rightRemote.components["cursor-controller"].tick2(t);
-    this.leftRemote.components["cursor-controller"].tick2(t, true);
+
+    if (this.rightRemote) {
+      this.rightRemote.components["cursor-controller"].tick2(t);
+    }
+
+    if (this.leftRemote) {
+      this.leftRemote.components["cursor-controller"].tick2(t, true);
+    }
   }
 
   populateEntities(targets) {
     targets.length = 0;
     // TODO: Do not querySelectorAll on the entire scene every time anything changes!
-    const els = AFRAME.scenes[0].querySelectorAll(".collidable, .interactable, .ui, .drawing");
+    const els = AFRAME.scenes[0].querySelectorAll(
+      ".collidable, .interactable, .ui, .drawing, .occupiable-waypoint-icon, .teleport-waypoint-icon"
+    );
     for (let i = 0; i < els.length; i++) {
       if (els[i].object3D) {
         targets.push(els[i].object3D);

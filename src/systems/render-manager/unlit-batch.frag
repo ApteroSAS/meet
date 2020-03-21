@@ -3,7 +3,6 @@ precision highp float;
 precision highp int;
 precision highp sampler2DArray;
 
-
 layout(std140) uniform InstanceData {
   mat4 transforms[MAX_INSTANCES];
   vec4 colors[MAX_INSTANCES];
@@ -26,6 +25,15 @@ flat in uint vInstance;
 
 
 uniform sampler2DArray map;
+
+in float fogDepth;
+uniform vec3 fogColor;
+
+// Fog Type
+// 0.0 -> disabled
+// 1.0 -> linear
+// 2.0 -> exponential
+uniform vec4 fogOptions; // r = type; g = density; b = near; a = far;
 
 in vec2 vUv;
 in vec4 vColor;
@@ -77,9 +85,9 @@ void main() {
       float hubs_Time = instanceData.hubs_Time;
 
       float ratio = 0.0;
+      float size = hubs_SweepParams.t - hubs_SweepParams.s;
 
       if (hubs_EnableSweepingEffect) {
-          float size = hubs_SweepParams.t - hubs_SweepParams.s;
           float line = mod(hubs_Time / 500.0 * size, size * 3.0) + hubs_SweepParams.s - size / 3.0;
 
           if (hubs_WorldPosition.y < line) {
@@ -89,7 +97,7 @@ void main() {
       }
 
       // Highlight with a gradient falling off with distance.
-      float pulse = 9.0 + 3.0 * (sin(hubs_Time / 1000.0) + 1.0);
+      float pulse = 1.0 / (size + 0.2) * 8.0 + 1.0 / (size + 0.3) * 3.0 * (sin(hubs_Time / 1000.0) + 1.0);
 
       if (hubs_HighlightInteractorOne) {
           float dist1 = distance(hubs_WorldPosition, instanceData.hubs_InteractorOnePos);
@@ -109,4 +117,20 @@ void main() {
       outColor = vec4((outColor.rgb * (1.0 - ratio)) + (highlightColor * ratio), outColor.a);
   }
 
+  float fogType = fogOptions.r;
+
+  if (fogType > 0.5) {
+    float fogFactor = 0.0;
+
+    if (fogType < 1.5) {
+      float fogNear = fogOptions.z;
+      float fogFar = fogOptions.w;
+      fogFactor = smoothstep( fogNear, fogFar, fogDepth );
+    } else {
+      float fogDensity = fogOptions.y;
+      fogFactor = 1.0 - exp( - fogDensity * fogDensity * fogDepth * fogDepth );
+    }
+
+    outColor.rgb = mix( outColor.rgb, fogColor, fogFactor );
+  }
 }

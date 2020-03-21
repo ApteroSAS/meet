@@ -1,30 +1,30 @@
 import { Socket } from "phoenix";
 import { generateHubName } from "../utils/name-generation";
+import configs from "../utils/configs";
 
 import Store from "../storage/store";
 
+export function hasReticulumServer() {
+  return !!configs.RETICULUM_SERVER;
+}
+
 export function isLocalClient() {
-  return process.env.RETICULUM_SERVER && document.location.host !== process.env.RETICULUM_SERVER;
+  return hasReticulumServer() && document.location.host !== configs.RETICULUM_SERVER;
 }
 
 const resolverLink = document.createElement("a");
-export function getReticulumFetchUrl(path, absolute = false) {
-  if (process.env.RETICULUM_SERVER) {
-    return `${process.env.RETICULUM_SERVER}${path}`;
+let reticulumMeta = null;
+let invalidatedReticulumMetaThisSession = false;
+
+export function getReticulumFetchUrl(path, absolute = false, host = null, port = null) {
+  if (host || hasReticulumServer()) {
+    return `https://${host || configs.RETICULUM_SERVER}${port ? `:${port}` : ""}${path}`;
   } else if (absolute) {
     resolverLink.href = path;
     return resolverLink.href;
   } else {
     return path;
   }
-}
-
-let reticulumMeta = null;
-let invalidatedReticulumMetaThisSession = false;
-
-export async function invalidateReticulumMeta() {
-  invalidatedReticulumMetaThisSession = true;
-  reticulumMeta = null;
 }
 
 export async function getReticulumMeta() {
@@ -45,7 +45,6 @@ export async function getReticulumMeta() {
 
   const qs = new URLSearchParams(location.search);
   const phxHostOverride = qs.get("phx_host");
-  //const phxHostOverride = "reticulum.aptero.co";
 
   if (phxHostOverride) {
     reticulumMeta.phx_host = phxHostOverride;
@@ -54,20 +53,46 @@ export async function getReticulumMeta() {
   return reticulumMeta;
 }
 
-export async function connectToReticulum(debug = false, params = null) {
+let directReticulumHostAndPort;
+
+async function refreshDirectReticulumHostAndPort() {
+  const qs = new URLSearchParams(location.search);
+  let host = qs.get("phx_host");
+  const reticulumMeta = await getReticulumMeta();
+  host = host || configs.RETICULUM_SOCKET_SERVER || reticulumMeta.phx_host;
+  const port =
+    qs.get("phx_port") ||
+    (hasReticulumServer() ? new URL(`${document.location.protocol}//${configs.RETICULUM_SERVER}`).port : "443");
+  directReticulumHostAndPort = { host, port };
+}
+
+export function getDirectReticulumFetchUrl(path, absolute = false) {
+  if (!directReticulumHostAndPort) {
+    console.warn("Cannot call getDirectReticulumFetchUrl before connectToReticulum. Returning non-direct url.");
+    return getReticulumFetchUrl(path, absolute);
+  }
+
+  const { host, port } = directReticulumHostAndPort;
+  return getReticulumFetchUrl(path, absolute, host, port);
+}
+
+export async function invalidateReticulumMeta() {
+  invalidatedReticulumMetaThisSession = true;
+  reticulumMeta = null;
+}
+
+export async function connectToReticulum(debug = false, params = null, socketClass = Socket) {
   const qs = new URLSearchParams(location.search);
 
   const getNewSocketUrl = async () => {
-    const socketProtocol = qs.get("phx_protocol") || (document.location.protocol === "https:" ? "wss:" : "ws:");
-    let socketHost = qs.get("phx_host");
-    let socketPort = qs.get("phx_port");
+    await refreshDirectReticulumHostAndPort();
+    const { host, port } = directReticulumHostAndPort;
+    const protocol =
+      qs.get("phx_protocol") ||
+      configs.RETICULUM_SOCKET_PROTOCOL ||
+      (document.location.protocol === "https:" ? "wss:" : "ws:");
 
-    const reticulumMeta = await getReticulumMeta();
-    socketHost = socketHost || process.env.RETICULUM_SOCKET_SERVER || reticulumMeta.phx_host;
-    socketPort =
-      socketPort ||
-      (process.env.RETICULUM_SERVER ? new URL(`${socketProtocol}//${process.env.RETICULUM_SERVER}`).port : "443");
-    return `${socketProtocol}//${socketHost}${socketPort ? `:${socketPort}` : ""}`;
+    return `${protocol}//${host}${port ? `:${port}` : ""}`;
   };
 
   const socketUrl = await getNewSocketUrl();
@@ -85,7 +110,7 @@ export async function connectToReticulum(debug = false, params = null) {
     socketSettings.params = params;
   }
 
-  const socket = new Socket(`${socketUrl}/socket`, socketSettings);
+  const socket = new socketClass(`${socketUrl}/socket`, socketSettings);
   socket.connect();
   socket.onError(async () => {
     // On error, underlying reticulum node may have died, so rebalance by
@@ -133,7 +158,11 @@ export function fetchReticulumAuthenticated(url, method = "GET", payload) {
 
 export async function createAndRedirectToNewHub(name, sceneId, replace) {
   const createUrl = getReticulumFetchUrl("/api/v1/hubs");
-  const payload = { hub: { name: name || generateHubName(), scene_id: sceneId } };
+  const payload = { hub: { name: name || generateHubName() } };
+
+  if (sceneId) {
+    payload.hub.scene_id = sceneId;
+  }
 
   const headers = { "content-type": "application/json" };
   const store = new Store();

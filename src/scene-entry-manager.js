@@ -1,9 +1,11 @@
 import qsTruthy from "./utils/qs_truthy";
 import nextTick from "./utils/next-tick";
 import pinnedEntityToGltf from "./utils/pinned-entity-to-gltf";
+import { hackyMobileSafariTest } from "./utils/detect-touchscreen";
 
 const isBotMode = qsTruthy("bot");
 const isMobile = AFRAME.utils.device.isMobile();
+const forceEnableTouchscreen = hackyMobileSafariTest();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 const isDebug = qsTruthy("debug");
 const qs = new URLSearchParams(location.search);
@@ -68,7 +70,10 @@ export default class SceneEntryManager {
       await exit2DInterstitialAndEnterVR(true);
     }
 
-    if (isMobile || qsTruthy("mobile")) {
+    const waypointSystem = this.scene.systems["hubs-systems"].waypointSystem;
+    waypointSystem.moveToSpawnPoint();
+
+    if (isMobile || forceEnableTouchscreen || qsTruthy("mobile")) {
       this.avatarRig.setAttribute("virtual-gamepad-controls", {});
     }
 
@@ -86,6 +91,7 @@ export default class SceneEntryManager {
 
     if (isBotMode) {
       this._runBot(mediaStream);
+      this.scene.addState("entered");
       return;
     }
 
@@ -134,6 +140,7 @@ export default class SceneEntryManager {
   };
 
   exitScene = () => {
+    this.scene.exitVR();
     if (NAF.connection.adapter && NAF.connection.adapter.localMediaStream) {
       NAF.connection.adapter.localMediaStream.getTracks().forEach(t => t.stop());
     }
@@ -143,12 +150,17 @@ export default class SceneEntryManager {
     if (this.scene.renderer) {
       this.scene.renderer.setAnimationLoop(null); // Stop animation loop, TODO A-Frame should do this
     }
-    document.body.removeChild(this.scene);
+    this.scene.parentNode.removeChild(this.scene);
   };
 
   _setupPlayerRig = () => {
     this._setPlayerInfoFromProfile();
-    this.store.addEventListener("statechanged", this._setPlayerInfoFromProfile);
+
+    // Explict user action changed avatar or updated existing avatar.
+    this.scene.addEventListener("avatar_updated", () => this._setPlayerInfoFromProfile(true));
+
+    // Store updates can occur to avatar id in cases like error, auth reset, etc.
+    this.store.addEventListener("statechanged", () => this._setPlayerInfoFromProfile());
 
     const avatarScale = parseInt(qs.get("avatar_scale"), 10);
     if (avatarScale) {
@@ -156,8 +168,11 @@ export default class SceneEntryManager {
     }
   };
 
-  _setPlayerInfoFromProfile = async () => {
+  _setPlayerInfoFromProfile = async (force = false) => {
     const avatarId = this.store.state.profile.avatarId;
+    if (!force && this._lastFetchedAvatarId === avatarId) return; // Avoid continually refetching based upon state changing
+
+    this._lastFetchedAvatarId = avatarId;
     const avatarSrc = await getAvatarSrc(avatarId);
 
     this.avatarRig.setAttribute("player-info", { avatarSrc, avatarType: getAvatarType(avatarId) });
@@ -232,7 +247,7 @@ export default class SceneEntryManager {
           await this._unpinElement(el);
         };
 
-    this.performConditionalSignIn(() => {return true}, action, pin ? "pin" : "unpin", () => {
+    this.performConditionalSignIn(() => this.hubChannel.signedIn, action, pin ? "pin" : "unpin", () => {
       // UI pins/un-pins the entity optimistically, so we undo that here.
       // Note we have to disable the sign in flow here otherwise this will recurse.
       this._disableSignInOnPinAction = true;
@@ -285,15 +300,17 @@ export default class SceneEntryManager {
       spawnMediaInfrontOfPlayer(e.detail, contentOrigin);
     });
 
-    this.scene.addEventListener("pinned", e => {
+    const handlePinEvent = (e, pinned) => {
       if (this._disableSignInOnPinAction) return;
-      this._signInAndPinOrUnpinElement(e.detail.el, true);
-    });
+      const el = e.detail.el;
 
-    this.scene.addEventListener("unpinned", e => {
-      if (this._disableSignInOnPinAction) return;
-      this._signInAndPinOrUnpinElement(e.detail.el, false);
-    });
+      if (NAF.utils.isMine(el)) {
+        this._signInAndPinOrUnpinElement(e.detail.el, pinned);
+      }
+    };
+
+    this.scene.addEventListener("pinned", e => handlePinEvent(e, true));
+    this.scene.addEventListener("unpinned", e => handlePinEvent(e, false));
 
     this.scene.addEventListener("object_spawned", e => {
       this.hubChannel.sendObjectSpawnedEvent(e.detail.objectType);
@@ -302,7 +319,6 @@ export default class SceneEntryManager {
     this.scene.addEventListener("action_spawn", () => {
       handleExitTo2DInterstitial(false, () => window.APP.mediaSearchStore.pushExitMediaBrowserHistory());
       window.APP.mediaSearchStore.sourceNavigateToDefaultSource();
-      //pushHistoryState(this.props.history, "modal", "create");
     });
 
     this.scene.addEventListener("action_invite", () => {
@@ -433,7 +449,8 @@ export default class SceneEntryManager {
             width: 720 * (screen.width / screen.height),
             height: 720,
             frameRate: 30
-          }
+          },
+          audio: true
         },
         true
       );

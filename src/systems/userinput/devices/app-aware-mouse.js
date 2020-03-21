@@ -33,16 +33,24 @@ export class AppAwareMouseDevice {
     this.prevDirection.copy(this.prevDirection);
 
     if (!this.cursorController) {
-      this.cursorController = document.getElementById("right-cursor-controller").components["cursor-controller"];
+      const rightCursorController = document.getElementById("right-cursor-controller");
+
+      if (rightCursorController && rightCursorController.components) {
+        this.cursorController = rightCursorController.components["cursor-controller"];
+      }
     }
 
     if (!this.camera) {
-      this.camera = document.getElementById("viewing-camera").components.camera.camera;
+      const viewingCamera = document.getElementById("viewing-camera");
+
+      if (viewingCamera && viewingCamera.components) {
+        this.camera = viewingCamera.components.camera.camera;
+      }
     }
 
     const buttonLeft = frame.get(paths.device.mouse.buttonLeft);
     const buttonRight = frame.get(paths.device.mouse.buttonRight);
-    if (buttonLeft && !this.prevButtonLeft) {
+    if (buttonLeft && !this.prevButtonLeft && this.cursorController) {
       const rawIntersections = [];
       this.cursorController.raycaster.intersectObjects(
         AFRAME.scenes[0].systems["hubs-systems"].cursorTargettingSystem.targets,
@@ -52,12 +60,26 @@ export class AppAwareMouseDevice {
       const intersection = rawIntersections.find(x => x.object.el);
       const remoteHoverTarget = intersection && findRemoteHoverTarget(intersection.object);
       const userinput = AFRAME.scenes[0].systems.userinput;
-      const isInteractable = intersection && intersection.object.el.matches(".interactable, .interactable *");
+      const isInteractable =
+        intersection &&
+        intersection.object.el.matches(
+          ".interactable, .interactable *, .occupiable-waypoint-icon, .teleport-waypoint-icon"
+        );
       const isPinned =
         remoteHoverTarget && remoteHoverTarget.components.pinnable && remoteHoverTarget.components.pinnable.data.pinned;
       const isFrozen = AFRAME.scenes[0].is("frozen");
+      const template =
+        remoteHoverTarget &&
+        remoteHoverTarget.components.networked &&
+        remoteHoverTarget.components.networked.data.template;
+      const isStaticControlledMedia = template && template === "#static-controlled-media";
+      const isStaticMedia = template && template === "#static-media";
       this.clickedOnAnything =
-        (isInteractable && (isFrozen || !isPinned) && (remoteHoverTarget && canMove(remoteHoverTarget))) ||
+        (isInteractable &&
+          (isFrozen || !isPinned) &&
+          (remoteHoverTarget && canMove(remoteHoverTarget)) &&
+          !isStaticControlledMedia &&
+          !isStaticMedia) ||
         userinput.activeSets.includes(sets.rightCursorHoldingPen) ||
         userinput.activeSets.includes(sets.rightCursorHoldingInteractable) ||
         userinput.activeSets.includes(sets.rightCursorHoldingCamera);
@@ -76,10 +98,12 @@ export class AppAwareMouseDevice {
       frame.setValueType(paths.device.smartMouse.shouldMoveCamera, true);
     }
 
-    const coords = frame.get(paths.device.mouse.coords);
-    frame.setPose(
-      paths.device.smartMouse.cursorPose,
-      calculateCursorPose(this.camera, coords, this.origin, this.direction, this.cursorPose)
-    );
+    if (this.camera) {
+      const coords = frame.get(paths.device.mouse.coords);
+      frame.setPose(
+        paths.device.smartMouse.cursorPose,
+        calculateCursorPose(this.camera, coords, this.origin, this.direction, this.cursorPose)
+      );
+    }
   }
 }

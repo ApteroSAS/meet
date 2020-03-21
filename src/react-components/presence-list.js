@@ -1,3 +1,4 @@
+import configs from "../utils/configs";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { FormattedMessage } from "react-intl";
@@ -5,35 +6,37 @@ import classNames from "classnames";
 
 import rootStyles from "../assets/stylesheets/ui-root.scss";
 import styles from "../assets/stylesheets/presence-list.scss";
-import PhoneImage from "../assets/images/presence_phone.png";
-import DesktopImage from "../assets/images/presence_desktop.png";
-import DiscordImage from "../assets/images/presence_discord.png";
-import CameraImage from "../assets/images/presence_camera.png";
-import HMDImage from "../assets/images/presence_vr.png";
 import maskEmail from "../utils/mask-email";
 import StateLink from "./state-link.js";
 import { WithHoverSound } from "./wrap-with-audio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUsers } from "@fortawesome/free-solid-svg-icons/faUsers";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
+import { faDesktop } from "@fortawesome/free-solid-svg-icons/faDesktop";
+import { faVideo } from "@fortawesome/free-solid-svg-icons/faVideo";
+import discordIcon from "../assets/images/discord.svgi";
+import hmdIcon from "../assets/images/hmd-icon.svgi";
+import { faMobileAlt } from "@fortawesome/free-solid-svg-icons/faMobileAlt";
 import { pushHistoryPath, withSlug } from "../utils/history";
+import { hasReticulumServer } from "../utils/phoenix-utils";
+import { InlineSVG } from "./svgi";
 
-function getPresenceImage(ctx) {
-  if (ctx && ctx.mobile) {
-    return PhoneImage;
-  } else if (ctx && ctx.hmd) {
-    return HMDImage;
+function getPresenceIcon(ctx) {
+  if (ctx && ctx.hmd) {
+    return <InlineSVG src={hmdIcon} />;
+  } else if (ctx && ctx.mobile) {
+    return <FontAwesomeIcon icon={faMobileAlt} />;
   } else if (ctx && ctx.discord) {
-    return DiscordImage;
+    return <InlineSVG src={discordIcon} />;
   } else {
-    return DesktopImage;
+    return <FontAwesomeIcon icon={faDesktop} />;
   }
 }
 
 export function navigateToClientInfo(history, clientId) {
   const currentParams = new URLSearchParams(history.location.search);
 
-  if (process.env.RETICULUM_SERVER && document.location.host !== process.env.RETICULUM_SERVER) {
+  if (hasReticulumServer() && document.location.host !== configs.RETICULUM_SERVER) {
     currentParams.set("client_id", clientId);
     pushHistoryPath(history, history.location.pathname, currentParams.toString());
   } else {
@@ -63,9 +66,11 @@ export default class PresenceList extends Component {
     const context = meta.context;
     const profile = meta.profile;
     const recording = meta.streaming || meta.recording;
-    const image = recording ? CameraImage : getPresenceImage(context);
+    const icon = recording ? <FontAwesomeIcon icon={faVideo} /> : getPresenceIcon(context);
     const isBot = context && context.discord;
+    const isEntering = context && context.entering;
     const isOwner = meta.roles && meta.roles.owner;
+    const messageId = isEntering ? "presence.entering" : `presence.in_${meta.presence}`;
     const badge = isOwner && (
       <span className={styles.moderatorBadge} title="Moderator">
         &#x2605;
@@ -76,7 +81,7 @@ export default class PresenceList extends Component {
       <WithHoverSound key={sessionId}>
         <div className={styles.row}>
           <div className={styles.icon}>
-            <img src={image} />
+            <i>{icon}</i>
           </div>
           <div
             className={classNames({
@@ -105,7 +110,7 @@ export default class PresenceList extends Component {
             )}
           </div>
           <div className={styles.presence}>
-            <FormattedMessage id={`presence.in_${meta.presence}`} />
+            <FormattedMessage id={messageId} />
           </div>
         </div>
       </WithHoverSound>
@@ -161,7 +166,7 @@ export default class PresenceList extends Component {
     return (
       <div>
         <div
-          title={"Participants"}
+          title={"Members"}
           onClick={() => {
             this.props.onExpand(!this.props.expanded);
           }}

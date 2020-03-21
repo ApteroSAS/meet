@@ -1,21 +1,18 @@
-/* global AFRAME Ammo NAF */
+/* global AFRAME NAF */
 import { paths } from "./userinput/paths";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 import { canMove } from "../utils/permissions-utils";
 import { isTagged } from "../components/tags";
 
-function findHandCollisionTargetForHand(body) {
-  const world = this.el.sceneEl.systems["hubs-systems"].physicsSystem.world;
+function findHandCollisionTargetForHand(bodyHelper) {
+  const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
 
-  if (world) {
-    const handPtr = Ammo.getPointer(body.physicsBody);
-    const handCollisions = world.collisions.get(handPtr);
-    if (handCollisions) {
-      for (let i = 0; i < handCollisions.length; i++) {
-        const object3D = world.object3Ds.get(handCollisions[i]);
-        if (isTagged(object3D.el, "isHandCollisionTarget")) {
-          return object3D.el;
-        }
+  const handCollisions = physicsSystem.getCollisions(bodyHelper.uuid);
+  if (handCollisions) {
+    for (let i = 0; i < handCollisions.length; i++) {
+      const object3D = physicsSystem.bodyUuidToData.get(handCollisions[i]).object3D;
+      if (isTagged(object3D.el, "isHandCollisionTarget")) {
+        return object3D.el;
       }
     }
   }
@@ -183,6 +180,7 @@ AFRAME.registerSystem("interaction", {
       this.options.rightHand.entity = document.getElementById("player-right-controller");
       this.options.rightRemote.entity = document.getElementById("right-cursor");
       this.options.leftRemote.entity = document.getElementById("left-cursor");
+      this.ready = true;
     });
   },
 
@@ -197,8 +195,8 @@ AFRAME.registerSystem("interaction", {
     } else {
       state.hovered = options.hoverFn.call(
         this,
-        options.entity.components["body-helper"] && options.entity.components["body-helper"].body
-          ? options.entity.components["body-helper"].body
+        options.entity.components["body-helper"] && options.entity.components["body-helper"]
+          ? options.entity.components["body-helper"]
           : null
       );
       if (state.hovered) {
@@ -207,10 +205,9 @@ AFRAME.registerSystem("interaction", {
         const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
         if (
           isTagged(entity, "isHoldable") &&
-          userinput.get(options.grabPath)
-          //&&
-          //(isFrozen || !isPinned) &&
-          //canMove(entity)
+          userinput.get(options.grabPath) &&
+          (isFrozen || !isPinned) &&
+          canMove(entity)
         ) {
           state.held = entity;
         }

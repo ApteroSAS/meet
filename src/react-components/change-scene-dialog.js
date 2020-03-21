@@ -1,14 +1,19 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import styles from "../assets/stylesheets/change-scene-dialog.scss";
+import { FormattedMessage } from "react-intl";
 import cx from "classnames";
+
+import IfFeature from "./if-feature";
+import styles from "../assets/stylesheets/change-scene-dialog.scss";
 import DialogContainer from "./dialog-container.js";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
-import { FormattedMessage } from "react-intl";
+import { messages } from "../utils/i18n";
+import { isValidSceneUrl } from "../utils/scene-url-utils";
 
 export default class ChangeSceneDialog extends Component {
   state = {
-    url: ""
+    url: "",
+    submitting: false
   };
 
   static propTypes = {
@@ -16,9 +21,21 @@ export default class ChangeSceneDialog extends Component {
     onClose: PropTypes.func
   };
 
+  constructor(props) {
+    super(props);
+    this.urlValidationPromise = null;
+  }
+
   onUrlChange = e => {
-    this.setState({
-      url: e.target && e.target.value
+    const urlInput = e.target;
+    const url = urlInput.value;
+    this.setState({ url });
+
+    urlInput.setCustomValidity("");
+
+    this.urlValidationPromise = new Promise(async resolve => {
+      urlInput.setCustomValidity((await isValidSceneUrl(url.trim())) ? "" : messages["invalid-scene-url"]);
+      resolve();
     });
   };
 
@@ -27,14 +44,23 @@ export default class ChangeSceneDialog extends Component {
     this.setState({ url: "" });
   };
 
-  onChangeClicked = e => {
+  onSubmit = async e => {
     e.preventDefault();
 
-    if (this.state.url) {
-      this.props.onChange(this.state.url);
-    }
+    this.setState({ submitting: true });
 
-    this.props.onClose();
+    const form = e.target;
+
+    if (this.state.url) {
+      await this.urlValidationPromise;
+      if (form.checkValidity()) {
+        this.props.onChange(this.state.url.trim());
+        this.props.onClose();
+      } else {
+        form.reportValidity();
+        this.setState({ submitting: false });
+      }
+    }
   };
 
   render() {
@@ -46,12 +72,18 @@ export default class ChangeSceneDialog extends Component {
           <div>
             <p>
               Paste a URL to a{" "}
+              <IfFeature name="enable_spoke">
+                <a href="/spoke" target="_blank" rel="noopener noreferrer">
+                  <FormattedMessage id="editor-name" />
+                </a>{" "}
+              </IfFeature>
+              scene or a URL to a{" "}
               <a href="https://en.wikipedia.org/wiki/GlTF#GLB" target="_blank" rel="noopener noreferrer">
-                GLB File or a MP4 file for a 360 video
+                GLB
               </a>.
             </p>
           </div>
-          <form onSubmit={this.onChangeClicked}>
+          <form onSubmit={this.onSubmit}>
             <div className={styles.changeSceneForm}>
               <div className={styles.inputBorder}>
                 <input
@@ -65,10 +97,20 @@ export default class ChangeSceneDialog extends Component {
                 />
               </div>
               <div className={styles.buttons}>
-                <button className={styles.actionButton}>
+                <button className={styles.actionButton} disabled={this.state.submitting}>
                   <FormattedMessage id="change-scene-dialog.change-scene" />
                 </button>
               </div>
+              <IfFeature name="enable_spoke">
+                <div className={styles.spokeCreate}>
+                  <div>
+                    <FormattedMessage id="change-scene-dialog.create-in-spoke" />
+                  </div>
+                  <a className={styles.spokeLaunch} href="/spoke/new" target="_blank" rel="noopener noreferrer">
+                    <FormattedMessage id="change-scene-dialog.new-spoke-project" />
+                  </a>
+                </div>
+              </IfFeature>
             </div>
           </form>
         </div>

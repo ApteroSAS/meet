@@ -8,7 +8,8 @@ const HAND_OFFSET = new THREE.Matrix4().compose(
   new THREE.Quaternion().setFromEuler(new THREE.Euler(-40 * THREE.Math.DEG2RAD, 0, 0)),
   new THREE.Vector3(1, 1, 1)
 );
-const RAY_ROTATION = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 12);
+const RAY_ROTATION = new THREE.Quaternion();
+const m = new THREE.Matrix4();
 
 export class ViveControllerDevice {
   constructor(gamepad) {
@@ -17,29 +18,55 @@ export class ViveControllerDevice {
     navigator.getVRDisplays();
     this.gamepad = gamepad;
 
-    if (this.gamepad.id === "HTC Vive Focus Plus Controller") {
+    if (this.gamepad.id === "OpenVR Cosmos") {
+      RAY_ROTATION.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 12);
+      this.buttonMap = [
+        { name: "trigger", buttonId: 0 },
+        { name: "grip", buttonId: 1 },
+        { name: "primary", buttonId: 2 },
+        { name: "secondary", buttonId: 3 },
+        { name: "joystick", buttonId: 4 },
+        { name: "bumper", buttonId: 5 }
+      ];
+      this.axisMap = [{ name: "joyX", axisId: 0 }, { name: "joyY", axisId: 1 }];
+    } else if (this.gamepad.id === "HTC Vive Focus Plus Controller") {
+      RAY_ROTATION.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 15);
       this.buttonMap = [
         { name: "touchpad", buttonId: 0 },
         { name: "trigger", buttonId: 1 },
         { name: "grip", buttonId: 2 }
       ];
-    } else {
-      if (gamepad.axes.length === 2) {
-        this.isViveWand = true;
-      }
+      this.axisMap = [{ name: "touchX", axisId: 0 }, { name: "touchY", axisId: 1 }];
+    } else if (this.gamepad.axes.length === 4) {
+      RAY_ROTATION.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 12);
       this.buttonMap = [
         { name: "touchpad", buttonId: 0 },
         { name: "trigger", buttonId: 1 },
         { name: "grip", buttonId: 2 },
-        { name: "top", buttonId: 3 }
+        { name: "primary", buttonId: 3 },
+        { name: "secondary", buttonId: 4 },
+        { name: "joystick", buttonId: 5 },
+        { name: "index", buttonId: 6 },
+        { name: "middle", buttonId: 7 },
+        { name: "ring", buttonId: 8 },
+        { name: "pinky", buttonId: 9 }
       ];
+      this.axisMap = [
+        { name: "touchX", axisId: 0 },
+        { name: "touchY", axisId: 1 },
+        { name: "joyX", axisId: 2 },
+        { name: "joyY", axisId: 3 }
+      ];
+    } else {
+      RAY_ROTATION.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 12);
+      this.buttonMap = [
+        { name: "touchpad", buttonId: 0 },
+        { name: "trigger", buttonId: 1 },
+        { name: "grip", buttonId: 2 },
+        { name: "primary", buttonId: 3 }
+      ];
+      this.axisMap = [{ name: "touchX", axisId: 0 }, { name: "touchY", axisId: 1 }];
     }
-    this.axisMap = [
-      { name: "touchX", axisId: 0 },
-      { name: "touchY", axisId: 1 },
-      { name: "joyX", axisId: 2 },
-      { name: "joyY", axisId: 3 }
-    ];
 
     this.pose = new Pose();
     this.rayObjectRotation = new THREE.Quaternion();
@@ -86,7 +113,7 @@ export class ViveControllerDevice {
     const el = document.querySelector(this.selector);
     const rayObject = el.object3D;
     rayObject.updateMatrixWorld();
-    this.rayObjectRotation.setFromRotationMatrix(rayObject.matrixWorld);
+    this.rayObjectRotation.setFromRotationMatrix(m.extractRotation(rayObject.matrixWorld));
     this.pose.position.setFromMatrixPosition(rayObject.matrixWorld);
     this.pose.direction
       .set(0, 0, -1)

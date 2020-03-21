@@ -20,7 +20,13 @@ import { keyboardMouseUserBindings } from "./bindings/keyboard-mouse-user";
 import { touchscreenUserBindings } from "./bindings/touchscreen-user";
 import { keyboardDebuggingBindings } from "./bindings/keyboard-debugging";
 import { oculusTouchUserBindings } from "./bindings/oculus-touch-user";
-import { viveUserBindings, viveWandUserBindings } from "./bindings/vive-user";
+import {
+  viveUserBindings,
+  viveWandUserBindings,
+  indexUserBindings,
+  viveFocusPlusUserBindings,
+  viveCosmosUserBindings
+} from "./bindings/vive-user";
 import { wmrUserBindings } from "./bindings/windows-mixed-reality-user";
 import { xboxControllerUserBindings } from "./bindings/xbox-controller-user";
 import { daydreamUserBindings } from "./bindings/daydream-user";
@@ -34,6 +40,7 @@ import { resolveActionSets } from "./resolve-action-sets";
 import { GamepadDevice } from "./devices/gamepad";
 import { gamepadBindings } from "./bindings/generic-gamepad";
 import { getAvailableVREntryTypes, VR_DEVICE_AVAILABILITY } from "../../utils/vr-caps-detect";
+import { hackyMobileSafariTest } from "../../utils/detect-touchscreen";
 import { ArrayBackedSet } from "./array-backed-set";
 
 function arrayContentsDiffer(a, b) {
@@ -233,12 +240,13 @@ AFRAME.registerSystem("userinput", {
 
     const isMobile = AFRAME.utils.device.isMobile();
     const isMobileVR = AFRAME.utils.device.isMobileVR();
+    const forceEnableTouchscreen = hackyMobileSafariTest();
 
-    if (!(isMobile || isMobileVR)) {
+    if (!(isMobile || isMobileVR || forceEnableTouchscreen)) {
       this.activeDevices.add(new MouseDevice());
       this.activeDevices.add(new AppAwareMouseDevice());
       this.activeDevices.add(new KeyboardDevice());
-    } else if (!isMobileVR) {
+    } else if (!isMobileVR || forceEnableTouchscreen) {
       this.activeDevices.add(new AppAwareTouchscreenDevice());
       this.activeDevices.add(new KeyboardDevice());
       this.activeDevices.add(new GyroDevice());
@@ -262,21 +270,49 @@ AFRAME.registerSystem("userinput", {
     nonVRGamepadMappings.set(XboxControllerDevice, xboxControllerUserBindings);
     nonVRGamepadMappings.set(GamepadDevice, gamepadBindings);
 
+    const addExtraMappings = activeDevice => {
+      if (activeDevice instanceof ViveControllerDevice && activeDevice.gamepad) {
+        if (activeDevice.gamepad.id === "OpenVR Cosmos") {
+          //HTC Vive Cosmos Controller
+          this.registeredMappings.add(viveCosmosUserBindings);
+        } else if (activeDevice.gamepad.id === "HTC Vive Focus Plus Controller") {
+          //HTC Vive Focus Plus Controller
+          this.registeredMappings.add(viveFocusPlusUserBindings);
+        } else if (activeDevice.gamepad.axes.length === 4) {
+          //Valve Index Controller
+          this.registeredMappings.add(indexUserBindings);
+        } else {
+          //HTC Vive Controller (wands)
+          this.registeredMappings.add(viveWandUserBindings);
+        }
+      }
+    };
+
+    const deleteExtraMappings = activeDevice => {
+      if (activeDevice instanceof ViveControllerDevice && activeDevice.gamepad) {
+        this.registeredMappings.delete(viveCosmosUserBindings);
+        this.registeredMappings.delete(viveFocusPlusUserBindings);
+        this.registeredMappings.delete(indexUserBindings);
+        this.registeredMappings.delete(viveWandUserBindings);
+      }
+    };
+
     const updateBindingsForVRMode = () => {
       const inVRMode = this.el.sceneEl.is("vr-mode");
       const isMobile = AFRAME.utils.device.isMobile();
+      const forceEnableTouchscreen = hackyMobileSafariTest();
 
       if (inVRMode) {
         console.log("Using VR bindings.");
-        this.registeredMappings.delete(isMobile ? touchscreenUserBindings : keyboardMouseUserBindings);
+        this.registeredMappings.delete(
+          isMobile || forceEnableTouchscreen ? touchscreenUserBindings : keyboardMouseUserBindings
+        );
         // add mappings for all active VR input devices
         for (let i = 0; i < this.activeDevices.items.length; i++) {
           const activeDevice = this.activeDevices.items[i];
           const mapping = vrGamepadMappings.get(activeDevice.constructor);
           mapping && this.registeredMappings.add(mapping);
-          if (activeDevice instanceof ViveControllerDevice && activeDevice.isViveWand) {
-            this.registeredMappings.add(viveWandUserBindings);
-          }
+          addExtraMappings(activeDevice);
         }
 
         // Handle cardboard by looking of VR device caps
@@ -293,9 +329,12 @@ AFRAME.registerSystem("userinput", {
         // remove mappings for all active VR input devices
         for (let i = 0; i < this.activeDevices.items.length; i++) {
           const activeDevice = this.activeDevices.items[i];
+          deleteExtraMappings(activeDevice);
           this.registeredMappings.delete(vrGamepadMappings.get(activeDevice.constructor));
         }
-        this.registeredMappings.add(isMobile ? touchscreenUserBindings : keyboardMouseUserBindings);
+        this.registeredMappings.add(
+          isMobile || forceEnableTouchscreen ? touchscreenUserBindings : keyboardMouseUserBindings
+        );
       }
 
       for (let i = 0; i < this.activeDevices.items.length; i++) {
@@ -317,13 +356,17 @@ AFRAME.registerSystem("userinput", {
         }
       }
       // HACK Firefox Nightly bug causes corrupt gamepad names for OpenVR, so do startsWith
-      if (e.gamepad.id.startsWith("OpenVR Gamepad") || e.gamepad.id === "HTC Vive Focus Plus Controller") {
+      if (
+        e.gamepad.id.startsWith("OpenVR Gamepad") ||
+        e.gamepad.id === "HTC Vive Focus Plus Controller" ||
+        e.gamepad.id === "OpenVR Cosmos"
+      ) {
         gamepadDevice = new ViveControllerDevice(e.gamepad);
-      } else if (e.gamepad.id.startsWith("Oculus Touch")) {
+      } else if (e.gamepad.id.startsWith("Oculus Touch") || e.gamepad.id.startsWith("Pico Neo 2")) {
         gamepadDevice = new OculusTouchControllerDevice(e.gamepad);
       } else if (e.gamepad.id.startsWith("Spatial Controller")) {
         gamepadDevice = new WindowsMixedRealityControllerDevice(e.gamepad);
-      } else if (e.gamepad.id === "Oculus Go Controller") {
+      } else if (e.gamepad.id === "Oculus Go Controller" || e.gamepad.id === "Pico G2 Controller") {
         gamepadDevice = new OculusGoControllerDevice(e.gamepad);
       } else if (e.gamepad.id === "Gear VR Controller" || e.gamepad.id === "HTC Vive Focus Controller") {
         gamepadDevice = new GearVRControllerDevice(e.gamepad);
@@ -370,7 +413,7 @@ AFRAME.registerSystem("userinput", {
   },
 
   maybeToggleXboxMapping() {
-    if (this.isMobile || this.isMobileVR) return;
+    if (hackyMobileSafariTest() || this.isMobile || this.isMobileVR) return;
 
     const vrAxesSum =
       (this.get(paths.device.vive.left.axesSum) || 0) +
@@ -378,7 +421,7 @@ AFRAME.registerSystem("userinput", {
       (this.get(paths.device.leftOculusTouch.axesSum) || 0) +
       (this.get(paths.device.rightOculusTouch.axesSum) || 0);
     const mouseMovement = this.get(paths.device.mouse.movementXY);
-    const nonXboxActivity = (mouseMovement[0] || mouseMovement[1]) > 2 || vrAxesSum > 0.5;
+    const nonXboxActivity = (mouseMovement && (mouseMovement[0] || mouseMovement[1])) > 2 || vrAxesSum > 0.5;
 
     const hasXboxMapping = this.registeredMappings.has(xboxControllerUserBindings);
 

@@ -1,27 +1,14 @@
 import { findAncestorWithComponent } from "../utils/scene-graph";
+import { waitForDOMContentLoaded } from "../utils/async-utils";
+import { easeOutQuadratic } from "../utils/easing";
 
 // This computation is expensive, so we run on at most one avatar per frame, including quiet avatars.
 // However if we detect an avatar is seen speaking (its volume is above DISABLE_AT_VOLUME_THRESHOLD)
 // then we continue analysis for at least DISABLE_GRACE_PERIOD_MS and disable doing it every frame if
 // the avatar is quiet during that entire duration (eg they are muted)
 const DISABLE_AT_VOLUME_THRESHOLD = 0.00001;
-const DISABLE_GRACE_PERIOD_MS = 1000;
+const DISABLE_GRACE_PERIOD_MS = 10000;
 const MIN_VOLUME_THRESHOLD = 0.08;
-const EventEmitter = require("eventemitter3");
-
-export const eventEmitter = new EventEmitter();
-eventEmitter.on("speak:local:start",(data)=>{
-  console.log("speak:local:start "+data.volume);
-});
-eventEmitter.on("speak:local:stop",(data)=>{
-  console.log("speak:local:stop "+data.volume);
-});
-eventEmitter.on("speak:network:start",(data)=>{
-  console.log("speak:network:start "+data.volume);
-})
-;eventEmitter.on("speak:network:stop",(data)=>{
-  console.log("speak:network:stop "+data.volume);
-});
 
 const calculateVolume = (analyser, levels) => {
   // take care with compatibility, e.g. safari doesn't support getFloatTimeDomainData
@@ -107,18 +94,13 @@ AFRAME.registerComponent("networked-audio-analyser", {
 
     if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
       if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
-        if(!this.avatarIsQuiet) {
-          eventEmitter.emit("speak:network:stop",{volume:this.volume});
-        }
         this.avatarIsQuiet = true;
       }
     } else {
       if (t) {
         this.lastSeenVolume = t;
       }
-      if(this.avatarIsQuiet) {
-        eventEmitter.emit("speak:network:start",{volume:this.volume});
-      }
+
       this.avatarIsQuiet = false;
     }
   }
@@ -136,7 +118,8 @@ function connectAnalyser(mediaStream) {
 
 function getAnalyser(el) {
   // Is this the local player
-  if (findAncestorWithComponent(el, "ik-root").id === "avatar-rig") {
+  const ikRootEl = findAncestorWithComponent(el, "ik-root");
+  if (ikRootEl && ikRootEl.id === "avatar-rig") {
     return el.sceneEl.systems["local-audio-analyser"];
   } else {
     const analyserEl = findAncestorWithComponent(el, "networked-audio-analyser");
@@ -153,8 +136,6 @@ AFRAME.registerSystem("local-audio-analyser", {
     this.volume = 0;
     this.loudest = 0;
     this.prevVolume = 0;
-    this.avatarIsQuiet = true;
-    this.lastSeenVolume = 0;
 
     this.el.addEventListener("local-media-stream-created", e => {
       const mediaStream = e.detail.mediaStream;
@@ -169,33 +150,10 @@ AFRAME.registerSystem("local-audio-analyser", {
     });
   },
 
-  tick: function(t) {
-    this._updateAnalysis(t);
-  },
-
-  _updateAnalysis: function(t) {
+  tick: function() {
     if (!this.analyser) return;
-
     updateVolume(this);
-
-    if (this.volume < DISABLE_AT_VOLUME_THRESHOLD) {
-      if (t && this.lastSeenVolume && this.lastSeenVolume < t - DISABLE_GRACE_PERIOD_MS) {
-        if(!this.avatarIsQuiet) {
-          eventEmitter.emit("speak:local:stop",{volume:this.volume});
-        }
-        this.avatarIsQuiet = true;
-      }
-    } else {
-      if (t) {
-        this.lastSeenVolume = t;
-      }
-      if(this.avatarIsQuiet){
-        eventEmitter.emit("speak:local:start",{volume:this.volume});
-      }
-      this.avatarIsQuiet = false;
-    }
   }
-
 });
 
 /**
@@ -209,7 +167,8 @@ AFRAME.registerComponent("scale-audio-feedback", {
     maxScale: { default: 1.5 }
   },
 
-  init() {
+  async init() {
+    await waitForDOMContentLoaded();
     this.camera = document.getElementById("viewing-camera").object3D;
   },
 
@@ -217,23 +176,25 @@ AFRAME.registerComponent("scale-audio-feedback", {
     // TODO: come up with a cleaner way to handle this.
     // bone's are "hidden" by scaling them with bone-visibility, without this we would overwrite that.
     if (!this.el.object3D.visible) return;
-
+    if (!this.camera) return;
     if (!this.analyser) this.analyser = getAnalyser(this.el);
 
     const { minScale, maxScale } = this.data;
 
     const { object3D } = this.el;
 
-    const scale = getAudioFeedbackScale(this.el.object3D, this.camera, minScale, maxScale, this.analyser.volume);
+    const scale = getAudioFeedbackScale(
+      this.el.object3D,
+      this.camera,
+      minScale,
+      maxScale,
+      this.analyser ? this.analyser.volume : 0
+    );
 
     object3D.scale.setScalar(scale);
     object3D.matrixNeedsUpdate = true;
   }
 });
-
-function easeOutQuadratic(t) {
-  return t * (2 - t);
-}
 
 /**
  * Animates a morph target based on an audio-analyser in a parent entity
@@ -259,7 +220,7 @@ AFRAME.registerComponent("morph-audio-feedback", {
 
     const { minValue, maxValue } = this.data;
     this.mesh.morphTargetInfluences[this.morphNumber] = THREE.Math.mapLinear(
-      easeOutQuadratic(this.analyser.volume),
+      easeOutQuadratic(this.analyser ? this.analyser.volume : 0),
       0,
       1,
       minValue,

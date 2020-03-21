@@ -6,6 +6,7 @@ dotenv.config({ path: ".env.defaults" });
 const fs = require("fs");
 const path = require("path");
 const selfsigned = require("selfsigned");
+const webpack = require("webpack");
 const cors = require("cors");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -92,7 +93,7 @@ module.exports = (env, argv) => ({
     // need to specify this manually because some random lodash code will try to access
     // Buffer on the global object if it exists, so webpack will polyfill on its behalf
     Buffer: false,
-    fs: 'empty'
+    fs: "empty"
   },
   entry: {
     index: path.join(__dirname, "src", "index.js"),
@@ -100,19 +101,17 @@ module.exports = (env, argv) => ({
     scene: path.join(__dirname, "src", "scene.js"),
     avatar: path.join(__dirname, "src", "avatar.js"),
     link: path.join(__dirname, "src", "link.js"),
-    spoke: path.join(__dirname, "src", "spoke.js"),
     discord: path.join(__dirname, "src", "discord.js"),
-    admin: path.join(__dirname, "src", "admin.js"),
     "whats-new": path.join(__dirname, "src", "whats-new.js")
   },
   output: {
     filename: "assets/js/[name]-[chunkhash].js",
-    publicPath: process.env.BASE_ASSETS_PATH || "/"
+    publicPath: process.env.BASE_ASSETS_PATH || ""
   },
   devtool: argv.mode === "production" ? "source-map" : "inline-source-map",
   devServer: {
     https: createHTTPSConfig(),
-    host: process.env.HOST_IP || "0.0.0.0",
+    host: "0.0.0.0",
     public: `${host}:8080`,
     useLocalIp: true,
     allowedHosts: [host],
@@ -190,7 +189,7 @@ module.exports = (env, argv) => ({
         ]
       },
       {
-        test: /\.(png|jpg|gif|glb|gltf|bin|ogg|mp3|mp4|wav|woff2|svg|webm)$/,
+        test: /\.(png|jpg|gif|glb|ogg|mp3|mp4|wav|woff2|svg|webm)$/,
         use: {
           loader: "file-loader",
           options: {
@@ -230,12 +229,6 @@ module.exports = (env, argv) => ({
     minimize: false,
     splitChunks: {
       cacheGroups: {
-        admindeps: {
-          test: /[\\/]node_modules[\\/](@material-ui|material-ui|jss-|ra-|react-admin|react-autosuggest|react-jss|react-redux|react-router-redux|react-themable|redux|redux-|theming)/,
-          priority: 150,
-          name: "admindeps",
-          chunks: "all"
-        },
         vendors: {
           test: matchRegex({
             include: /([\\/]node_modules[\\/]|[\\/]vendor[\\/])/,
@@ -312,11 +305,6 @@ module.exports = (env, argv) => ({
       chunks: ["vendor", "engine", "link"]
     }),
     new HTMLWebpackPlugin({
-      filename: "spoke.html",
-      template: path.join(__dirname, "src", "spoke.html"),
-      chunks: ["vendor", "spoke"]
-    }),
-    new HTMLWebpackPlugin({
       filename: "discord.html",
       template: path.join(__dirname, "src", "discord.html"),
       chunks: ["vendor", "discord"]
@@ -327,39 +315,10 @@ module.exports = (env, argv) => ({
       chunks: ["vendor", "whats-new"],
       inject: "head"
     }),
-    new HTMLWebpackPlugin({
-      filename: "admin.html",
-      template: path.join(__dirname, "src", "admin.html"),
-      chunks: ["vendor", "engine", "admindeps", "admin"]
-    }),
     new CopyWebpackPlugin([
       {
-        from: "src/assets/images/favicon.ico",
-        to: "favicon.ico"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/assets/images/hub-preview.png",
-        to: "hub-preview.png"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/assets/images/default-room.png",
-        to: "assets/images/default-room.png"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/workers/pdfjs-dist@2.1.266/build/pdf.worker.js",
-        to: "workers/pdfjs-dist@2.1.266/build/pdf.worker.js"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/assets/models/DrawingPen.glb",
-        to: "assets/models/DrawingPen.glb"
+        from: "src/assets/images/default_thumbnail.png",
+        to: "app-thumbnail.png"
       }
     ]),
     new CopyWebpackPlugin([
@@ -369,6 +328,12 @@ module.exports = (env, argv) => ({
       }
     ]),
     new CopyWebpackPlugin([
+      {
+        from: "src/schema.toml",
+        to: "schema.toml"
+      }
+    ]),
+        new CopyWebpackPlugin([
       {
         from: "src/properties.js",
         to: "properties.js"
@@ -385,5 +350,22 @@ module.exports = (env, argv) => ({
       filename: "assets/stylesheets/[name]-[contenthash].css",
       disable: argv.mode !== "production"
     }),
+    // Define process.env variables in the browser context.
+    /*new webpack.DefinePlugin({
+      "process.env": JSON.stringify({
+        NODE_ENV: argv.mode,
+        SHORTLINK_DOMAIN: process.env.SHORTLINK_DOMAIN,
+        RETICULUM_SERVER: process.env.RETICULUM_SERVER,
+        RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
+        THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
+        CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
+        NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,
+        BUILD_VERSION: process.env.BUILD_VERSION,
+        SENTRY_DSN: process.env.SENTRY_DSN,
+        GA_TRACKING_ID: process.env.GA_TRACKING_ID,
+        POSTGREST_SERVER: process.env.POSTGREST_SERVER,
+        USE_FEATURE_CONFIG: process.env.USE_FEATURE_CONFIG
+      })
+    })*/
   ]
 });

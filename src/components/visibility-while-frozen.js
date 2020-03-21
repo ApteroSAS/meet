@@ -1,10 +1,7 @@
 import { getLastWorldPosition } from "../utils/three-utils";
+import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 const isMobile = AFRAME.utils.device.isMobile();
-
-function almostEqual(a, b) {
-  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.z - b.z) < 0.1;
-}
 
 /**
  * Toggles the visibility of this entity when the scene is frozen.
@@ -16,16 +13,20 @@ AFRAME.registerComponent("visibility-while-frozen", {
     withinDistance: { type: "number" },
     visible: { type: "boolean", default: true },
     requireHoverOnNonMobile: { type: "boolean", default: true },
-    withPermission: { type: "string" }
+    withPermission: { type: "string" },
+    withoutPermission: { type: "string" },
+    visibleIfOwned: { type: "boolean", default: true }
   },
 
   init() {
     this.updateVisibility = this.updateVisibility.bind(this);
     this.camWorldPos = new THREE.Vector3();
-    this.cam2WorldPos = new THREE.Vector3();
     this.objWorldPos = new THREE.Vector3();
-    this.cam = document.getElementById("avatar-pov-node").object3D;
-    this.cam2 = this.el.sceneEl.camera;
+
+    waitForDOMContentLoaded().then(() => {
+      this.cam = document.getElementById("viewing-camera").object3D;
+      this.updateVisibility();
+    });
 
     let hoverableSearch = this.el;
 
@@ -39,6 +40,15 @@ AFRAME.registerComponent("visibility-while-frozen", {
     }
     if (!this.hoverable && this.data.requireHoverOnNonMobile) {
       console.error("Didn't find a remote hover target.");
+    }
+
+    if (!this.data.visibleIfOwned) {
+      NAF.utils
+        .getNetworkedEntity(this.el)
+        .then(networkedEl => {
+          this.networkedEl = networkedEl;
+        })
+        .then(() => {}); //ignore exception, entity might not be networked
     }
 
     this.onStateChange = evt => {
@@ -58,6 +68,7 @@ AFRAME.registerComponent("visibility-while-frozen", {
   },
 
   updateVisibility() {
+    if (!this.cam) return;
     const isFrozen = this.el.sceneEl.is("frozen");
 
     let isWithinDistance = true;
@@ -71,20 +82,30 @@ AFRAME.registerComponent("visibility-while-frozen", {
       }
 
       getLastWorldPosition(this.cam, this.camWorldPos);
-      getLastWorldPosition(this.cam2, this.cam2WorldPos);
-      const checkBoth = !almostEqual(this.camWorldPos, this.cam2WorldPos);
       this.objWorldPos.copy(this.el.object3D.position);
       this.el.object3D.localToWorld(this.objWorldPos);
 
       isWithinDistance =
-        this.camWorldPos.distanceToSquared(this.objWorldPos) < this.data.withinDistance * this.data.withinDistance ||
-        (checkBoth &&
-          this.cam2WorldPos.distanceToSquared(this.objWorldPos) < this.data.withinDistance * this.data.withinDistance);
+        this.camWorldPos.distanceToSquared(this.objWorldPos) < this.data.withinDistance * this.data.withinDistance;
     }
 
     const isTransforming = this.el.sceneEl.systems["transform-selected-object"].transforming;
 
-    const allowed = !this.data.withPermission || window.APP.hubChannel.canOrWillIfCreator(this.data.withPermission);
+    if (this.data.withPermission && this.data.withoutPermission) {
+      throw new Error(
+        "only withPermission or withoutPermission can be speciifed on visibility-while-frozen, not both."
+      );
+    }
+
+    const allowed = !!(
+      (!this.data.withPermission && !this.data.withoutPermission) ||
+      (this.data.withPermission &&
+        window.APP.hubChannel &&
+        window.APP.hubChannel.canOrWillIfCreator(this.data.withPermission)) ||
+      (this.data.withoutPermission &&
+        window.APP.hubChannel &&
+        !window.APP.hubChannel.canOrWillIfCreator(this.data.withoutPermission))
+    );
 
     let shouldBeVisible =
       allowed &&
@@ -99,6 +120,10 @@ AFRAME.registerComponent("visibility-while-frozen", {
           (this.el.sceneEl.systems.interaction.state.rightRemote.hovered === this.hoverable ||
             this.el.sceneEl.systems.interaction.state.leftRemote.hovered === this.hoverable)) ||
           isVisible);
+    }
+
+    if (!this.data.visibleIfOwned) {
+      shouldBeVisible = shouldBeVisible && this.networkedEl && !NAF.utils.isMine(this.networkedEl);
     }
 
     if (isVisible !== shouldBeVisible) {

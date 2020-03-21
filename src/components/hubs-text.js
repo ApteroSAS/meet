@@ -273,6 +273,7 @@ AFRAME.registerComponent("text", {
     // Place text slightly in front to avoid Z-fighting.
     mesh.position.z = data.zOffset;
     mesh.scale.set(textScale, -1 * textScale, textScale);
+    mesh.matrixNeedsUpdate = true;
   },
 
   /**
@@ -296,6 +297,8 @@ AFRAME.registerComponent("text", {
         .replace(tabRegex, "\t");
       geometryUpdateData.width = computeWidth(data.wrapPixels, data.wrapCount, font.widthFactor);
       geometry.update(Object.assign(geometryUpdateBase, data, geometryUpdateData));
+      geometry.boundingBox = null;
+      geometry.boundingSphere = null;
     };
   })()
 });

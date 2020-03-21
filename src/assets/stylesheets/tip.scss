@@ -2,7 +2,9 @@
 
 :local(.tip-root) {
   @extend %tip-bubble;
+
   bottom: 80px;
+
   width: auto;
   padding: 4px 24px 4px 12px;
 
@@ -14,7 +16,7 @@
   }
 
   :local(.tip-cancel) {
-    color: $light-blue;
+    color: $notice-widget-color;
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -78,7 +80,16 @@
 
   :local(.tip-link) {
     @extend %link-button;
-    color: white;
+    color: $notice-text-color;
   }
 }
 
+:local(.tour-tip-root) {
+  @media(min-height: 700px) {
+    bottom: 20vh;
+  }
+
+  @media(min-height: 800px) {
+    bottom: 25vh;
+  }
+}

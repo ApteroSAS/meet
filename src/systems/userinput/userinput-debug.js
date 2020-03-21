@@ -2,6 +2,37 @@ import { paths } from "./paths";
 import qsTruthy from "../../utils/qs_truthy";
 
 const PATHS_TO_SHOW = ["/actions/", "/device/", "/var/"];
+const DELIMITER = "-----------------------------------";
+
+const replacer = (k, v) => {
+  if (typeof v === "number") {
+    return `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
+  }
+  return v;
+};
+function describeCurrentMasks(userinput) {
+  const strings = [];
+  userinput.masked.forEach((maskers, i) => {
+    let val;
+    if (!userinput.actives[i]) return;
+    if (maskers.length) {
+      val = JSON.stringify(userinput.sortedBindings[i], replacer);
+      strings.push(DELIMITER);
+      strings.push(`Binding #${i}:`);
+      if (val) val = val.replace(/{"(\w{3,})":/g, '{\n  "$1":').replace(/,"(\w{3,})":/g, ',\n  "$1":');
+      strings.push(`${val}\n`);
+    }
+    maskers.forEach(masker => {
+      val = JSON.stringify(userinput.sortedBindings[masker], replacer);
+      if (val) val = val.replace(/{"(\w{3,})":/g, '{\n  "$1":').replace(/,"(\w{3,})":/g, ',\n  "$1":');
+      strings.push(`- Masked by #${masker}:\n${val}`);
+    });
+    if (maskers.length) {
+      strings.push(`\n`);
+    }
+  });
+  return strings.join("\n");
+}
 
 AFRAME.registerSystem("userinput-debug", {
   active: true,
@@ -12,12 +43,6 @@ AFRAME.registerSystem("userinput-debug", {
     const userinput = AFRAME.scenes[0].systems.userinput;
 
     if (this.userinputFrameStatus) {
-      const replacer = (k, v) => {
-        if (typeof v === "number") {
-          return `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
-        }
-        return v;
-      };
       const pathsOutput = [];
       const { frame } = userinput;
       for (const key in frame.values) {
@@ -28,6 +53,10 @@ AFRAME.registerSystem("userinput-debug", {
         pathsOutput.push(`${key} -> ${val}`);
       }
       this.userinputFrameStatus.textContent = pathsOutput.join("\n");
+    }
+
+    if (userinput.get(paths.actions.debugUserInput.describeCurrentMasks)) {
+      console.log(describeCurrentMasks(userinput));
     }
 
     if (userinput.get(paths.actions.logDebugFrame)) {
@@ -47,20 +76,20 @@ AFRAME.registerSystem("userinput-debug", {
       }
 
       console.log(userinput);
-      console.log("sorted", userinput.sortedBindings);
-      console.log("actives", userinput.actives);
-      console.log("masks", userinput.masks);
-      console.log("masked", userinput.masked);
+      console.log("sorted", JSON.parse(JSON.stringify(userinput.sortedBindings)));
+      console.log("actives", JSON.parse(JSON.stringify(userinput.actives)));
+      console.log("masks", JSON.parse(JSON.stringify(userinput.masks)));
+      console.log("masked", JSON.parse(JSON.stringify(userinput.masked)));
       console.log("devices", userinput.activeDevices);
-      console.log("activeSets", userinput.activeSets);
-      console.log("frame", userinput.frame);
+      console.log("activeSets", JSON.parse(JSON.stringify(userinput.activeSets)));
+      console.log("frame", JSON.parse(JSON.stringify(userinput.frame)));
       console.log("xformStates", userinput.xformStates);
       const { sortedBindings, actives, masked } = userinput;
       for (const i in sortedBindings) {
-        const sb = [];
+        const strings = [];
         if (masked[i].length > 0) {
           for (const j of masked[i]) {
-            sb.push(JSON.stringify(sortedBindings[j]));
+            strings.push(JSON.stringify(sortedBindings[j]));
           }
         }
 
@@ -69,18 +98,18 @@ AFRAME.registerSystem("userinput-debug", {
             "binding: ",
             i,
             "\n",
-            sortedBindings[i],
+            JSON.parse(JSON.stringify(sortedBindings[i])),
             "\n",
             "dest: ",
-            sortedBindings[i].dest && Object.values(sortedBindings[i].dest),
+            JSON.parse(JSON.stringify(sortedBindings[i].dest && Object.values(sortedBindings[i].dest))),
             "\n",
             "active: ",
-            actives[i],
+            JSON.parse(JSON.stringify(actives[i])),
             "\n",
             "maskedBy: ",
-            masked[i],
+            JSON.parse(JSON.stringify(masked[i])),
             "\n",
-            sb.join("\n"),
+            strings.join("\n"),
             "\n"
           );
         }

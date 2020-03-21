@@ -54,12 +54,27 @@ function shouldMoveCursor(touch, raycaster) {
     rawIntersections
   );
   const intersection = rawIntersections.find(x => x.object.el);
-  const isInteractable = intersection && intersection.object.el.matches(".interactable, .interactable *");
+  const isInteractable =
+    intersection &&
+    intersection.object.el.matches(
+      ".interactable, .interactable *, .occupiable-waypoint-icon, .teleport-waypoint-icon"
+    );
   const remoteHoverTarget = intersection && findRemoteHoverTarget(intersection.object);
   const isPinned =
     remoteHoverTarget && remoteHoverTarget.components.pinnable && remoteHoverTarget.components.pinnable.data.pinned;
   const isFrozen = AFRAME.scenes[0].is("frozen");
-  return isInteractable && (isFrozen || !isPinned) && (remoteHoverTarget && canMove(remoteHoverTarget));
+
+  const template =
+    remoteHoverTarget && remoteHoverTarget.components.networked && remoteHoverTarget.components.networked.data.template;
+  const isStaticControlledMedia = template && template === "#static-controlled-media";
+  const isStaticMedia = template && template === "#static-media";
+  return (
+    isInteractable &&
+    (isFrozen || !isPinned) &&
+    !isStaticControlledMedia &&
+    !isStaticMedia &&
+    (remoteHoverTarget && canMove(remoteHoverTarget))
+  );
 }
 
 export class AppAwareTouchscreenDevice {

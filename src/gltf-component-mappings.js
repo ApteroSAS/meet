@@ -1,11 +1,28 @@
 import "./components/gltf-model-plus";
 import { getSanitizedComponentMapping } from "./utils/component-mappings";
-import { isHubsDestinationUrl } from "./utils/media-url-utils";
 import { TYPE, SHAPE, FIT } from "three-ammo/constants";
 const COLLISION_LAYERS = require("./constants").COLLISION_LAYERS;
 
-AFRAME.GLTFModelPlus.registerComponent("duck", "duck");
-AFRAME.GLTFModelPlus.registerComponent("quack", "quack");
+function registerRootSceneComponent(componentName) {
+  AFRAME.GLTFModelPlus.registerComponent(componentName, componentName, (el, componentName, componentData) => {
+    const sceneEl = AFRAME.scenes[0];
+
+    sceneEl.setAttribute(componentName, componentData);
+
+    sceneEl.addEventListener(
+      "reset_scene",
+      () => {
+        sceneEl.removeAttribute(componentName);
+      },
+      { once: true }
+    );
+  });
+}
+
+registerRootSceneComponent("fog");
+registerRootSceneComponent("background");
+
+
 AFRAME.GLTFModelPlus.registerComponent("sound", "sound");
 AFRAME.GLTFModelPlus.registerComponent("css-class", "css-class");
 AFRAME.GLTFModelPlus.registerComponent("interactable", "css-class", (el, componentName) => {
@@ -47,15 +64,10 @@ AFRAME.GLTFModelPlus.registerComponent("light", "light", (el, componentName, com
 AFRAME.GLTFModelPlus.registerComponent("ambient-light", "ambient-light");
 AFRAME.GLTFModelPlus.registerComponent("directional-light", "directional-light");
 AFRAME.GLTFModelPlus.registerComponent("hemisphere-light", "hemisphere-light");
-function decayMigration(el, componentName, componentData) {
-  if (componentData.range === 0) {
-    componentData.decay = 0;
-  }
-  el.setAttribute(componentName, componentData);
-}
-AFRAME.GLTFModelPlus.registerComponent("point-light", "point-light", decayMigration);
-AFRAME.GLTFModelPlus.registerComponent("spot-light", "spot-light", decayMigration);
+AFRAME.GLTFModelPlus.registerComponent("point-light", "point-light");
+AFRAME.GLTFModelPlus.registerComponent("spot-light", "spot-light");
 
+AFRAME.GLTFModelPlus.registerComponent("simple-water", "simple-water");
 AFRAME.GLTFModelPlus.registerComponent("skybox", "skybox");
 AFRAME.GLTFModelPlus.registerComponent("layers", "layers");
 AFRAME.GLTFModelPlus.registerComponent("shadow", "shadow");
@@ -78,7 +90,7 @@ AFRAME.GLTFModelPlus.registerComponent(
         fit: FIT.MANUAL,
         offset: componentData.position,
         halfExtents: { x: scale.x / 2, y: scale.y / 2, z: scale.z / 2 },
-        orientation
+        orientation: { x: orientation.x, y: orientation.y, z: orientation.z, w: orientation.w }
       });
     };
   })()
@@ -90,7 +102,16 @@ AFRAME.GLTFModelPlus.registerComponent("visible", "visible", (el, componentName,
     el.setAttribute(componentName, componentData);
   }
 });
-AFRAME.GLTFModelPlus.registerComponent("spawn-point", "spawn-point");
+AFRAME.GLTFModelPlus.registerComponent("spawn-point", "spawn-point", el => {
+  el.setAttribute("waypoint", {
+    canBeSpawnPoint: true,
+    canBeOccupied: false,
+    canBeClicked: false,
+    willDisableMotion: false,
+    willDisableTeleporting: false,
+    willMaintainWorldUp: true
+  });
+});
 AFRAME.GLTFModelPlus.registerComponent("sticky-zone", "sticky-zone");
 AFRAME.GLTFModelPlus.registerComponent("nav-mesh", "nav-mesh", (el, _componentName, componentData) => {
   const nav = AFRAME.scenes[0].systems.nav;
@@ -109,6 +130,19 @@ AFRAME.GLTFModelPlus.registerComponent("nav-mesh", "nav-mesh", (el, _componentNa
 
 AFRAME.GLTFModelPlus.registerComponent("pinnable", "pinnable");
 
+AFRAME.GLTFModelPlus.registerComponent("waypoint", "waypoint", (el, componentName, componentData, components) => {
+  if (componentData.canBeOccupied) {
+    el.setAttribute("networked", {
+      template: "#template-waypoint-avatar",
+      attachTemplateToLocal: false,
+      owner: "scene",
+      persistent: true,
+      networkId: components.networked.id
+    });
+  }
+  el.setAttribute("waypoint", componentData);
+});
+
 AFRAME.GLTFModelPlus.registerComponent("media", "media", (el, componentName, componentData) => {
   if (componentData.id) {
     el.setAttribute("networked", {
@@ -119,14 +153,20 @@ AFRAME.GLTFModelPlus.registerComponent("media", "media", (el, componentName, com
     });
   }
 
-  el.setAttribute("media-loader", {
+  const mediaLoaderAttributes = {
     src: componentData.src,
-    resize: componentData.contentSubtype ? false : true,
+    fitToBox: componentData.contentSubtype ? false : true,
     resolve: true,
     fileIsOwned: true,
     animate: false,
     contentSubtype: componentData.contentSubtype
-  });
+  };
+
+  if (componentData.version) {
+    mediaLoaderAttributes.version = componentData.version;
+  }
+
+  el.setAttribute("media-loader", mediaLoaderAttributes);
 
   if (componentData.pageIndex) {
     el.setAttribute("media-pdf", { index: componentData.pageIndex });
@@ -142,15 +182,13 @@ AFRAME.GLTFModelPlus.registerComponent("media", "media", (el, componentName, com
   }
 });
 
-function mediaInflator(el, componentName, componentData, components) {
+async function mediaInflator(el, componentName, componentData, components) {
   let isControlled = true;
 
   if (components.networked) {
-    // TODO: When non-hubs links can be traversed, make all link components controlled so you can open them.
-    isControlled =
-      componentData.controls || isHubsDestinationUrl(componentData.src) || isHubsDestinationUrl(componentData.href);
+    isControlled = componentData.controls || componentName === "link";
 
-    const hasVolume = componentName === "video";
+    const hasVolume = componentName === "video" || componentName === "audio";
     const templateName = isControlled || hasVolume ? "#static-controlled-media" : "#static-media";
 
     el.setAttribute("networked", {
@@ -167,7 +205,7 @@ function mediaInflator(el, componentName, componentData, components) {
     mediaOptions.projection = componentData.projection;
   }
 
-  if (componentName === "video") {
+  if (componentName === "video" || componentName === "audio") {
     mediaOptions.videoPaused = !componentData.autoPlay;
     mediaOptions.volume = componentData.volume;
     mediaOptions.loop = componentData.loop;
@@ -191,7 +229,7 @@ function mediaInflator(el, componentName, componentData, components) {
 
   el.setAttribute("media-loader", {
     src,
-    resize: true,
+    fitToBox: true,
     resolve: true,
     fileIsOwned: true,
     animate: false,
@@ -200,6 +238,13 @@ function mediaInflator(el, componentName, componentData, components) {
 }
 
 AFRAME.GLTFModelPlus.registerComponent("image", "image", mediaInflator);
+AFRAME.GLTFModelPlus.registerComponent("audio", "audio", mediaInflator, (name, property, value) => {
+  if (property === "paused") {
+    return { name: "video-pause-state", property, value };
+  } else {
+    return null;
+  }
+});
 AFRAME.GLTFModelPlus.registerComponent("video", "video", mediaInflator, (name, property, value) => {
   if (property === "paused") {
     return { name: "video-pause-state", property, value };
@@ -219,7 +264,8 @@ AFRAME.GLTFModelPlus.registerComponent("spawner", "spawner", (el, componentName,
     src: componentData.src,
     resolve: true,
     fileIsOwned: true,
-    animate: false
+    animate: false,
+    moveTheParentNotTheMesh: true
   });
   el.setAttribute("css-class", "interactable");
   el.setAttribute("super-spawner", {
@@ -332,3 +378,7 @@ AFRAME.GLTFModelPlus.registerComponent("trimesh", "trimesh", el => {
 AFRAME.GLTFModelPlus.registerComponent("particle-emitter", "particle-emitter");
 
 AFRAME.GLTFModelPlus.registerComponent("networked-drawing-buffer", "networked-drawing-buffer");
+
+AFRAME.GLTFModelPlus.registerComponent("audio-settings", "audio-settings", (el, _componentName, componentData) => {
+  el.sceneEl.systems["hubs-systems"].audioSettingsSystem.updateAudioSettings(componentData);
+});

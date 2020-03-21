@@ -4,6 +4,7 @@ import makeRenderer from "./makeRenderer";
 import { loadGLTF } from "../../../components/gltf-model-plus";
 import { findNode } from "../../three-utils";
 import { createDefaultEnvironmentMap } from "../../../components/environment-map";
+import {properties} from "../../../properties";
 
 import axios from "axios";
 
@@ -21,16 +22,16 @@ export default class ThumbnailRenderer {
     this.available = false;
   }
 
-  getFreeRenderer(){
-    if(this.available){
+  getFreeRenderer() {
+    if (this.available) {
       return this.renderer;
-    }else{
+    } else {
       return makeRenderer(512, 512);
     }
   }
 
   fitBoxInFrustum(camera, box, center, margin = DEFAULT_MARGIN) {
-    const maxHalfExtents = Math.max(box.max.y - center.y, center.y - box.min.y,box.max.x - center.x, center.x - box.min.x,box.max.z - center.z, center.z - box.min.z);
+    const maxHalfExtents = Math.max(box.max.y - center.y, center.y - box.min.y, box.max.x - center.x, center.x - box.min.x, box.max.z - center.z, center.z - box.min.z);
     //const halfVertFOV = THREE.Math.degToRad(camera.fov / 2);
     //camera.position.set(0, 0, (halfYExtents / Math.tan(halfVertFOV)) * margin);
     camera.position.set(0, 0, maxHalfExtents * margin * 2);
@@ -39,14 +40,14 @@ export default class ThumbnailRenderer {
     camera.lookAt(center);
   }
 
-  generateThumbnailFromUrl (url) {
+  generateThumbnailFromUrl(url) {
     return new Promise((resolve, reject) => {
       const preferredTechnique = window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
       this.loadPreviewGLTF(url, "model/gltf", preferredTechnique, null, null).then(gltf => {
         console.log(gltf);
         this.generateThumbnail(gltf).then((blob) => {
           const reader = new FileReader();
-          reader.onload = function () {
+          reader.onload = function() {
             // Since it contains the Data URI, we should remove the prefix and keep only Base64 string
             const b64 = reader.result;
             console.log(b64);
@@ -60,22 +61,22 @@ export default class ThumbnailRenderer {
       }).catch(reason => {
         reject(reason);
       });
-    })
+    });
   }
 
 
   generateThumbnailFromUrlRemote = async (glbFileUrl) => {
     return new Promise((resolve, reject) => {
-      axios.post(process.env.RETICULUM_SERVER+"/thumbnail/compute/hash",{url:glbFileUrl}).then(data => {
+      axios.post(properties.PROTOCOL + properties.RETICULUM_SERVER + "/thumbnail/compute/hash", { url: glbFileUrl }).then(data => {
         const res = data.data;
         const hash = res.hash;
-        axios.post(process.env.RETICULUM_SERVER+"/thumbnail/get",{hash:hash}).then(data => {
+        axios.post(properties.PROTOCOL + properties.RETICULUM_SERVER + "/thumbnail/get", { hash: hash }).then(data => {
           const res = data.data;
           const imageUrl = res.url;
-          if(imageUrl&&imageUrl!=="NO_CACHE"){
+          if (imageUrl && imageUrl !== "NO_CACHE") {
             resolve(imageUrl);
-          }else{
-            axios.post(process.env.RETICULUM_SERVER+"/thumbnail/generate",{url:glbFileUrl}).then(data => {
+          } else {
+            axios.post(properties.PROTOCOL + properties.RETICULUM_SERVER + "/thumbnail/generate", { url: glbFileUrl }).then(data => {
               const res = data.data;
               const imageUrl = res.url;
               resolve(imageUrl);
@@ -89,12 +90,12 @@ export default class ThumbnailRenderer {
       }).catch(reason => {
         reject(reason);
       });
-    })
+    });
   };
 
   generateThumbnail = async (glb, width = 256, height = 256) => {
     const renderer = this.getFreeRenderer();
-    if(renderer===this.renderer) {
+    if (renderer === this.renderer) {
       this.available = false;
     }
     const scene = new Scene();
@@ -125,7 +126,7 @@ export default class ThumbnailRenderer {
 
     camera.layers.disable(1);
 
-    this.fitBoxInFrustum(camera, box, center,1.7);
+    this.fitBoxInFrustum(camera, box, center, 1.7);
     camera.updateMatrix();
     camera.updateMatrixWorld();
 
@@ -134,13 +135,13 @@ export default class ThumbnailRenderer {
 
     const blob = await getCanvasBlob(renderer.domElement);
 
-    if(renderer===this.renderer) {
+    if (renderer === this.renderer) {
       this.available = true;
     }
     return blob;
   };
 
-  async loadPreviewGLTF (gltfGltfUrl) {
+  async loadPreviewGLTF(gltfGltfUrl) {
     let gltf;
     try {
       const preferredTechnique = window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";

@@ -1,3 +1,7 @@
+import "./webxr-bypass-hacks";
+import "./utils/theme";
+import "./utils/configs";
+
 console.log(`Hubs version: ${process.env.BUILD_VERSION || "?"}`);
 
 import "./assets/stylesheets/scene.scss";
@@ -14,13 +18,15 @@ import "./components/scene-components";
 import "./components/debug";
 import "./systems/nav";
 
-import { getReticulumFetchUrl } from "./utils/phoenix-utils";
+import { connectToReticulum, fetchReticulumAuthenticated } from "./utils/phoenix-utils";
 
 import ReactDOM from "react-dom";
 import React from "react";
+import jwtDecode from "jwt-decode";
 import SceneUI from "./react-components/scene-ui";
 import { disableiOSZoom } from "./utils/disable-ios-zoom";
 
+import "./systems/scene-systems";
 import "./gltf-component-mappings";
 
 import { App } from "./App";
@@ -30,7 +36,7 @@ window.APP = new App();
 const qs = new URLSearchParams(location.search);
 const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
 
-window.APP.quality = qs.get("quality") || isMobile ? "low" : "high";
+window.APP.quality = window.APP.store.state.preferences.materialQualitySetting || isMobile ? "low" : "high";
 
 import "./components/event-repeater";
 
@@ -74,6 +80,26 @@ const onReady = async () => {
   const gltfEl = document.createElement("a-entity");
   const camera = document.getElementById("camera");
 
+  connectToReticulum().then(socket => {
+    const joinParams = { hub_id: "scene" };
+
+    if (window.APP.store.state.credentials && window.APP.store.state.credentials.token) {
+      joinParams.token = window.APP.store.state.credentials.token;
+    }
+
+    const retPhxChannel = socket.channel("ret", joinParams);
+
+    retPhxChannel.join().receive("ok", () => {
+      retPhxChannel.push("refresh_perms_token").receive("ok", ({ perms_token }) => {
+        const perms = jwtDecode(perms_token);
+        remountUI({ showCreateRoom: !!perms.create_hub });
+
+        retPhxChannel.leave();
+        socket.disconnect();
+      });
+    });
+  });
+
   sceneModelEntity.addEventListener("scene-loaded", () => {
     remountUI({ sceneLoaded: true });
     const previewCamera = gltfEl.object3D.getObjectByName("scene-preview-camera");
@@ -87,7 +113,7 @@ const onReady = async () => {
     camera.setAttribute("scene-preview-camera", "");
   });
 
-  const res = await fetch(getReticulumFetchUrl(`/api/v1/scenes/${sceneId}`)).then(r => r.json());
+  const res = await fetchReticulumAuthenticated(`/api/v1/scenes/${sceneId}`);
   const sceneInfo = res.scenes[0];
 
   // Delisted/Removed
@@ -110,11 +136,20 @@ const onReady = async () => {
   sceneModelEntity.appendChild(gltfEl);
   sceneRoot.appendChild(sceneModelEntity);
 
+  const parentScene =
+    sceneInfo.parent_scene_id &&
+    (await fetchReticulumAuthenticated(`/api/v1/scenes/${sceneInfo.parent_scene_id}`)).scenes[0];
+
   remountUI({
     sceneName: sceneInfo.name,
     sceneDescription: sceneInfo.description,
     sceneAttributions: sceneInfo.attributions,
-    sceneScreenshotURL: sceneInfo.screenshot_url
+    sceneScreenshotURL: sceneInfo.screenshot_url,
+    sceneId: sceneInfo.scene_id,
+    sceneProjectId: sceneInfo.project_id,
+    sceneAllowRemixing: sceneInfo.allow_remixing,
+    isOwner: sceneInfo.account_id && sceneInfo.account_id === window.APP.store.credentialsAccountId,
+    parentScene: parentScene
   });
 };
 

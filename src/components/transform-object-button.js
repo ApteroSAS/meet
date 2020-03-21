@@ -1,18 +1,15 @@
 import { paths } from "../systems/userinput/paths";
+import { waitForDOMContentLoaded } from "../utils/async-utils";
 const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
 const AMMO_BODY_ATTRIBUTES = { type: "kinematic", collisionFilterMask: COLLISION_LAYERS.HANDS };
 
-const TRANSFORM_MODE = {
+export const TRANSFORM_MODE = {
   AXIS: "axis",
   PUPPET: "puppet",
   CURSOR: "cursor",
   ALIGN: "align",
   SCALE: "scale"
 };
-
-const SCALE_SENSITIVITY = 100;
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 100;
 
 const STEP_LENGTH = Math.PI / 10;
 const CAMERA_WORLD_QUATERNION = new THREE.Quaternion();
@@ -43,9 +40,15 @@ AFRAME.registerComponent("transform-button", {
     NAF.utils.getNetworkedEntity(this.el).then(networkedEl => {
       this.targetEl = networkedEl;
     });
-    const rightHand = document.getElementById("player-right-controller");
-    const leftHand = document.getElementById("player-left-controller");
+    let leftHand, rightHand;
+
+    waitForDOMContentLoaded().then(() => {
+      leftHand = document.getElementById("player-left-controller");
+      rightHand = document.getElementById("player-right-controller");
+    });
     this.onGrabStart = e => {
+      if (!leftHand || !rightHand) return;
+
       if (!this.targetEl) {
         return;
       }
@@ -202,8 +205,6 @@ AFRAME.registerSystem("transform-selected-object", {
     if (this.mode === TRANSFORM_MODE.ALIGN) {
       this.store.update({ activity: { hasRecentered: true } });
       return;
-    } else if (this.mode === TRANSFORM_MODE.SCALE) {
-      this.store.update({ activity: { hasScaled: true } });
     } else {
       this.store.update({ activity: { hasRotated: true } });
     }
@@ -227,9 +228,6 @@ AFRAME.registerSystem("transform-selected-object", {
   },
 
   puppetingTick() {
-    // Find controller delta as a quaternion, then apply it to the object, snapping in fixed increments if desired:
-    // Snap to fixed angle increments by converting to an Euler,
-    // restricting the angles using Math.floor, and converting back to a quaternion.
     const {
       currentControllerOrientation,
       controllerOrientationDelta,
@@ -238,11 +236,13 @@ AFRAME.registerSystem("transform-selected-object", {
     } = this.puppet;
     this.hand.getWorldQuaternion(currentControllerOrientation);
     controllerOrientationDelta.copy(initialControllerOrientation_inverse).premultiply(currentControllerOrientation);
-    this.target.quaternion.copy(initialObjectOrientation).premultiply(controllerOrientationDelta);
+    this.target.quaternion
+      .copy(initialObjectOrientation)
+      .premultiply(controllerOrientationDelta)
+      .premultiply(controllerOrientationDelta);
     this.target.matrixNeedsUpdate = true;
   },
 
-  // TODO: stabilize scaling in VR. currently feels broken
   cursorAxisOrScaleTick() {
     const {
       plane,
@@ -278,7 +278,7 @@ AFRAME.registerSystem("transform-selected-object", {
       .projectOnPlane(normal)
       .applyQuaternion(q.copy(plane.quaternion).inverse())
       .multiplyScalar(SENSITIVITY / cameraToPlaneDistance);
-    if (this.mode === TRANSFORM_MODE.CURSOR || this.mode === TRANSFORM_MODE.SCALE) {
+    if (this.mode === TRANSFORM_MODE.CURSOR) {
       const modify = AFRAME.scenes[0].systems.userinput.get(paths.actions.transformModifier);
 
       this.dyAll = this.dyStore + finalProjectedVec.y;
@@ -302,15 +302,6 @@ AFRAME.registerSystem("transform-selected-object", {
         q2.setFromAxisAngle(v, this.dxApplied);
 
         this.target.quaternion.premultiply(q).premultiply(q2);
-      } else {
-        const scaleFactor =
-          THREE.Math.clamp(finalProjectedVec.y + finalProjectedVec.x, -0.0005, 0.0005) * SCALE_SENSITIVITY;
-
-        const newScale = this.target.scale.x * (1.0 + scaleFactor);
-
-        if (newScale > MIN_SCALE && newScale < MAX_SCALE) {
-          this.target.scale.multiplyScalar(1.0 + scaleFactor);
-        }
       }
 
       this.target.matrixNeedsUpdate = true;
@@ -329,6 +320,10 @@ AFRAME.registerSystem("transform-selected-object", {
   tick() {
     if (!this.transforming) {
       return;
+    }
+
+    if (this.mode === TRANSFORM_MODE.SCALE) {
+      return; // Taken care of by scale-button
     }
 
     if (this.mode === TRANSFORM_MODE.ALIGN) {
