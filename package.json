@@ -1,7 +1,7 @@
 {
-  "name": "hubs",
+  "name": "Aptero",
   "version": "0.0.1",
-  "description": "Duck-themed multi-user virtual spaces in WebVR.",
+  "description": "Aptero",
   "main": "src/index.js",
   "license": "MPL-2.0",
   "homepage": "https://github.com/mozilla/hubs#readme",

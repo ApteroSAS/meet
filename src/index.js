@@ -93,8 +93,8 @@ async function fetchFeaturedRooms() {
   const entries = [...publicRoomsResult.entries, ...favoriteRoomsResult.entries];
   entries.forEach(entry => {
     if (entry.type === "hub") {
-      entry.images.preview.url = process.env.RETICULUM_SERVER + "/assets/images/default-room.png";
-      if (window.location.href.startsWith(window.location.href.startsWith("https://localhost"))) {
+      entry.images.preview.url = configs.PROTOCOL+configs.RETICULUM_SERVER + "/assets/images/default-room.png";
+      if (window.location.href.startsWith("https://localhost")) {
         entry.url = "/hub.html?hub_id=" + entry.id;
       } else {
         entry.url = "/room/" + entry.id + "/" + entry.name;

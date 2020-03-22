@@ -23,8 +23,7 @@ import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
 import { getReticulumFetchUrl } from "../utils/phoenix-utils";
-import ThumbnailRenderer from "../utils/thumnail/thumbnail/ThumbnailRenderer";
-//import ThumbnailRenderer from "../utils/thumnail/thumbnail/ThumbnailRenderer";
+import RemoteThumbnailRenderer from "../utils/thumnail/thumbnail/RemoteThumbnailRenderer";
 
 dayjs.extend(relativeTime);
 
@@ -168,7 +167,7 @@ class MediaTiles extends Component {
 
     if (isModel) {
       if (!this.thumbnailRenderer) {
-        this.thumbnailRenderer = new ThumbnailRenderer();
+        this.thumbnailRenderer = new RemoteThumbnailRenderer();
       }
       if(!this.state.thumbnailInProgress[entry.url] && !this.state.thumbnailCache[entry.url]) {
         this.setState((prevState) => {
@@ -241,7 +240,7 @@ class MediaTiles extends Component {
               <FontAwesomeIcon icon={faPencilAlt} />
             </StateLink>
           )}
-          {entry.type === "avatar_listing" && (
+          {/*entry.type === "avatar_listing" && (
             <a
               onClick={e => {
                 e.preventDefault();
@@ -251,7 +250,7 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faSearch} />
             </a>
-          )}
+          )*/}
           {/*entry.type === "avatar_listing" &&
             entry.allow_remixing && (
               <a onClick={e => this.handleCopyAvatar(e, entry)} title="Copy to my avatars">

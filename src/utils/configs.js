@@ -3,6 +3,7 @@ import companyLogo from "../assets/images/company-logo.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
 import pdfjs from "pdfjs-dist";
 import { properties, registerProperties } from "../properties";
+
 registerProperties();
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
@@ -10,6 +11,7 @@ const configs = {};
 let isAdmin = false;
 
 [
+  "PROTOCOL",
   "RETICULUM_SERVER",
   "THUMBNAIL_SERVER",
   "CORS_PROXY_SERVER",
@@ -20,7 +22,7 @@ let isAdmin = false;
   "BASE_ASSETS_PATH"
 ].forEach(x => {
   const el = document.querySelector(`meta[name='env:${x.toLowerCase()}']`);
-  configs[x] = el ? el.getAttribute("content") : process.env[x]?process.env[x]:properties[x];
+  configs[x] = el ? el.getAttribute("content") : process.env[x] ? process.env[x] : properties[x];
 
   if (x === "BASE_ASSETS_PATH" && configs[x]) {
     // eslint-disable-next-line no-undef
@@ -54,7 +56,7 @@ if (window.APP_CONFIG) {
   }
 } else {
   configs.APP_CONFIG = {
-    features: (properties.APP_CONFIG && properties.APP_CONFIG.features)?properties.APP_CONFIG.features:{}
+    features: (properties.APP_CONFIG && properties.APP_CONFIG.features) ? properties.APP_CONFIG.features : {}
   };
 }
 
@@ -70,19 +72,16 @@ configs.feature = featureName => {
   }
 };
 
-let localDevImages = {};
-if (isLocalDevelopment) {
-  localDevImages = {
-    logo: appLogo,
-    company_logo: companyLogo,
-    editor_logo: sceneEditorLogo
-  };
-}
+const localImages = {
+  logo: appLogo,
+  company_logo: companyLogo,
+  editor_logo: sceneEditorLogo
+};
 
 configs.image = (imageName, cssUrl) => {
   const url =
     (configs.APP_CONFIG && configs.APP_CONFIG.images && configs.APP_CONFIG.images[imageName]) ||
-    localDevImages[imageName];
+    localImages[imageName];
   return url && cssUrl ? `url(${url})` : url;
 };
 

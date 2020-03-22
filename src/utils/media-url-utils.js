@@ -75,6 +75,7 @@ export const isNonCorsProxyDomain = hostname => {
 };
 
 export const proxiedUrlFor = url => {
+  if (url.startsWith("hubs:")) return url;
   if (url.startsWith("https:")) return url;
 
   // Skip known domains that do not require CORS proxying.
@@ -159,7 +160,7 @@ async function isHubsServer(url) {
 
 const hubsSceneRegex = /https?:\/\/[^/]+\/scenes\/(\w+)\/?\S*/;
 const hubsAvatarRegex = /https?:\/\/[^/]+\/avatars\/(?<id>\w+)\/?\S*/;
-const hubsRoomRegex = /(https?:\/\/)?[^/]+\/([a-zA-Z0-9]{7})\/?\S*/;
+const hubsRoomRegex = /(https?:\/\/)?[^/]+\/room\/([a-zA-Z0-9]{7})\/?\S*/;
 
 export const isLocalHubsUrl = async url =>
   (await isHubsServer(url)) && new URL(url).origin === document.location.origin;

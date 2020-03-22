@@ -1,5 +1,4 @@
 import { fetchReticulumAuthenticated } from "./phoenix-utils";
-import ducky from "../assets/models/DuckyMesh.glb";
 
 const names = [
   "Guest"
@@ -14,7 +13,7 @@ export function generateRandomName() {
 }
 
 export async function fetchRandomDefaultAvatarId() {
-  const defaultAvatarEndpoint = "/api/v1/media/search?filter=default&source=avatar_listings";
+  /*const defaultAvatarEndpoint = "/api/v1/media/search?filter=default&source=avatar_listings";
   const defaultAvatars = (await fetchReticulumAuthenticated(defaultAvatarEndpoint)).entries;
   if (defaultAvatars.length === 0) {
     // If reticulum doesn't return any default avatars, just default to the duck model. This should only happen
@@ -22,5 +21,6 @@ export async function fetchRandomDefaultAvatarId() {
     return new URL(ducky, location.href).href;
   }
   const avatarIds = defaultAvatars.map(avatar => avatar.id);
-  return chooseRandom(avatarIds);
+  return chooseRandom(avatarIds);*/
+  return "default";
 }

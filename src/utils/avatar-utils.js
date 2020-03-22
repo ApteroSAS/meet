@@ -1,5 +1,6 @@
 import { fetchReticulumAuthenticated } from "./phoenix-utils";
 import { proxiedUrlFor } from "./media-url-utils";
+import configs from "./configs";
 
 const AVATARS_API = "/api/v1/avatars";
 
@@ -22,13 +23,13 @@ export async function fetchAvatar(avatarId) {
   if(avatarId==="default"){
     return {
       avatar_id: avatarId,
-      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/A005/A005.glb"
+      gltf_url: configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/avatar/A005/A005.glb"
     }
   }
   if(avatarId.startsWith("A0")){
     return {
       avatar_id: avatarId,
-      gltf_url: process.env.RETICULUM_SERVER+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
+      gltf_url: configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
     }
   }
   switch (getAvatarType(avatarId)) {
@@ -62,7 +63,7 @@ export async function getAvatarThumbnailUrl(avatarId) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchAvatar(avatarId).then(avatar => avatar.files.thumbnail);
     default:
-      return process.env.RETICULUM_SERVER+"/bots/avatar_unavailable.png";
+      return configs.PROTOCOL+configs.RETICULUM_SERVER+"/bots/avatar_unavailable.png";
   }
 }
 

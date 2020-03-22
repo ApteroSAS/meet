@@ -6,7 +6,6 @@ dotenv.config({ path: ".env.defaults" });
 const fs = require("fs");
 const path = require("path");
 const selfsigned = require("selfsigned");
-const webpack = require("webpack");
 const cors = require("cors");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -60,7 +59,7 @@ function createHTTPSConfig() {
   }
 }
 
-const defaultHostName = "hubs.local";
+const defaultHostName = "localhost";
 const host = process.env.HOST_IP || defaultHostName;
 
 function matchRegex({ include, exclude }) {
@@ -101,8 +100,6 @@ module.exports = (env, argv) => ({
     scene: path.join(__dirname, "src", "scene.js"),
     avatar: path.join(__dirname, "src", "avatar.js"),
     link: path.join(__dirname, "src", "link.js"),
-    discord: path.join(__dirname, "src", "discord.js"),
-    "whats-new": path.join(__dirname, "src", "whats-new.js")
   },
   output: {
     filename: "assets/js/[name]-[chunkhash].js",

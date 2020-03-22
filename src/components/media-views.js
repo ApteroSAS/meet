@@ -15,7 +15,7 @@ import { applyPersistentSync } from "../utils/permissions-utils";
 import { refreshMediaMirror, getCurrentMirroredMedia } from "../utils/mirror-utils";
 
 // Using external CDN to reduce build size
-pdfjs.GlobalWorkerOptions.workerSrc = process.env.RETICULUM_SERVER+"/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
+pdfjs.GlobalWorkerOptions.workerSrc = configs.PROTOCOL+configs.RETICULUM_SERVER+"/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
 
 const ONCE_TRUE = { once: true };
 const TYPE_IMG_PNG = { type: "image/png" };

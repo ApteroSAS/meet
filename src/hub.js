@@ -386,7 +386,7 @@ async function updateEnvironmentForHub(hub, entryManager) {
   let environmentEl = null;
   if (sceneUrl.endsWith(".mp4")) {
     const mp4url = sceneUrl;
-    sceneUrl = process.env.RETICULUM_SERVER+"/data/data/VideoConf.glb";
+    sceneUrl = configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/data/VideoConf.glb";
 
     {
       //remove old element
@@ -769,7 +769,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     qs.get("hub_id") ||
     (document.location.pathname === "/" && defaultRoomId
       ? defaultRoomId
-      : document.location.pathname.substring(1).split("/")[0]);
+      : document.location.pathname.substring(1).split("/")[1]);//host/room/id/.*
   console.log(`Hub ID: ${hubId}`);
 
   if (!defaultRoomId) {
