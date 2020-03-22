@@ -99,7 +99,7 @@ module.exports = (env, argv) => ({
     hub: path.join(__dirname, "src", "hub.js"),
     scene: path.join(__dirname, "src", "scene.js"),
     avatar: path.join(__dirname, "src", "avatar.js"),
-    link: path.join(__dirname, "src", "link.js"),
+    link: path.join(__dirname, "src", "link.js")
   },
   output: {
     filename: "assets/js/[name]-[chunkhash].js",
@@ -314,12 +314,6 @@ module.exports = (env, argv) => ({
     }),
     new CopyWebpackPlugin([
       {
-        from: "src/assets/images/default_thumbnail.png",
-        to: "app-thumbnail.png"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
         from: "src/hub.service.js",
         to: "hub.service.js"
       }
@@ -330,7 +324,7 @@ module.exports = (env, argv) => ({
         to: "schema.toml"
       }
     ]),
-        new CopyWebpackPlugin([
+    new CopyWebpackPlugin([
       {
         from: "src/properties.js",
         to: "properties.js"
@@ -346,7 +340,7 @@ module.exports = (env, argv) => ({
     new MiniCssExtractPlugin({
       filename: "assets/stylesheets/[name]-[contenthash].css",
       disable: argv.mode !== "production"
-    }),
+    })
     // Define process.env variables in the browser context.
     /*new webpack.DefinePlugin({
       "process.env": JSON.stringify({
