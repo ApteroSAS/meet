@@ -1562,7 +1562,7 @@ class UIRoot extends Component {
       !this.props.store.state.activity.hasOpenedShare &&
       this.occupantCount() <= 1;
 
-    const showChooseSceneButton =
+    /*const showChooseSceneButton =
       !entered &&
       !embed &&
       !preload &&
@@ -1570,7 +1570,8 @@ class UIRoot extends Component {
       !showInviteTip &&
       !this.state.showShareDialog &&
       this.props.hubChannel &&
-      this.props.hubChannel.canOrWillIfCreator("update_hub");
+      this.props.hubChannel.canOrWillIfCreator("update_hub");*/
+    const showChooseSceneButton = false;
 
     const displayNameOverride = this.props.hubIsBound
       ? getPresenceProfileForSession(this.props.presences, this.props.sessionId).displayName
@@ -2097,7 +2098,7 @@ class UIRoot extends Component {
                   }}
                 />
                 {!watching && !streaming ? (
-                  <UnlessFeature name="show_feedback_ui">
+                  <div>{/*<UnlessFeature name="show_feedback_ui">
                     <div className={styles.nagCornerButton}>
                       <button onClick={() => this.pushHistoryState("modal", "help")} className={styles.helpButton}>
                         <i>
@@ -2105,7 +2106,7 @@ class UIRoot extends Component {
                         </i>
                       </button>
                     </div>
-                  </UnlessFeature>
+                  </UnlessFeature>*/}</div>
                 ) : (
                   <div className={styles.nagCornerButton}>
                     <button onClick={() => this.setState({ hide: true })}>
@@ -2117,8 +2118,10 @@ class UIRoot extends Component {
                   !streaming && (
                     <IfFeature name="show_feedback_ui">
                       <div className={styles.nagCornerButton}>
-                        <button onClick={() => this.pushHistoryState("modal", "feedback")}>
-                          <FormattedMessage id="feedback.prompt" />
+                        <button onClick={() => this.pushHistoryState("modal", "help")} className={styles.helpButton}>
+                          <i>
+                            <FontAwesomeIcon icon={faQuestion} />
+                          </i>
                         </button>
                       </div>
                     </IfFeature>

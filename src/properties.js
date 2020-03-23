@@ -24,16 +24,20 @@ export const properties = {
   // The root URL under which Hubs expects static assets to be served.
   BASE_ASSETS_PATH: "/",
 
-  //alpha
   DEFAULT_SCENE_SID:"h8xwUAc",
 
   APP_CONFIG: {
     features: {
-      hide_powered_by: true
+      hide_powered_by: true,
+      show_feedback_ui : false
+    },
+    theme:{
+      "dark-theme":true,
     }
   }
 
 };
+window.APP_CONFIG = properties.APP_CONFIG;
 
 export function registerProperties() {
   /*if(!process) {

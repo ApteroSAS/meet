@@ -71,7 +71,7 @@ AFRAME.registerComponent("in-world-hud", {
     };
 
     this.onQuitClick = () => {
-      window.location = window.location.origin;
+      this.el.sceneEl.emit("leave_room_requested");
     };
 
     this.onPlayClick = () => {

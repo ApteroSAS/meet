@@ -41,6 +41,7 @@ class InWorldChatBox extends Component {
     const pendingMessageTextareaHeight = textRows * 28 + "px";
     const pendingMessageFieldHeight = textRows * 28 + 20 + "px";
     const discordSnippet = this.props.discordBridges.map(ch => "#" + ch).join(", ");
+    const lightMode = true;
 
     return (
       <form onSubmit={this.sendMessage}>
@@ -65,7 +66,7 @@ class InWorldChatBox extends Component {
               }
             }}
           />
-          {this.props.enableSpawning && (
+          {(this.props.enableSpawning&&!lightMode) && (
             <label
               htmlFor="message-entry-media-input"
               title={"Upload"}
@@ -113,7 +114,7 @@ class InWorldChatBox extends Component {
             }}
             placeholder={this.props.discordBridges.length ? `Send to room and ${discordSnippet}...` : "Send to room..."}
           />
-          {this.props.enableSpawning && (
+          {(this.props.enableSpawning&&!lightMode) && (
             <InlineSVGButton
               title={"Create"}
               className={classNames([styles.messageEntrySpawn])}

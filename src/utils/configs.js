@@ -60,16 +60,9 @@ if (window.APP_CONFIG) {
   };
 }
 
-const isLocalDevelopment = process.env.NODE_ENV === "development";
-
 configs.feature = featureName => {
   const value = configs.APP_CONFIG.features[featureName];
-  if (typeof value === "boolean") {
-    const enableAll = isLocalDevelopment && !process.env.USE_FEATURE_CONFIG;
-    return enableAll || value;
-  } else {
-    return value;
-  }
+  return value;
 };
 
 const localImages = {

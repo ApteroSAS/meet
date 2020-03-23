@@ -574,13 +574,13 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
   // Handle request for user gesture
   scene.addEventListener("2d-interstitial-gesture-required", () => {
-    remountUI({
+    /*remountUI({
       showInterstitialPrompt: true,
       onInterstitialPromptClicked: () => {
         remountUI({ showInterstitialPrompt: false, onInterstitialPromptClicked: null });
         scene.emit("2d-interstitial-gesture-complete");
       }
-    });
+    });*/
   });
 
   const objectsScene = document.querySelector("#objects-scene");
@@ -1042,6 +1042,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   scene.addEventListener("leave_room_requested", () => {
     entryManager.exitScene("left");
+    window.location.href = window.location.origin;
     remountUI({ roomUnavailableReason: "left" });
   });
 
