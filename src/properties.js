@@ -32,7 +32,7 @@ export const properties = {
       show_feedback_ui : false
     },
     theme:{
-      "dark-theme":true,
+      "dark-theme":false,
     }
   }
 
