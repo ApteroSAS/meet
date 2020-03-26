@@ -229,7 +229,7 @@ class MediaTiles extends Component {
           {thumbnailElement}
         </a>
         <div className={styles.tileActions}>
-          {entry.type === "avatar" && (
+          {/*entry.type === "avatar" && (
             <StateLink
               stateKey="overlay"
               stateValue="avatar-editor"
@@ -239,7 +239,7 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faPencilAlt} />
             </StateLink>
-          )}
+          )*/}
           {/*entry.type === "avatar_listing" && (
             <a
               onClick={e => {
@@ -257,13 +257,13 @@ class MediaTiles extends Component {
                 <FontAwesomeIcon icon={faClone} />
               </a>
             )*/}
-          {entry.type === "scene_listing" &&
+          {/*entry.type === "scene_listing" &&
             entry.allow_remixing && (
               <a onClick={e => this.handleCopyScene(e, entry)} title="Copy to my scenes">
                 <FontAwesomeIcon icon={faClone} />
               </a>
-            )}
-          {entry.type === "scene" &&
+            )*/}
+          {/*entry.type === "scene" &&
             entry.project_id && (
               <a
                 target="_blank"
@@ -273,7 +273,7 @@ class MediaTiles extends Component {
               >
                 <FontAwesomeIcon icon={faPencilAlt} />
               </a>
-            )}
+            )*/}
           {entry.type === "room" &&
             this.props.handleEntryInfoClicked &&
             entry.description && (

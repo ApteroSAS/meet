@@ -20,18 +20,6 @@ async function fetchSkinnableAvatar(avatarId) {
 }
 
 export async function fetchAvatar(avatarId) {
-  if(avatarId==="default"){
-    return {
-      avatar_id: avatarId,
-      gltf_url: configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/avatar/A005/A005.glb"
-    }
-  }
-  if(avatarId.startsWith("A0")){
-    return {
-      avatar_id: avatarId,
-      gltf_url: configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/avatar/"+avatarId+"/"+avatarId+".glb"
-    }
-  }
   switch (getAvatarType(avatarId)) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchSkinnableAvatar(avatarId);
