@@ -15,7 +15,8 @@ export function showHoverEffect(el) {
 }
 
 export function canMove(entity) {
-  const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
+  return true;//we can always move items
+  /*const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
   const networkedTemplate = entity && entity.components.networked && entity.components.networked.data.template;
   const isCamera = networkedTemplate === "#interactable-camera";
   const isPen = networkedTemplate === "#interactable-pen";
@@ -32,7 +33,7 @@ export function canMove(entity) {
       (!isPinned || window.APP.hubChannel.can("pin_objects")) &&
       (!isCamera || window.APP.hubChannel.can("spawn_camera")) &&
       (!isPen || window.APP.hubChannel.can("spawn_drawing")))
-  );
+  );*/
 }
 
 function indexForComponent(component, schema) {

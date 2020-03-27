@@ -206,7 +206,7 @@ AFRAME.registerSystem("interaction", {
         if (
           isTagged(entity, "isHoldable") &&
           userinput.get(options.grabPath) &&
-          (isFrozen || !isPinned) &&
+          /*(isFrozen || !isPinned) &&*/
           canMove(entity)
         ) {
           state.held = entity;
