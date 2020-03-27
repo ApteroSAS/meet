@@ -32,7 +32,7 @@ function createRenderer(canvas, alpha = false, useDevicePixelRatio = true) {
     powerPreference: "default"
   });
 
-  const renderer = new THREE.WebGLRenderer({ alpha, canvas, context });
+  const renderer = new THREE.WebGLRenderer({ alpha, canvas, context, forceWebVR: true });
   renderer.gammaOutput = true;
   renderer.gammaFactor = 2.2;
   renderer.physicallyCorrectLights = true;
@@ -62,7 +62,8 @@ function fitBoxInFrustum(camera, box, center, margin = DEFAULT_MARGIN) {
 class AvatarPreview extends Component {
   static propTypes = {
     avatarGltfUrl: PropTypes.string,
-    className: PropTypes.string
+    className: PropTypes.string,
+    onGltfLoaded: PropTypes.func
   };
   constructor(props) {
     super(props);
@@ -83,6 +84,8 @@ class AvatarPreview extends Component {
     this.scene.add(light);
     this.scene.add(new THREE.HemisphereLight(0xb1e3ff, 0xb1e3ff, 2.5));
 
+    this.loadId = 0;
+
     this.camera.position.set(-0.2, 0.5, 0.5);
     this.camera.matrixAutoUpdate = true;
 
@@ -90,7 +93,7 @@ class AvatarPreview extends Component {
     this.controls.update();
 
     if (this.props.avatarGltfUrl) {
-      this.loadPreviewAvatar(this.props.avatarGltfUrl).then(this.setAvatar);
+      this.loadCurrentAvatarGltfUrl();
     }
 
     const clock = new THREE.Clock();
@@ -179,11 +182,20 @@ class AvatarPreview extends Component {
       }
       if (this.props.avatarGltfUrl) {
         this.setState({ error: null, loading: true });
-        await this.loadPreviewAvatar(this.props.avatarGltfUrl).then(this.setAvatar);
+        await this.loadCurrentAvatarGltfUrl();
       }
     }
     this.applyMaps(oldProps, this.props);
   };
+
+  async loadCurrentAvatarGltfUrl() {
+    const newLoadId = ++this.loadId;
+    const gltf = await this.loadPreviewAvatar(this.props.avatarGltfUrl);
+    // If we had started loading another avatar while we were loading this one, throw this one away
+    if (newLoadId !== this.loadId) return;
+    if (gltf && this.props.onGltfLoaded) this.props.onGltfLoaded(gltf);
+    this.setAvatar(gltf.scene);
+  }
 
   applyMaps(oldProps, newProps) {
     return Promise.all(
@@ -258,7 +270,7 @@ class AvatarPreview extends Component {
       this.originalMaps = {};
     }
 
-    return gltf.scene;
+    return gltf;
   };
 
   applyMapToPreview = (name, image) => {
