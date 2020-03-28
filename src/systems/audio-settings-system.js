@@ -9,10 +9,12 @@ function updateMediaAudioSettings(audio, settings) {
 }
 
 function updateAvatarAudioSettings(audio, settings) {
-  audio.setDistanceModel(settings.avatarDistanceModel);
-  audio.setRolloffFactor(settings.avatarRolloffFactor);
-  audio.setRefDistance(settings.avatarRefDistance);
-  audio.setMaxDistance(settings.avatarMaxDistance);
+  if(audio.setDistanceModel) {
+    audio.setDistanceModel(settings.avatarDistanceModel);
+    audio.setRolloffFactor(settings.avatarRolloffFactor);
+    audio.setRefDistance(settings.avatarRefDistance);
+    audio.setMaxDistance(settings.avatarMaxDistance);
+  }
 }
 
 export class AudioSettingsSystem {

@@ -10,7 +10,7 @@ self.addEventListener("fetch", function() {});
 
 // Reticulum will inject an overrided app name.
 // eslint-disable-next-line prefer-const
-let appFullName = "ApteroHub";
+let appFullName = "Aptero";
 
 // DO NOT REMOVE/EDIT THIS COMMENT - META_TAGS
 
