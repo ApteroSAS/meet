@@ -336,6 +336,12 @@ module.exports = (env, argv) => ({
         to: "manifest.webmanifest"
       }
     ]),
+    new CopyWebpackPlugin([
+      {
+        from: "src/workers/pdfjs-dist@2.1.266/build/pdf.worker.js",
+        to: "workers/pdfjs-dist@2.1.266/build/pdf.worker.js"
+      }
+    ]),
     // Extract required css and add a content hash.
     new MiniCssExtractPlugin({
       filename: "assets/stylesheets/[name]-[contenthash].css",
