@@ -9,6 +9,7 @@ import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { disposeNode, cloneObject3D } from "../utils/three-utils";
 import ImprovedStandardMaterial from "../materials/ImprovedStandardMaterial";
 import StandardMaterial from "../materials/StandardMaterial";
+import ImprovedMobileStandardMaterial from "../materials/ImprovedMobileStandardMaterial";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -381,16 +382,12 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
     object.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 
     object.material = mapMaterials(object, material => {
-      /*if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
-        return MobileStandardMaterial.fromStandardMaterial(material);
-      }*/
-
-      //return material;
-      if (material.name.startsWith("PBR_")) {
+      if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
+        return ImprovedMobileStandardMaterial.fromStandardMaterial(material);
+      } else if (material.name.startsWith("PBR_")) {
         return ImprovedStandardMaterial.fromStandardMaterial(material);
       } else {
-        console.log("load material standard");
-        return StandardMaterial.fromStandardMaterial(material);
+        return material;
       }
     });
   });
