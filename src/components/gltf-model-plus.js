@@ -325,7 +325,7 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
   const loadingManager = new THREE.LoadingManager();
   loadingManager.setURLModifier(getCustomGLTFParserURLResolver(gltfUrl));
   const gltfLoader = new THREE.GLTFLoader(loadingManager);
-  gltfLoader.setBasisTextureLoader(basisTextureLoader);
+  //gltfLoader.setBasisTextureLoader(basisTextureLoader);
 
   const parser = await new Promise((resolve, reject) => gltfLoader.createParser(gltfUrl, resolve, onProgress, reject));
 
