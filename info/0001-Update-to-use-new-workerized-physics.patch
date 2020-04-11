@@ -1,0 +1,801 @@
+From 80451a1981670e56e58725e4b14f518e17390921 Mon Sep 17 00:00:00 2001
+From: Kevin Lee <kevin@infinite-lee.com>
+Date: Thu, 27 Feb 2020 14:56:02 -0800
+Subject: [PATCH] Update to use new workerized physics
+
+---
+ package-lock.json                    |   8 +-
+ src/components/body-helper.js        |  20 +-
+ src/components/drop-object-button.js |   6 +-
+ src/components/emoji.js              |  14 +-
+ src/components/floaty-object.js      |  13 +-
+ src/components/shape-helper.js       |  25 +--
+ src/components/super-spawner.js      |   7 +-
+ src/gltf-component-mappings.js       |   2 +-
+ src/hub.html                         |   1 -
+ src/systems/constraints-system.js    |  28 ++-
+ src/systems/interactions.js          |  27 ++-
+ src/systems/physics-system.js        | 312 ++++++++++++++++++++++-----
+ 12 files changed, 331 insertions(+), 132 deletions(-)
+
+diff --git a/package-lock.json b/package-lock.json
+index 4371d130..cc048886 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -3280,11 +3280,11 @@
+       "integrity": "sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU="
+     },
+     "ammo-debug-drawer": {
+-      "version": "github:infinitelee/ammo-debug-drawer#0b2c323ef65b4fd414235b6a5e705cfc1201c765",
++      "version": "github:infinitelee/ammo-debug-drawer#561fd698109e61456f34136a53dd08b45d4ad9ca",
+       "from": "github:infinitelee/ammo-debug-drawer"
+     },
+     "ammo.js": {
+-      "version": "github:mozillareality/ammo.js#728594b744e5c0b5c2c8a6a602c20a89bfc64de2",
++      "version": "github:mozillareality/ammo.js#a38109e87e300c820da14c9615be379caf03d77a",
+       "from": "github:mozillareality/ammo.js#hubs/master"
+     },
+     "an-array": {
+@@ -16879,7 +16879,7 @@
+       "from": "github:mozillareality/three.js#hubs/master"
+     },
+     "three-ammo": {
+-      "version": "github:infinitelee/three-ammo#fe57353506b79627a5b2e9b0feba4a2fe52b745c",
++      "version": "github:infinitelee/three-ammo#105195029314bff7dc04e10025e9e0bf00f536a7",
+       "from": "github:infinitelee/three-ammo#master"
+     },
+     "three-bmfont-text": {
+@@ -16914,7 +16914,7 @@
+       "from": "github:MozillaReality/three-pathfinding#hubs/master2"
+     },
+     "three-to-ammo": {
+-      "version": "github:infinitelee/three-to-ammo#fd60a47f9c5c02eb1406450b01e187fd3c78d991",
++      "version": "github:infinitelee/three-to-ammo#92fd0e8300e693d4d48a603a8c446e520f9568ab",
+       "from": "github:infinitelee/three-to-ammo"
+     },
+     "through": {
+diff --git a/src/components/body-helper.js b/src/components/body-helper.js
+index 952e74d4..50c98855 100644
+--- a/src/components/body-helper.js
++++ b/src/components/body-helper.js
+@@ -1,5 +1,6 @@
+-import { Body } from "three-ammo";
+-import { ACTIVATION_STATE, TYPE } from "three-ammo/constants";
++import { CONSTANTS } from "three-ammo";
++const ACTIVATION_STATE = CONSTANTS.ACTIVATION_STATE,
++  TYPE = CONSTANTS.TYPE;
+ 
+ const ACTIVATION_STATES = [
+   ACTIVATION_STATE.ACTIVE_TAG,
+@@ -34,25 +35,24 @@ AFRAME.registerComponent("body-helper", {
+   init: function() {
+     this.system = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+     this.alive = true;
++    this.uuid = -1;
+     this.system.registerBodyHelper(this);
+   },
+ 
+   init2: function() {
+-    this.body = new Body(this.data, this.el.object3D, this.system.world);
+-    this.system.addBody(this.body);
++    this.el.object3D.updateMatrices();
++    this.uuid = this.system.addBody(this.el.object3D, this.data);
+   },
+ 
+   update: function(prevData) {
+-    if (prevData !== null && this.body) {
+-      this.body.update(this.data);
++    if (prevData !== null && this.uuid !== -1) {
++      this.system.updateBody(this.uuid, this.data);
+     }
+   },
+ 
+   remove: function() {
+-    if (this.body) {
+-      this.system.removeBody(this.body);
+-      this.body.destroy();
+-      this.body = null;
++    if (this.uuid !== -1) {
++      this.system.removeBody(this.uuid);
+     }
+     this.alive = false;
+   }
+diff --git a/src/components/drop-object-button.js b/src/components/drop-object-button.js
+index 1ecd9e38..11d3ca3b 100644
+--- a/src/components/drop-object-button.js
++++ b/src/components/drop-object-button.js
+@@ -15,8 +15,10 @@ AFRAME.registerComponent("drop-object-button", {
+         angularSleepingThreshold: 2.5,
+         collisionFilterMask: COLLISION_LAYERS.DEFAULT_INTERACTABLE
+       });
+-      if (this.targetEl.components["body-helper"].body) {
+-        this.targetEl.components["body-helper"].body.physicsBody.activate();
++
++      const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
++      if (this.targetEl.components["body-helper"].uuid) {
++        physicsSystem.activateBody(this.targetEl.components["body-helper"].uuid);
+       }
+ 
+       // Remove drop button after using it
+diff --git a/src/components/emoji.js b/src/components/emoji.js
+index ae25c595..69c415d0 100644
+--- a/src/components/emoji.js
++++ b/src/components/emoji.js
+@@ -16,11 +16,13 @@ AFRAME.registerComponent("emoji", {
+ 
+   init() {
+     this.data.emitEndTime = performance.now() + this.data.emitDecayTime * 1000;
++    this.physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+   },
+ 
+   play() {
+-    this.lastLinearVelocity = this.el.components["body-helper"].body.physicsBody.getLinearVelocity().length2();
+-    this.lastAngularVelocity = this.el.components["body-helper"].body.physicsBody.getAngularVelocity().length2();
++    const uuid = this.el.components["body-helper"].uuid;
++    this.lastLinearVelocity = this.physicsSystem.getLinearVelocity(uuid);
++    this.lastAngularVelocity = this.physicsSystem.getAngularVelocity(uuid);
+     this.el.sceneEl.systems["hubs-systems"].soundEffectsSystem.playPositionalSoundFollowing(
+       SOUND_SPAWN_EMOJI,
+       this.el.object3D
+@@ -41,15 +43,17 @@ AFRAME.registerComponent("emoji", {
+     if (this.particleConfig && isMine) {
+       const now = performance.now();
+ 
+-      const linearVelocity = this.el.components["body-helper"].body.physicsBody.getLinearVelocity().length2();
++      const uuid = this.el.components["body-helper"].uuid;
++
++      const linearVelocity = this.physicsSystem.getLinearVelocity(uuid);
+       const linearAcceleration = ((linearVelocity - this.lastLinearVelocity) / dt) * 1000;
+       this.lastLinearVelocity = linearVelocity;
+ 
+-      const angularVelocity = this.el.components["body-helper"].body.physicsBody.getAngularVelocity().length2();
++      const angularVelocity = this.physicsSystem.getAngularVelocity(uuid);
+       const angularAcceleration = ((angularVelocity - this.lastAngularVelocity) / dt) * 1000;
+       this.lastAngularVelocity = angularVelocity;
+ 
+-      if (Math.abs(linearAcceleration) > 10000 || Math.abs(angularAcceleration) > 10000) {
++      if (Math.abs(linearAcceleration) > 33 || Math.abs(angularAcceleration) > 33) {
+         this.data.emitEndTime = now + this.data.emitDecayTime * 1000;
+       }
+ 
+diff --git a/src/components/floaty-object.js b/src/components/floaty-object.js
+index c08d89cd..a3539a1a 100644
+--- a/src/components/floaty-object.js
++++ b/src/components/floaty-object.js
+@@ -26,6 +26,7 @@ AFRAME.registerComponent("floaty-object", {
+   init() {
+     this.onGrab = this.onGrab.bind(this);
+     this.onRelease = this.onRelease.bind(this);
++    this.physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+   },
+ 
+   tick() {
+@@ -46,10 +47,11 @@ AFRAME.registerComponent("floaty-object", {
+       const isMine = this.el.components.networked && NAF.utils.isMine(this.el);
+       const linearThreshold = this.bodyHelper.data.linearSleepingThreshold;
+       const angularThreshold = this.bodyHelper.data.angularSleepingThreshold;
++      const uuid = this.bodyHelper.uuid;
+       const isAtRest =
+-        this.bodyHelper.body &&
+-        this.bodyHelper.body.physicsBody.getLinearVelocity().length2() < linearThreshold * linearThreshold &&
+-        this.bodyHelper.body.physicsBody.getAngularVelocity().length2() < angularThreshold * angularThreshold;
++        this.physicsSystem.bodyInitialized(uuid) &&
++        this.physicsSystem.getLinearVelocity(uuid) < linearThreshold &&
++        this.physicsSystem.getAngularVelocity(uuid) < angularThreshold;
+ 
+       if (isAtRest && isMine) {
+         this.el.setAttribute("body-helper", { type: "kinematic" });
+@@ -84,10 +86,11 @@ AFRAME.registerComponent("floaty-object", {
+ 
+   onRelease() {
+     if (this.data.modifyGravityOnRelease) {
++      const uuid = this.bodyHelper.uuid;
+       if (
+         this.data.gravitySpeedLimit === 0 ||
+-        (this.bodyHelper.body &&
+-          this.bodyHelper.body.getVelocity().length2() < this.data.gravitySpeedLimit * this.data.gravitySpeedLimit)
++        (this.physicsSystem.bodyInitialized(uuid) &&
++          this.physicsSystem.getLinearVelocity(uuid) < this.data.gravitySpeedLimit)
+       ) {
+         this.el.setAttribute("body-helper", {
+           gravity: { x: 0, y: 0, z: 0 },
+diff --git a/src/components/shape-helper.js b/src/components/shape-helper.js
+index 39de8b05..60385bb4 100644
+--- a/src/components/shape-helper.js
++++ b/src/components/shape-helper.js
+@@ -1,5 +1,3 @@
+-/* global Ammo */
+-import * as threeToAmmo from "three-to-ammo";
+ import { SHAPE, FIT } from "three-ammo/constants";
+ 
+ AFRAME.registerComponent("shape-helper", {
+@@ -38,6 +36,7 @@ AFRAME.registerComponent("shape-helper", {
+   init: function() {
+     this.system = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+     this.alive = true;
++    this.uuid = -1;
+     this.system.registerShapeHelper(this);
+   },
+ 
+@@ -52,36 +51,26 @@ AFRAME.registerComponent("shape-helper", {
+         this.bodyHelper = bodyEl.components["body-helper"];
+       }
+     }
+-    if (!this.bodyHelper || !this.bodyHelper.body) {
++    if (!this.bodyHelper || this.bodyHelper.uuid === null || this.bodyHelper.uuid === undefined) {
+       console.warn("body not found");
+       return;
+     }
+-    if (this.data.fit !== FIT.MANUAL) {
++    if (this.data.fit === FIT.ALL) {
+       if (!this.el.object3DMap.mesh) {
+         console.error("Cannot use FIT.ALL without object3DMap.mesh");
+         return;
+       }
+       this.mesh = this.el.object3DMap.mesh;
+-      this.mesh.updateMatrices();
++      this.mesh.updateMatrices(true, true);
+     }
+ 
+-    this.shapes = threeToAmmo.createCollisionShapes(this.mesh, this.data);
+-    for (let i = 0; i < this.shapes.length; i++) {
+-      this.bodyHelper.body.addShape(this.shapes[i]);
+-    }
++    this.uuid = this.system.addShapes(this.bodyHelper.uuid, this.mesh, this.data);
+   },
+ 
+   remove: function() {
+-    if (this.shapes) {
+-      for (let i = 0; i < this.shapes.length; i++) {
+-        if (this.bodyHelper.body) {
+-          this.bodyHelper.body.removeShape(this.shapes[i]);
+-        }
+-        this.shapes[i].destroy();
+-        Ammo.destroy(this.shapes[i].localTransform);
+-      }
++    if (this.uuid !== -1) {
++      this.system.removeShapes(this.bodyHelper.uuid, this.uuid);
+     }
+-    this.shapes = null;
+     this.alive = false;
+   }
+ });
+diff --git a/src/components/super-spawner.js b/src/components/super-spawner.js
+index e38c8558..3990ff51 100644
+--- a/src/components/super-spawner.js
++++ b/src/components/super-spawner.js
+@@ -77,6 +77,8 @@ AFRAME.registerComponent("super-spawner", {
+     this.handleMediaLoaded = this.handleMediaLoaded.bind(this);
+ 
+     this.spawnedMediaScale = null;
++
++    this.physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+   },
+ 
+   play() {
+@@ -187,9 +189,8 @@ AFRAME.registerComponent("super-spawner", {
+         interaction.state.rightRemote.spawning = false;
+       }
+     }
+-    if (spawnedEntity.components["body-helper"].body) {
+-      spawnedEntity.components["body-helper"].body.syncToPhysics(true);
+-    }
++
++    this.physicsSystem.resetDynamicBody(spawnedEntity.components["body-helper"].uuid);
+ 
+     spawnedEntity.addEventListener(
+       "media-loaded",
+diff --git a/src/gltf-component-mappings.js b/src/gltf-component-mappings.js
+index 9fdedd9b..5807e7a1 100644
+--- a/src/gltf-component-mappings.js
++++ b/src/gltf-component-mappings.js
+@@ -91,7 +91,7 @@ AFRAME.GLTFModelPlus.registerComponent(
+         fit: FIT.MANUAL,
+         offset: componentData.position,
+         halfExtents: { x: scale.x / 2, y: scale.y / 2, z: scale.z / 2 },
+-        orientation
++        orientation: { x: orientation.x, y: orientation.y, z: orientation.z, w: orientation.w }
+       });
+     };
+   })()
+diff --git a/src/hub.html b/src/hub.html
+index 261cd567..dc2fb757 100644
+--- a/src/hub.html
++++ b/src/hub.html
+@@ -29,7 +29,6 @@
+ <body>
+     <a-scene
+         loading-screen="enabled: false"
+-        physics="debug: false; driver: ammo; debugDrawMode: 1; iterations: 4;"
+         hubs-systems
+         capture-system
+         listed-media
+diff --git a/src/systems/constraints-system.js b/src/systems/constraints-system.js
+index e31516ce..2dd6f6c1 100644
+--- a/src/systems/constraints-system.js
++++ b/src/systems/constraints-system.js
+@@ -1,8 +1,6 @@
+ /* global NAF AFRAME */
+-import { Constraint } from "three-ammo";
+-import { ACTIVATION_STATE } from "three-ammo/constants.js";
+-
+-const CONSTRAINT_CONFIG = {};
++import { CONSTANTS } from "three-ammo";
++const ACTIVATION_STATE = CONSTANTS.ACTIVATION_STATE;
+ 
+ export class ConstraintsSystem {
+   constructor(physicsSystem) {
+@@ -24,12 +22,11 @@ export class ConstraintsSystem {
+     };
+ 
+     this.physicsSystem = physicsSystem;
+-    this.constraints = {};
+     this.constraintPairs = {};
+   }
+ 
+   tickInteractor(constraintTag, entityId, state, prevState) {
+-    if (!this.physicsSystem.world) return;
++    if (!this.physicsSystem) return;
+ 
+     if (prevState.held === state.held) {
+       if (
+@@ -44,11 +41,11 @@ export class ConstraintsSystem {
+           activationState: ACTIVATION_STATE.DISABLE_DEACTIVATION
+         });
+         const heldEntityId = state.held.id;
+-        const body = state.held.components["body-helper"].body;
++        const bodyUuid = state.held.components["body-helper"].uuid;
+         const targetEl = document.querySelector(`#${entityId}`);
+-        const targetBody = targetEl.components["body-helper"].body;
+-        if (targetBody && targetBody.physicsBody) {
+-          this.constraints[entityId] = new Constraint({}, body, targetBody, this.physicsSystem.world);
++        const targetUuid = targetEl.components["body-helper"].uuid;
++        if (bodyUuid !== -1 && targetUuid !== -1) {
++          this.physicsSystem.addConstraint(entityId, bodyUuid, targetUuid, {});
+           if (!this.constraintPairs[heldEntityId]) {
+             this.constraintPairs[heldEntityId] = [];
+           }
+@@ -64,8 +61,7 @@ export class ConstraintsSystem {
+         if (this.constraintPairs[heldEntityId].length === 0) {
+           delete this.constraintPairs[heldEntityId];
+         }
+-        this.constraints[entityId].destroy();
+-        delete this.constraints[entityId];
++        this.physicsSystem.removeConstraint(entityId);
+       }
+ 
+       if (!this.constraintPairs[heldEntityId] || this.constraintPairs[heldEntityId].length < 1) {
+@@ -79,11 +75,11 @@ export class ConstraintsSystem {
+           activationState: ACTIVATION_STATE.DISABLE_DEACTIVATION
+         });
+         const heldEntityId = state.held.id;
+-        const body = state.held.components["body-helper"].body;
++        const bodyUuid = state.held.components["body-helper"].uuid;
+         const targetEl = document.querySelector(`#${entityId}`);
+-        const targetBody = targetEl.components["body-helper"].body;
+-        if (targetBody && targetBody.physicsBody) {
+-          this.constraints[entityId] = new Constraint(CONSTRAINT_CONFIG, body, targetBody, this.physicsSystem.world);
++        const targetUuid = targetEl.components["body-helper"].uuid;
++        if (bodyUuid !== -1 && targetUuid !== -1) {
++          this.physicsSystem.addConstraint(entityId, bodyUuid, targetUuid, {});
+           if (!this.constraintPairs[heldEntityId]) {
+             this.constraintPairs[heldEntityId] = [];
+           }
+diff --git a/src/systems/interactions.js b/src/systems/interactions.js
+index f2d376fc..ec61aecd 100644
+--- a/src/systems/interactions.js
++++ b/src/systems/interactions.js
+@@ -1,21 +1,18 @@
+-/* global AFRAME Ammo NAF */
++/* global AFRAME NAF */
+ import { paths } from "./userinput/paths";
+ import { waitForDOMContentLoaded } from "../utils/async-utils";
+ import { canMove } from "../utils/permissions-utils";
+ import { isTagged } from "../components/tags";
+ 
+-function findHandCollisionTargetForHand(body) {
+-  const world = this.el.sceneEl.systems["hubs-systems"].physicsSystem.world;
+-
+-  if (world) {
+-    const handPtr = Ammo.getPointer(body.physicsBody);
+-    const handCollisions = world.collisions.get(handPtr);
+-    if (handCollisions) {
+-      for (let i = 0; i < handCollisions.length; i++) {
+-        const object3D = world.object3Ds.get(handCollisions[i]);
+-        if (isTagged(object3D.el, "isHandCollisionTarget")) {
+-          return object3D.el;
+-        }
++function findHandCollisionTargetForHand(bodyHelper) {
++  const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
++
++  const handCollisions = physicsSystem.collisions[bodyHelper.uuid];
++  if (handCollisions) {
++    for (let i = 0; i < handCollisions.length; i++) {
++      const object3D = physicsSystem.object3Ds[handCollisions[i]];
++      if (isTagged(object3D.el, "isHandCollisionTarget")) {
++        return object3D.el;
+       }
+     }
+   }
+@@ -198,8 +195,8 @@ AFRAME.registerSystem("interaction", {
+     } else {
+       state.hovered = options.hoverFn.call(
+         this,
+-        options.entity.components["body-helper"] && options.entity.components["body-helper"].body
+-          ? options.entity.components["body-helper"].body
++        options.entity.components["body-helper"] && options.entity.components["body-helper"]
++          ? options.entity.components["body-helper"]
+           : null
+       );
+       if (state.hovered) {
+diff --git a/src/systems/physics-system.js b/src/systems/physics-system.js
+index 39507b69..3135faa0 100644
+--- a/src/systems/physics-system.js
++++ b/src/systems/physics-system.js
+@@ -1,92 +1,280 @@
+-import { World } from "three-ammo";
+-import { TYPE } from "three-ammo/constants";
++import { AmmoWorker, WorkerHelpers, CONSTANTS } from "three-ammo";
++import { AmmoDebugConstants, DefaultBufferSize } from "ammo-debug-drawer";
++
++const MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES,
++  TYPE = CONSTANTS.TYPE,
++  BUFFER_CONFIG = CONSTANTS.BUFFER_CONFIG;
+ 
+ const WORLD_CONFIG = {
+-  debugDrawMode: THREE.AmmoDebugConstants.DrawWireframe,
++  debugDrawMode: AmmoDebugConstants.DrawWireframe,
+   gravity: { x: 0, y: -9.8, z: 0 }
+ };
+ 
+ export class PhysicsSystem {
+   constructor(scene) {
+-    const Ammo = require("ammo.js/builds/ammo.wasm.js");
+-    const AmmoWasm = require("ammo.js/builds/ammo.wasm.wasm");
+-    const AmmoModule = Ammo.bind(undefined, {
+-      locateFile(path) {
+-        if (path.endsWith(".wasm")) {
+-          return AmmoWasm;
+-        }
+-        return path;
+-      }
+-    });
++    this.ammoWorker = new AmmoWorker();
++    this.workerHelpers = new WorkerHelpers(this.ammoWorker);
+ 
+-    this.bodies = [];
+     this.bodyHelpers = [];
+     this.shapeHelpers = [];
+ 
++    this.bodyUuids = [];
++    this.uuidToIndex = {};
++    this.indexToUuid = {};
++    this.object3Ds = {};
++    window.object3Ds = this.object3Ds;
++    this.bodyOptions = {};
++    this.bodyLinearVelocities = {};
++    this.bodyAngularVelocities = {};
++
++    this.shapeUuids = [];
++    this.shapes = {};
++
++    this.collisions = {};
++
++    this.constraints = {};
++
+     this.debugRequested = false;
+     this.debugEnabled = false;
+     this.scene = scene;
+     this.stepDuration = 0;
+ 
+-    AmmoModule().then(() => {
+-      this.world = new World(WORLD_CONFIG);
++    this.ready = false;
++    this.nextBodyUuid = 0;
++    this.nextShapeUuid = 0;
+ 
+-      for (const bodyHelper of this.bodyHelpers) {
+-        if (bodyHelper.alive) bodyHelper.init2();
+-      }
+-      for (const shapeHelper of this.shapeHelpers) {
+-        if (shapeHelper.alive) shapeHelper.init2();
++    const arrayBuffer = new ArrayBuffer(4 * BUFFER_CONFIG.BODY_DATA_SIZE * BUFFER_CONFIG.MAX_BODIES);
++    this.objectMatricesFloatArray = new Float32Array(arrayBuffer);
++    this.objectMatricesIntArray = new Int32Array(arrayBuffer);
++
++    this.ammoWorker.postMessage(
++      {
++        type: MESSAGE_TYPES.INIT,
++        worldConfig: WORLD_CONFIG,
++        arrayBuffer
++      },
++      [arrayBuffer]
++    );
++
++    this.ammoWorker.onmessage = async event => {
++      if (event.data.type === MESSAGE_TYPES.READY) {
++        this.ready = true;
++        for (const bodyHelper of this.bodyHelpers) {
++          if (bodyHelper.alive) bodyHelper.init2();
++        }
++        for (const shapeHelper of this.shapeHelpers) {
++          if (shapeHelper.alive) shapeHelper.init2();
++        }
++        this.shapeHelpers.length = 0;
++        this.bodyHelpers.length = 0;
++      } else if (event.data.type === MESSAGE_TYPES.BODY_READY) {
++        const uuid = event.data.uuid;
++        const index = event.data.index;
++        this.bodyUuids.push(uuid);
++        this.uuidToIndex[uuid] = index;
++        this.indexToUuid[index] = uuid;
++      } else if (event.data.type === MESSAGE_TYPES.SHAPES_READY) {
++        const bodyUuid = event.data.bodyUuid;
++        const shapesUuid = event.data.shapesUuid;
++        this.shapes[bodyUuid].push(shapesUuid);
++      } else if (event.data.type === MESSAGE_TYPES.TRANSFER_DATA) {
++        this.objectMatricesFloatArray = event.data.objectMatricesFloatArray;
++        this.objectMatricesIntArray = new Int32Array(this.objectMatricesFloatArray.buffer);
+       }
+-      this.shapeHelpers.length = 0;
+-      this.bodyHelpers.length = 0;
+-    });
++    };
+   }
+ 
+   setDebug(debug) {
+     this.debugRequested = debug;
+   }
+ 
+-  tick(dt) {
+-    if (this.world) {
+-      if (this.debugRequested !== this.debugEnabled) {
+-        this.debugEnabled = this.debugRequested;
+-        if (this.debugEnabled) {
+-          this.world.getDebugDrawer(this.scene).enable();
+-        } else {
+-          this.world.getDebugDrawer(this.scene).disable();
++  enableDebug() {
++    if (!window.SharedArrayBuffer) {
++      console.warn("Physics debug rendering only available in browsers that support SharedArrayBuffers.");
++      this.debugRequested = false;
++      return;
++    }
++
++    this.debugEnabled = true;
++
++    if (!this.debugMesh) {
++      this.debugSharedArrayBuffer = new window.SharedArrayBuffer(4 + 2 * DefaultBufferSize * 4);
++      this.debugIndex = new Uint32Array(this.debugSharedArrayBuffer, 0, 4);
++      const debugVertices = new Float32Array(this.debugSharedArrayBuffer, 4, DefaultBufferSize);
++      const debugColors = new Float32Array(this.debugSharedArrayBuffer, 4 + DefaultBufferSize, DefaultBufferSize);
++      this.debugGeometry = new THREE.BufferGeometry();
++      this.debugGeometry.addAttribute("position", new THREE.BufferAttribute(debugVertices, 3));
++      this.debugGeometry.addAttribute("color", new THREE.BufferAttribute(debugColors, 3));
++      const debugMaterial = new THREE.LineBasicMaterial({
++        vertexColors: THREE.VertexColors,
++        depthTest: true
++      });
++      this.debugMesh = new THREE.LineSegments(this.debugGeometry, debugMaterial);
++      this.debugMesh.frustumCulled = false;
++      this.debugMesh.renderOrder = 999;
++    }
++
++    if (!this.debugMesh.parent) {
++      this.scene.add(this.debugMesh);
++      this.workerHelpers.enableDebug(true, this.debugSharedArrayBuffer);
++    }
++  }
++
++  disableDebug() {
++    this.debugEnabled = false;
++    if (this.debugMesh) {
++      this.scene.remove(this.debugMesh);
++      this.workerHelpers.enableDebug(false);
++    }
++  }
++
++  tick = (() => {
++    const transform = new THREE.Matrix4();
++    const inverse = new THREE.Matrix4();
++    const matrix = new THREE.Matrix4();
++    const scale = new THREE.Vector3();
++    return function() {
++      if (this.ready) {
++        if (this.debugRequested !== this.debugEnabled) {
++          if (this.debugRequested) {
++            this.enableDebug();
++          } else {
++            this.disableDebug();
++          }
+         }
+-      }
+ 
+-      for (let i = 0; i < this.bodies.length; i++) {
+-        this.bodies[i].updateShapes();
+-        if (this.bodies[i].type !== TYPE.DYNAMIC) {
+-          this.bodies[i].syncToPhysics();
++        /** Buffer Schema
++         * Every physics body has 26 * 4 bytes (64bit float/int) assigned in the buffer
++         * 0-15   Matrix4 elements (floats)
++         * 16     Linear Velocity (float)
++         * 17     Angular Velocity (float)
++         * 18-25  first 8 Collisions (ints)
++         */
++
++        if (this.objectMatricesFloatArray.buffer.byteLength !== 0) {
++          for (let i = 0; i < this.bodyUuids.length; i++) {
++            const uuid = this.bodyUuids[i];
++            const type = this.bodyOptions[uuid].type ? this.bodyOptions[uuid].type : TYPE.DYNAMIC;
++            const object3D = this.object3Ds[uuid];
++            if (type === TYPE.DYNAMIC) {
++              matrix.fromArray(this.objectMatricesFloatArray, this.uuidToIndex[uuid] * BUFFER_CONFIG.BODY_DATA_SIZE);
++              inverse.getInverse(object3D.parent.matrixWorld);
++              transform.multiplyMatrices(inverse, matrix);
++              transform.decompose(object3D.position, object3D.quaternion, scale);
++            }
++
++            object3D.updateMatrices();
++            this.objectMatricesFloatArray.set(
++              object3D.matrixWorld.elements,
++              this.uuidToIndex[uuid] * BUFFER_CONFIG.BODY_DATA_SIZE
++            );
++
++            if (this.bodyLinearVelocities.hasOwnProperty(uuid)) {
++              this.bodyLinearVelocities[uuid] = this.objectMatricesFloatArray[
++                this.uuidToIndex[uuid] * BUFFER_CONFIG.BODY_DATA_SIZE + 16
++              ];
++            }
++            if (this.bodyAngularVelocities.hasOwnProperty(uuid)) {
++              this.bodyAngularVelocities[uuid] = this.objectMatricesFloatArray[
++                this.uuidToIndex[uuid] * BUFFER_CONFIG.BODY_DATA_SIZE + 17
++              ];
++            }
++
++            this.collisions[uuid].length = 0;
++
++            for (let j = 18; j < BUFFER_CONFIG.BODY_DATA_SIZE; j++) {
++              const collidingIndex = this.objectMatricesIntArray[
++                this.uuidToIndex[uuid] * BUFFER_CONFIG.BODY_DATA_SIZE + j
++              ];
++              if (collidingIndex !== -1) {
++                this.collisions[uuid].push(this.indexToUuid[collidingIndex]);
++              }
++            }
++          }
++
++          this.ammoWorker.postMessage(
++            { type: MESSAGE_TYPES.TRANSFER_DATA, objectMatricesFloatArray: this.objectMatricesFloatArray },
++            [this.objectMatricesFloatArray.buffer]
++          );
+         }
+-      }
+-      const time = performance.now();
+-      this.world.step(dt / 1000);
+-      this.stepDuration = performance.now() - time;
+-      for (let i = 0; i < this.bodies.length; i++) {
+-        if (this.bodies[i].type === TYPE.DYNAMIC) {
+-          this.bodies[i].syncFromPhysics();
++
++        /* DEBUG RENDERING */
++        if (this.debugEnabled) {
++          const index = window.Atomics.load(this.debugIndex, 0);
++          if (index !== 0) {
++            this.debugGeometry.attributes.position.needsUpdate = true;
++            this.debugGeometry.attributes.color.needsUpdate = true;
++          }
++          this.debugGeometry.setDrawRange(0, index);
++          window.Atomics.store(this.debugIndex, 0, 0);
+         }
+       }
+-    }
++    };
++  })();
++
++  addBody(object3D, options) {
++    this.workerHelpers.addBody(this.nextBodyUuid, object3D, options);
++    this.object3Ds[this.nextBodyUuid] = object3D;
++    this.bodyOptions[this.nextBodyUuid] = options;
++    this.collisions[this.nextBodyUuid] = [];
++    this.bodyLinearVelocities[this.nextBodyUuid] = 0;
++    this.bodyAngularVelocities[this.nextBodyUuid] = 0;
++    return this.nextBodyUuid++;
+   }
+ 
+-  addBody(body) {
+-    this.bodies.push(body);
++  updateBody(uuid, options) {
++    this.bodyOptions[uuid] = options;
++    this.workerHelpers.updateBody(uuid, options);
+   }
+ 
+-  removeBody(body) {
+-    const idx = this.bodies.indexOf(body);
++  removeBody(uuid) {
++    delete this.indexToUuid[this.uuidToIndex[uuid]];
++    delete this.uuidToIndex[uuid];
++    delete this.object3Ds[uuid];
++    delete this.bodyOptions[uuid];
++    delete this.collisions[uuid];
++    delete this.bodyLinearVelocities[uuid];
++    delete this.bodyAngularVelocities[uuid];
++    const idx = this.bodyUuids.indexOf(uuid);
+     if (idx !== -1) {
+-      this.bodies.splice(idx, 1);
++      this.bodyUuids.splice(idx, 1);
++    }
++    this.workerHelpers.removeBody(uuid);
++  }
++
++  addShapes(bodyUuid, mesh, options) {
++    if (mesh) {
++      const scale = new THREE.Vector3();
++      scale.setFromMatrixScale(mesh.matrixWorld);
++    }
++    this.workerHelpers.addShapes(bodyUuid, this.nextShapeUuid, mesh, options);
++    if (!this.shapes[bodyUuid]) {
++      this.shapes[bodyUuid] = [];
++    }
++    this.shapes[bodyUuid].push(this.nextShapeUuid);
++    return this.nextShapeUuid++;
++  }
++
++  removeShapes(bodyUuid, shapesUuid) {
++    this.workerHelpers.removeShapes(bodyUuid, shapesUuid);
++    if (this.shapes.bodyUuid) {
++      const idx = this.shapes[bodyUuid].indexOf(shapesUuid);
++      if (idx !== -1) {
++        this.shapes[bodyUuid].splice(idx, 1);
++      }
+     }
+   }
+ 
++  addConstraint(constraintId, bodyUuid, targetUuid, options) {
++    this.workerHelpers.addConstraint(constraintId, bodyUuid, targetUuid, options);
++  }
++
++  removeConstraint(constraintId) {
++    this.workerHelpers.removeConstraint(constraintId);
++  }
++
+   registerBodyHelper(bodyHelper) {
+-    if (this.world) {
++    if (this.ready) {
+       bodyHelper.init2();
+     } else {
+       this.bodyHelpers.push(bodyHelper);
+@@ -94,10 +282,30 @@ export class PhysicsSystem {
+   }
+ 
+   registerShapeHelper(shapeHelper) {
+-    if (this.world) {
++    if (this.ready) {
+       shapeHelper.init2();
+     } else {
+       this.shapeHelpers.push(shapeHelper);
+     }
+   }
++
++  bodyInitialized(uuid) {
++    return !!this.uuidToIndex[uuid];
++  }
++
++  getLinearVelocity(uuid) {
++    return this.bodyLinearVelocities[uuid];
++  }
++
++  getAngularVelocity(uuid) {
++    return this.bodyAngularVelocities[uuid];
++  }
++
++  resetDynamicBody(uuid) {
++    this.workerHelpers.resetDynamicBody(uuid);
++  }
++
++  activateBody(uuid) {
++    this.workerHelpers.activateBody(uuid);
++  }
+ }
+-- 
+2.17.0.windows.1
+

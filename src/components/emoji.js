@@ -16,21 +16,11 @@ AFRAME.registerComponent("emoji", {
 
   init() {
     this.data.emitEndTime = performance.now() + this.data.emitDecayTime * 1000;
-    this.physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
-
-    this.emojiHud = document.querySelector("[emoji-hud]").components["emoji-hud"];
   },
 
   play() {
-    const mediaLoader = this.el.components["media-loader"];
-    if (this.emojiHud.emojiUrls.indexOf(mediaLoader.data.src) === -1) {
-      this.el.parentNode.removeChild(this.el);
-      return;
-    }
-
-    const uuid = this.el.components["body-helper"].uuid;
-    this.lastLinearVelocity = this.physicsSystem.getLinearVelocity(uuid);
-    this.lastAngularVelocity = this.physicsSystem.getAngularVelocity(uuid);
+    this.lastLinearVelocity = this.el.components["body-helper"].body.physicsBody.getLinearVelocity().length2();
+    this.lastAngularVelocity = this.el.components["body-helper"].body.physicsBody.getAngularVelocity().length2();
     this.el.sceneEl.systems["hubs-systems"].soundEffectsSystem.playPositionalSoundFollowing(
       SOUND_SPAWN_EMOJI,
       this.el.object3D
@@ -51,17 +41,15 @@ AFRAME.registerComponent("emoji", {
     if (this.particleConfig && isMine) {
       const now = performance.now();
 
-      const uuid = this.el.components["body-helper"].uuid;
-
-      const linearVelocity = this.physicsSystem.getLinearVelocity(uuid);
+      const linearVelocity = this.el.components["body-helper"].body.physicsBody.getLinearVelocity().length2();
       const linearAcceleration = ((linearVelocity - this.lastLinearVelocity) / dt) * 1000;
       this.lastLinearVelocity = linearVelocity;
 
-      const angularVelocity = this.physicsSystem.getAngularVelocity(uuid);
+      const angularVelocity = this.el.components["body-helper"].body.physicsBody.getAngularVelocity().length2();
       const angularAcceleration = ((angularVelocity - this.lastAngularVelocity) / dt) * 1000;
       this.lastAngularVelocity = angularVelocity;
 
-      if (Math.abs(linearAcceleration) > 33 || Math.abs(angularAcceleration) > 33) {
+      if (Math.abs(linearAcceleration) > 10000 || Math.abs(angularAcceleration) > 10000) {
         this.data.emitEndTime = now + this.data.emitDecayTime * 1000;
       }
 

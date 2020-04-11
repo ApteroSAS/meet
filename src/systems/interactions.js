@@ -1,19 +1,21 @@
-/* global AFRAME NAF */
+/* global AFRAME Ammo NAF */
 import { paths } from "./userinput/paths";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 import { canMove } from "../utils/permissions-utils";
 import { isTagged } from "../components/tags";
 
-function findHandCollisionTargetForHand(bodyHelper) {
-  const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+function findHandCollisionTargetForHand(body) {
+  const world = this.el.sceneEl.systems["hubs-systems"].physicsSystem.world;
 
-  const handCollisions = physicsSystem.getCollisions(bodyHelper.uuid);
-  if (handCollisions) {
-    for (let i = 0; i < handCollisions.length; i++) {
-      const bodyData = physicsSystem.bodyUuidToData.get(handCollisions[i]);
-      const object3D = bodyData && bodyData.object3D;
-      if (object3D && isTagged(object3D.el, "isHandCollisionTarget")) {
-        return object3D.el;
+  if (world) {
+    const handPtr = Ammo.getPointer(body.physicsBody);
+    const handCollisions = world.collisions.get(handPtr);
+    if (handCollisions) {
+      for (let i = 0; i < handCollisions.length; i++) {
+        const object3D = world.object3Ds.get(handCollisions[i]);
+        if (isTagged(object3D.el, "isHandCollisionTarget")) {
+          return object3D.el;
+        }
       }
     }
   }
@@ -196,8 +198,8 @@ AFRAME.registerSystem("interaction", {
     } else {
       state.hovered = options.hoverFn.call(
         this,
-        options.entity.components["body-helper"] && options.entity.components["body-helper"]
-          ? options.entity.components["body-helper"]
+        options.entity.components["body-helper"] && options.entity.components["body-helper"].body
+          ? options.entity.components["body-helper"].body
           : null
       );
       if (state.hovered) {

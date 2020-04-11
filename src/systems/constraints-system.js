@@ -1,6 +1,8 @@
 /* global NAF AFRAME */
-import { CONSTANTS } from "three-ammo";
-const ACTIVATION_STATE = CONSTANTS.ACTIVATION_STATE;
+import { Constraint } from "three-ammo";
+import { ACTIVATION_STATE } from "three-ammo/constants.js";
+
+const CONSTRAINT_CONFIG = {};
 
 export class ConstraintsSystem {
   constructor(physicsSystem) {
@@ -22,11 +24,12 @@ export class ConstraintsSystem {
     };
 
     this.physicsSystem = physicsSystem;
+    this.constraints = {};
     this.constraintPairs = {};
   }
 
   tickInteractor(constraintTag, entityId, state, prevState) {
-    if (!this.physicsSystem) return;
+    if (!this.physicsSystem.world) return;
 
     if (prevState.held === state.held) {
       if (
@@ -41,11 +44,11 @@ export class ConstraintsSystem {
           activationState: ACTIVATION_STATE.DISABLE_DEACTIVATION
         });
         const heldEntityId = state.held.id;
-        const bodyUuid = state.held.components["body-helper"].uuid;
+        const body = state.held.components["body-helper"].body;
         const targetEl = document.querySelector(`#${entityId}`);
-        const targetUuid = targetEl.components["body-helper"].uuid;
-        if (bodyUuid !== -1 && targetUuid !== -1) {
-          this.physicsSystem.addConstraint(entityId, bodyUuid, targetUuid, {});
+        const targetBody = targetEl.components["body-helper"].body;
+        if (targetBody && targetBody.physicsBody) {
+          this.constraints[entityId] = new Constraint({}, body, targetBody, this.physicsSystem.world);
           if (!this.constraintPairs[heldEntityId]) {
             this.constraintPairs[heldEntityId] = [];
           }
@@ -61,7 +64,8 @@ export class ConstraintsSystem {
         if (this.constraintPairs[heldEntityId].length === 0) {
           delete this.constraintPairs[heldEntityId];
         }
-        this.physicsSystem.removeConstraint(entityId);
+        this.constraints[entityId].destroy();
+        delete this.constraints[entityId];
       }
 
       if (!this.constraintPairs[heldEntityId] || this.constraintPairs[heldEntityId].length < 1) {
@@ -75,11 +79,11 @@ export class ConstraintsSystem {
           activationState: ACTIVATION_STATE.DISABLE_DEACTIVATION
         });
         const heldEntityId = state.held.id;
-        const bodyUuid = state.held.components["body-helper"].uuid;
+        const body = state.held.components["body-helper"].body;
         const targetEl = document.querySelector(`#${entityId}`);
-        const targetUuid = targetEl.components["body-helper"].uuid;
-        if (bodyUuid !== -1 && targetUuid !== -1) {
-          this.physicsSystem.addConstraint(entityId, bodyUuid, targetUuid, {});
+        const targetBody = targetEl.components["body-helper"].body;
+        if (targetBody && targetBody.physicsBody) {
+          this.constraints[entityId] = new Constraint(CONSTRAINT_CONFIG, body, targetBody, this.physicsSystem.world);
           if (!this.constraintPairs[heldEntityId]) {
             this.constraintPairs[heldEntityId] = [];
           }

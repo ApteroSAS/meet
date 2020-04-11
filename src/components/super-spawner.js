@@ -77,8 +77,6 @@ AFRAME.registerComponent("super-spawner", {
     this.handleMediaLoaded = this.handleMediaLoaded.bind(this);
 
     this.spawnedMediaScale = null;
-
-    this.physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
   },
 
   play() {
@@ -189,8 +187,9 @@ AFRAME.registerComponent("super-spawner", {
         interaction.state.rightRemote.spawning = false;
       }
     }
-
-    this.physicsSystem.resetDynamicBody(spawnedEntity.components["body-helper"].uuid);
+    if (spawnedEntity.components["body-helper"].body) {
+      spawnedEntity.components["body-helper"].body.syncToPhysics(true);
+    }
 
     spawnedEntity.addEventListener(
       "media-loaded",
