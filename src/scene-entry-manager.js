@@ -405,6 +405,8 @@ export default class SceneEntryManager {
         if (isDisplayMedia) {
           newStream = await navigator.mediaDevices.getDisplayMedia(constraints);
         } else {
+          constraints.audio = constraints.audio?constraints.audio:{};
+          constraints.audio.echoCancellation=true;
           newStream = await navigator.mediaDevices.getUserMedia(constraints);
         }
       } catch (e) {

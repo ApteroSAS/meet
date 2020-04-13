@@ -1,4 +1,6 @@
 import { VOLUME_LABELS } from "./media-views";
+import { eventEmitter } from "./audio-feedback";
+
 const MAX_VOLUME = 8;
 const SMALL_STEP = 1 / (VOLUME_LABELS.length / 2);
 const BIG_STEP = (MAX_VOLUME - 1) / (VOLUME_LABELS.length / 2);
@@ -7,6 +9,7 @@ AFRAME.registerComponent("avatar-volume-controls", {
   schema: {
     volume: { type: "number", default: 1.0 }
   },
+  aecEnabled: true,
 
   init() {
     this.volumeUp = this.volumeUp.bind(this);
@@ -21,7 +24,44 @@ AFRAME.registerComponent("avatar-volume-controls", {
     window.APP.store.addEventListener("statechanged", this.update);
 
     this.updateVolumeLabel();
+    this.beforeVolumeDecrease = this.data.volume;
+
+    //Echo is when I speak and I heard my voice in the speaker (meaning that the sound of my voice got to the the speaker of the other participant and back through its mic)
+    //So we reduce the sound of the speaker when we speak so we heard less echo and also prevend echo feedback loop
+    // speak:network:start triggering while we speak just means that we are receiving echo (or the person is speaking at the same time as us
+    //this.checkEnableEchoCancellation();
+    if (this.aecEnabled) {
+      console.log("AEC enabled");
+      eventEmitter.on("speak:local:start", () => {
+        //we try to prevent echo by diminishing the sound when we speak
+        this.beforeVolumeDecrease = this.data.volume;
+        this.changeVolume(0.5);
+        console.log("volume changed to " + this.data.volume);
+      });
+
+      eventEmitter.on("speak:local:stop", () => {
+        //we try to prevent echo by diminishing the sound when we speak
+        this.changeVolume(this.beforeVolumeDecrease);
+        console.log("volume changed to " + this.data.volume);
+      });
+    } else {
+      console.log("AEC disabled");
+    }
   },
+
+  /*checkEnableEchoCancellation() {
+    const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
+    //do not need AEC on mobile device or Quest so we remove it
+    this.aecEnabled = !isMobile;
+  },*/
+
+  changeVolume(v) {
+    if (this && this.el && this.data && this.data.volume && v) {
+      this.el.setAttribute("avatar-volume-controls", "volume", THREE.Math.clamp(v, 0, 1));
+      this.updateVolumeLabel();
+    }
+  },
+
   remove() {
     window.APP.store.removeEventListener("statechanged", this.update);
   },

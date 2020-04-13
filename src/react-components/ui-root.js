@@ -619,6 +619,9 @@ class UIRoot extends Component {
     }
 
     try {
+
+      constraints.audio = constraints.audio?constraints.audio:{};
+      constraints.audio.echoCancellation=true;
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       const audioTrack = mediaStream.getAudioTracks()[0];
       this.setState({ audioTrack });
@@ -631,6 +634,8 @@ class UIRoot extends Component {
             "Oculus Browser 6 bug hit: Audio stream track ended without calling stop. Recreating audio stream."
           );
 
+          constraints.audio = constraints.audio?constraints.audio:{};
+          constraints.audio.echoCancellation=true;
           const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
           const audioTrack = mediaStream.getAudioTracks()[0];
           const audioTrackClone = audioTrack.clone();
