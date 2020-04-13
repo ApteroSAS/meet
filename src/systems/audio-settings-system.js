@@ -22,7 +22,7 @@ export class AudioSettingsSystem {
     this.sceneEl = sceneEl;
     this.defaultSettings = {
       avatarDistanceModel: "inverse",
-      avatarRolloffFactor: 2,
+      avatarRolloffFactor: 0, //NOTE: this desactivate the audio spatial positioning
       avatarRefDistance: 1,
       avatarMaxDistance: 10000,
       mediaVolume: 0.5,
