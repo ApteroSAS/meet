@@ -31,18 +31,23 @@ AFRAME.registerComponent("avatar-volume-controls", {
     // speak:network:start triggering while we speak just means that we are receiving echo (or the person is speaking at the same time as us
     //this.checkEnableEchoCancellation();
     if (this.aecEnabled) {
+      let started = false;
       console.log("AEC enabled");
       eventEmitter.on("speak:local:start", () => {
-        //we try to prevent echo by diminishing the sound when we speak
-        this.beforeVolumeDecrease = this.data.volume;
-        this.changeVolume(0.5);
-        console.log("volume changed to " + this.data.volume);
+        if(!started) {
+          started = true;
+          //we try to prevent echo by diminishing the sound when we speak
+          this.beforeVolumeDecrease = this.data.volume;
+          this.changeVolume(0.4);
+          //console.log("volume changed to " + this.data.volume);
+        }
       });
 
       eventEmitter.on("speak:local:stop", () => {
+        started = false;
         //we try to prevent echo by diminishing the sound when we speak
         this.changeVolume(this.beforeVolumeDecrease);
-        console.log("volume changed to " + this.data.volume);
+        //console.log("volume changed to " + this.data.volume);
       });
     } else {
       console.log("AEC disabled");
