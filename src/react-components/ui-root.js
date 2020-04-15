@@ -619,9 +619,12 @@ class UIRoot extends Component {
     }
 
     try {
-
-      constraints.audio = constraints.audio?constraints.audio:{};
-      constraints.audio.echoCancellation=true;
+      try {
+        constraints.audio = constraints.audio ? constraints.audio : {};
+        constraints.audio.echoCancellation = true;
+      }catch (e) {
+        console.warn("force echoCancellation failled");
+      }
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       const audioTrack = mediaStream.getAudioTracks()[0];
       this.setState({ audioTrack });
@@ -634,8 +637,12 @@ class UIRoot extends Component {
             "Oculus Browser 6 bug hit: Audio stream track ended without calling stop. Recreating audio stream."
           );
 
-          constraints.audio = constraints.audio?constraints.audio:{};
-          constraints.audio.echoCancellation=true;
+          try {
+            constraints.audio = constraints.audio ? constraints.audio : {};
+            constraints.audio.echoCancellation = true;
+          }catch (e) {
+            console.warn("force echoCancellation failled");
+          }
           const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
           const audioTrack = mediaStream.getAudioTracks()[0];
           const audioTrackClone = audioTrack.clone();
@@ -659,9 +666,11 @@ class UIRoot extends Component {
         audioTrack.addEventListener("ended", recreateAudioStream, { once: true });
       }
 
+      console.log("Audio track created", audioTrack.getSettings());
       return true;
     } catch (e) {
       // Error fetching audio track, most likely a permission denial.
+      console.warn("Error fetching audio track",e);
       this.setState({ audioTrack: null });
       return false;
     }
