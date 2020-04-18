@@ -1,21 +1,19 @@
-/* global AFRAME Ammo NAF */
+/* global AFRAME NAF */
 import { paths } from "./userinput/paths";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 import { canMove } from "../utils/permissions-utils";
 import { isTagged } from "../components/tags";
 
-function findHandCollisionTargetForHand(body) {
-  const world = this.el.sceneEl.systems["hubs-systems"].physicsSystem.world;
+function findHandCollisionTargetForHand(bodyHelper) {
+  const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
 
-  if (world) {
-    const handPtr = Ammo.getPointer(body.physicsBody);
-    const handCollisions = world.collisions.get(handPtr);
-    if (handCollisions) {
-      for (let i = 0; i < handCollisions.length; i++) {
-        const object3D = world.object3Ds.get(handCollisions[i]);
-        if (isTagged(object3D.el, "isHandCollisionTarget")) {
-          return object3D.el;
-        }
+  const handCollisions = physicsSystem.getCollisions(bodyHelper.uuid);
+  if (handCollisions) {
+    for (let i = 0; i < handCollisions.length; i++) {
+      const bodyData = physicsSystem.bodyUuidToData.get(handCollisions[i]);
+      const object3D = bodyData && bodyData.object3D;
+      if (object3D && isTagged(object3D.el, "isHandCollisionTarget")) {
+        return object3D.el;
       }
     }
   }
@@ -61,22 +59,6 @@ AFRAME.registerSystem("interaction", {
 
     this.leftRemoteHoverTarget = intersection && findRemoteHoverTarget(intersection.object);
     return this.leftRemoteHoverTarget;
-  },
-
-  getActiveIntersection() {
-    return (
-      (this.state.rightRemote.hovered && this.rightCursorControllerEl.components["cursor-controller"].intersection) ||
-      (this.state.leftRemote.hovered && this.leftCursorControllerEl.components["cursor-controller"].intersection)
-    );
-  },
-
-  isHoldingAnything() {
-    return !!(
-      this.state.leftHand.held ||
-      this.state.rightHand.held ||
-      this.state.rightRemote.held ||
-      this.state.leftRemote.held
-    );
   },
 
   isHeld(el) {
@@ -199,8 +181,6 @@ AFRAME.registerSystem("interaction", {
       this.options.rightHand.entity = document.getElementById("player-right-controller");
       this.options.rightRemote.entity = document.getElementById("right-cursor");
       this.options.leftRemote.entity = document.getElementById("left-cursor");
-      this.rightCursorControllerEl = document.getElementById("right-cursor-controller");
-      this.leftCursorControllerEl = document.getElementById("left-cursor-controller");
       this.ready = true;
     });
   },
@@ -216,18 +196,18 @@ AFRAME.registerSystem("interaction", {
     } else {
       state.hovered = options.hoverFn.call(
         this,
-        options.entity.components["body-helper"] && options.entity.components["body-helper"].body
-          ? options.entity.components["body-helper"].body
+        options.entity.components["body-helper"] && options.entity.components["body-helper"]
+          ? options.entity.components["body-helper"]
           : null
       );
       if (state.hovered) {
         const entity = state.hovered;
-        //const isFrozen = this.el.is("frozen");
-        //const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
+        const isFrozen = this.el.is("frozen");
+        const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
         if (
           isTagged(entity, "isHoldable") &&
           userinput.get(options.grabPath) &&
-          /*(isFrozen || !isPinned) &&*/
+          (isFrozen || !isPinned) &&
           canMove(entity)
         ) {
           state.held = entity;

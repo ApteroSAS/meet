@@ -90,7 +90,6 @@ AFRAME.registerComponent("visibility-while-frozen", {
     }
 
     const isTransforming = this.el.sceneEl.systems["transform-selected-object"].transforming;
-    const isHoldingAnything = this.el.sceneEl.systems.interaction.isHoldingAnything();
 
     if (this.data.withPermission && this.data.withoutPermission) {
       throw new Error(
@@ -112,8 +111,7 @@ AFRAME.registerComponent("visibility-while-frozen", {
       allowed &&
       ((isFrozen && this.data.visible) || (!isFrozen && !this.data.visible)) &&
       isWithinDistance &&
-      !isTransforming &&
-      !isHoldingAnything;
+      !isTransforming;
 
     if (this.data.requireHoverOnNonMobile && !isMobile) {
       shouldBeVisible =

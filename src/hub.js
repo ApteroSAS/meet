@@ -21,7 +21,6 @@ import "naf-janus-adapter";
 import "aframe-rounded";
 import "webrtc-adapter";
 import "aframe-slice9-component";
-import "./utils/audio-context-fix";
 import "./utils/threejs-positional-audio-updatematrixworld";
 import "./utils/threejs-world-update";
 import patchThreeAllocations from "./utils/threejs-allocation-patches";
@@ -75,7 +74,7 @@ import "./components/media-views";
 import "./components/avatar-volume-controls";
 import "./components/pinch-to-move";
 import "./components/pitch-yaw-rotator";
-import "./components/position-at-border";
+import "./components/position-at-box-shape-border";
 import "./components/pinnable";
 import "./components/pin-networked-object-button";
 import "./components/mirror-media-button";
@@ -342,6 +341,32 @@ function mountUI(props = {}) {
 function remountUI(props) {
   uiProps = { ...uiProps, ...props };
   mountUI(uiProps);
+}
+
+function setupPeerConnectionConfig(adapter, host, turn) {
+  const forceTurn = qs.get("force_turn");
+  const peerConnectionConfig = {};
+
+  if (turn && turn.enabled) {
+    const iceServers = turn.transports.map(ts => {
+      return { urls: `turns:${host}:${ts.port}?transport=tcp`, username: turn.username, credential: turn.credential };
+    });
+
+    iceServers.push({ urls: "stun:stun1.l.google.com:19302" });
+
+    peerConnectionConfig.iceServers = iceServers;
+
+    if (forceTurn) {
+      peerConnectionConfig.iceTransportPolicy = "relay";
+    }
+  } else {
+    peerConnectionConfig.iceServers = [
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:19302" }
+    ];
+  }
+
+  adapter.setPeerConnectionConfig(peerConnectionConfig);
 }
 
 async function updateEnvironmentForHub(hub, entryManager) {
@@ -612,8 +637,10 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
           newHostPollInterval = setInterval(async () => {
             const currentServerURL = NAF.connection.adapter.serverUrl;
-            const newHubHost = await hubChannel.getHost();
-            const newServerURL = `wss://${newHubHost}`;
+            const { host, port, turn } = await hubChannel.getHost();
+            const newServerURL = `wss://${host}:${port}`;
+
+            setupPeerConnectionConfig(adapter, host, turn);
 
             if (currentServerURL !== newServerURL) {
               console.log("Connecting to new Janus server " + newServerURL);
@@ -1448,6 +1475,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const permsToken = oauthFlowPermsToken || data.perms_token;
       hubChannel.setPermissionsFromToken(permsToken);
 
+      const janusHost = data.hubs[0].host;
+      const janusTurn = data.hubs[0].turn;
+
       scene.addEventListener("adapter-ready", async ({ detail: adapter }) => {
         // HUGE HACK Safari does not like it if the first peer seen does not immediately
         // send audio over its media stream. Otherwise, the stream doesn't work and stays
@@ -1476,6 +1506,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const track = stream.getAudioTracks()[0];
         adapter.setClientId(socket.params().session_id);
         adapter.setJoinToken(data.perms_token);
+        setupPeerConnectionConfig(adapter, janusHost, janusTurn);
+
         hubChannel.addEventListener("permissions-refreshed", e => adapter.setJoinToken(e.detail.permsToken));
 
         // Stop the tone after we've connected, which seems to mitigate the issue without actually

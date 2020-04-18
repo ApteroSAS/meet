@@ -28,8 +28,8 @@ export const getDefaultResolveQuality = (is360 = false) => {
 };
 
 export const resolveUrl = async (url, quality = null, version = 1, bustCache) => {
-  const cacheKey = `${url}_${version}`;
-  if (!bustCache && resolveUrlCache.has(cacheKey)) return resolveUrlCache.get(cacheKey);
+  const key = `${url}_${version}`;
+  if (!bustCache && resolveUrlCache.has(key)) return resolveUrlCache.get(key);
   if(url.startsWith("http://")){
     //auto promote anythings to https since we cannot serve on http
     url = url.replace("http://","https://");
@@ -62,7 +62,7 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
         }
         return response.json();
       });
-      resolveUrlCache.set(cacheKey, resultPromise);
+      resolveUrlCache.set(key, resultPromise);
       return resultPromise;
   }
 };

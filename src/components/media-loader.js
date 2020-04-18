@@ -78,8 +78,7 @@ AFRAME.registerComponent("media-loader", {
         .then(networkedEl => {
           this.networkedEl = networkedEl;
         })
-        .catch(() => {
-        }); //ignore exception, entity might not be networked
+        .catch(() => {}); //ignore exception, entity might not be networked
     } catch (e) {
       // NAF may not exist on scene landing page
     }
@@ -328,8 +327,7 @@ AFRAME.registerComponent("media-loader", {
   },
 
   async update(oldData, forceLocalRefresh) {
-    let { src } = this.data;
-    const { version, contentSubtype } = this.data;
+    const { src, version, contentSubtype } = this.data;
     if (!src) return;
 
     const srcChanged = oldData.src !== src;
@@ -445,8 +443,8 @@ AFRAME.registerComponent("media-loader", {
             linkedMediaElementAudioSource
           })
         );
-        if (this.el.components["position-at-border__freeze"]) {
-          this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+        if (this.el.components["position-at-box-shape-border__freeze"]) {
+          this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
       } else if (contentType.startsWith("image/")) {
         this.el.removeAttribute("gltf-model-plus");
@@ -461,7 +459,7 @@ AFRAME.registerComponent("media-loader", {
             if (contentSubtype === "photo-camera") {
               this.el.setAttribute("hover-menu__photo", {
                 template: "#photo-hover-menu",
-                isFlat: true
+                dirs: ["forward", "back"]
               });
             }
           },
@@ -482,8 +480,8 @@ AFRAME.registerComponent("media-loader", {
           })
         );
 
-        if (this.el.components["position-at-border__freeze"]) {
-          this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+        if (this.el.components["position-at-box-shape-border__freeze"]) {
+          this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
       } else if (contentType.startsWith("application/pdf")) {
         this.el.removeAttribute("gltf-model-plus");
@@ -508,8 +506,8 @@ AFRAME.registerComponent("media-loader", {
           { once: true }
         );
 
-        if (this.el.components["position-at-border__freeze"]) {
-          this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+        if (this.el.components["position-at-box-shape-border__freeze"]) {
+          this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
       } else if (
         contentType.includes("application/octet-stream") ||
@@ -556,15 +554,15 @@ AFRAME.registerComponent("media-loader", {
             if (await isLocalHubsAvatarUrl(src)) {
               this.el.setAttribute("hover-menu__hubs-item", {
                 template: "#avatar-link-hover-menu",
-                isFlat: true
+                dirs: ["forward", "back"]
               });
             } else if ((await isHubsRoomUrl(src)) || ((await isLocalHubsSceneUrl(src)) && mayChangeScene)) {
               this.el.setAttribute("hover-menu__hubs-item", {
                 template: "#hubs-destination-hover-menu",
-                isFlat: true
+                dirs: ["forward", "back"]
               });
             } else {
-              this.el.setAttribute("hover-menu__link", { template: "#link-hover-menu", isFlat: true });
+              this.el.setAttribute("hover-menu__link", { template: "#link-hover-menu", dirs: ["forward", "back"] });
             }
             this.onMediaLoaded(SHAPE.BOX);
           },
@@ -584,8 +582,8 @@ AFRAME.registerComponent("media-loader", {
             batch
           })
         );
-        if (this.el.components["position-at-border__freeze"]) {
-          this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+        if (this.el.components["position-at-box-shape-border__freeze"]) {
+          this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
       } else {
         throw new Error(`Unsupported content type: ${contentType}`);
@@ -609,7 +607,7 @@ AFRAME.registerComponent("media-pager", {
     this.onSnap = this.onSnap.bind(this);
     this.update = this.update.bind(this);
 
-    this.el.setAttribute("hover-menu__pager", { template: "#pager-hover-menu", isFlat: true });
+    this.el.setAttribute("hover-menu__pager", { template: "#pager-hover-menu", dirs: ["forward", "back"] });
     this.el.components["hover-menu__pager"].getHoverMenu().then(menu => {
       // If we got removed while waiting, do nothing.
       if (!this.el.parentNode) return;
@@ -636,8 +634,7 @@ AFRAME.registerComponent("media-pager", {
         this.networkedEl.addEventListener("unpinned", this.update);
         window.APP.hubChannel.addEventListener("permissions_updated", this.update);
       })
-      .catch(() => {
-      }); //ignore exception, entity might not be networked
+      .catch(() => {}); //ignore exception, entity might not be networked
 
     this.el.addEventListener("pdf-loaded", async () => {
       this.update();

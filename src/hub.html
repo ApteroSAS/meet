@@ -29,7 +29,6 @@
 <body>
     <a-scene
         loading-screen="enabled: false"
-        physics="debug: false; driver: ammo; debugDrawMode: 1; iterations: 4;"
         hubs-systems
         capture-system
         listed-media
@@ -42,8 +41,7 @@
             physicallyCorrectLights: true;
             alpha: false;
             webgl2: true;
-            multiview: false;
-            forceWebVR: true;"
+            multiview: false;"
         shadow="type: pcfsoft"
         networked-scene="adapter: janus; audio: true; debug: true; connectOnLoad: false;"
         mute-mic="eventSrc: a-scene; toggleEvents: action_mute"
@@ -206,7 +204,7 @@
 
             <template id="static-media">
                 <a-entity
-                    body-helper="type: static; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 11;"
+                    body-helper="type: static; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 1;"
                 >
                 </a-entity>
             </template>
@@ -214,7 +212,7 @@
             <template id="static-controlled-media">
                 <a-entity
                     class="interactable"
-                    body-helper="type: static; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 11;"
+                    body-helper="type: static; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 1;"
                     is-remote-hover-target
                     position-at-box-shape-border__freeze="target:.freeze-menu;"
                     tags="isStatic: true; togglesHoveredActionSet: true; inspectable: true;"
@@ -279,9 +277,9 @@
                     floaty-object="modifyGravityOnRelease: true; autoLockOnLoad: true;"
                     set-yxz-order
                     matrix-auto-update
+                    position-at-box-shape-border__freeze="target:.freeze-menu;"
+                    position-at-box-shape-border__freeze-unprivileged="target:.freeze-unprivileged-menu;"
                     hoverable-visuals
-                    position-at-border__freeze="target:.freeze-menu"
-                    position-at-border__freeze-unpriveleged="target:.freeze-unprivileged-menu"
                     listed-media
                     audio-source="type: media"
                 >
@@ -518,7 +516,7 @@
                     floaty-object="modifyGravityOnRelease: true; autoLockOnLoad: true;"
                     set-yxz-order
                     matrix-auto-update
-                    position-at-border__freeze="target:.freeze-menu;"
+                    position-at-box-shape-border__freeze="target:.freeze-menu;"
                     hoverable-visuals
                 >
                     <a-entity
@@ -576,7 +574,7 @@
                     matrix-auto-update
                     scale="0.5 0.5 0.5"
                     action-to-remove__pen="path: /actions/pen/remove;"
-                    position-at-border="target:.pen-menu"
+                    position-at-box-shape-border="target:.pen-menu"
                     set-yxz-order
                 >
                     <a-entity
@@ -611,7 +609,7 @@
                     owned-object-limiter="counter: #camera-counter"
                     set-unowned-body-kinematic
                     scalable-when-grabbed
-                    position-at-border="target:.camera-menu; isFlat: true"
+                    position-at-box-shape-border__freeze="target: .camera-menu"
                     set-yxz-order
                 >
                     <a-entity class="ui interactable-ui camera-snap-menu" visible-if-permitted="spawn_camera">

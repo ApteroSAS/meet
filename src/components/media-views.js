@@ -268,7 +268,7 @@ AFRAME.registerComponent("media-video", {
     this.videoIsLive = null; // value null until we've determined if the video is live or not.
     this.onSnapImageLoaded = () => (this.isSnapping = false);
 
-    this.el.setAttribute("hover-menu__video", { template: "#video-hover-menu", isFlat: true });
+    this.el.setAttribute("hover-menu__video", { template: "#video-hover-menu", dirs: ["forward", "back"] });
     this.el.components["hover-menu__video"].getHoverMenu().then(menu => {
       // If we got removed while waiting, do nothing.
       if (!this.el.parentNode) return;
@@ -551,6 +551,9 @@ AFRAME.registerComponent("media-video", {
           this.mediaElementAudioSource =
             linkedMediaElementAudioSource ||
             this.el.sceneEl.audioListener.context.createMediaElementSource(audioSourceEl);
+
+          const audioOutputMode = window.APP.store.state.preferences.audioOutputMode === "audio" ? "audio" : "panner";
+          this.data.audioType = audioOutputMode === "panner" ? "pannernode" : "audionode";
           this.setupAudio();
         }
       }
@@ -592,9 +595,9 @@ AFRAME.registerComponent("media-video", {
       if (isIOS) {
         const template = document.getElementById("video-unmute");
         this.el.appendChild(document.importNode(template.content, true));
-        this.el.setAttribute("position-at-border__unmute-ui", {
+        this.el.setAttribute("position-at-box-shape-border__unmute-ui", {
           target: ".unmute-ui",
-          isFlat: true
+          dirs: ["forward", "back"]
         });
       }
 
