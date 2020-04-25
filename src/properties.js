@@ -1,4 +1,4 @@
-export const properties = {
+window.APP_PROPS = {
   // To override these variables, create a .env file containing the overrides.
 
   // The Reticulum backend to connect to. Used for storing information about active hubs.
@@ -37,14 +37,3 @@ export const properties = {
   }
 
 };
-window.APP_CONFIG = properties.APP_CONFIG;
-
-export function registerProperties() {
-  /*if(!process) {
-    process = {};
-  }*/
-  if (!process.env) {
-    process.env = {};
-  }
-  process.env = { ...properties, ...process.env };
-}

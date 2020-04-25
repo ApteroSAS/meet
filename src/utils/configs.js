@@ -2,7 +2,7 @@ import appLogo from "../assets/images/app-logo.png";
 import companyLogo from "../assets/images/company-logo.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
 import pdfjs from "pdfjs-dist";
-import { properties, registerProperties } from "../properties";
+import { propertiesService, registerProperties } from "../propertiesService";
 
 registerProperties();
 
@@ -22,7 +22,7 @@ let isAdmin = false;
   "BASE_ASSETS_PATH"
 ].forEach(x => {
   const el = document.querySelector(`meta[name='env:${x.toLowerCase()}']`);
-  configs[x] = el ? el.getAttribute("content") : process.env[x] ? process.env[x] : properties[x];
+  configs[x] = el ? el.getAttribute("content") : process.env[x] ? process.env[x] : propertiesService[x];
 
   if (x === "BASE_ASSETS_PATH" && configs[x]) {
     // eslint-disable-next-line no-undef
@@ -56,7 +56,7 @@ if (window.APP_CONFIG) {
   }
 } else {
   configs.APP_CONFIG = {
-    features: (properties.APP_CONFIG && properties.APP_CONFIG.features) ? properties.APP_CONFIG.features : {}
+    features: (propertiesService.APP_CONFIG && propertiesService.APP_CONFIG.features) ? propertiesService.APP_CONFIG.features : {}
   };
 }
 
