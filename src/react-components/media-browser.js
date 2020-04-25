@@ -66,11 +66,23 @@ const DEFAULT_FACETS = {
     { text: "Scenes", params: { filter: "scenes" } },
     { text: "Transport", params: { filter: "transport" } }
   ],
+  objects: [
+    { text: "My Objects", params: { filter: "" }},
+  ],
+  videos: [
+    { text: "My Video", params: { filter: "my-videos" }},
+    { text: "Live", params: { filter: "my-videos-live" } }
+  ],
+  videos360: [
+    { text: "My Video", params: { filter: "my-videos-360" }},
+    { text: "Live", params: { filter: "my-videos-360-live" } }
+  ],
   avatars: [
     { text: "Avatars", params: { filter: "" } }
   ],
   favorites: [],
-  scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }]
+  scenes: [{ text: "My Scenes", params: { filter: "my-scenes" } },
+    { text: "Library", params: { filter: "" } }]
 };
 
 class MediaBrowser extends Component {

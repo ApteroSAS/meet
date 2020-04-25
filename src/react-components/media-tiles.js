@@ -206,7 +206,11 @@ class MediaTiles extends Component {
       className={classNames(styles.tileContent, styles.avatarTile)}
       style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
       src={this.state.thumbnailCache[entry.url]}
-    /> : <div></div>)
+    /> : <img
+      className={classNames(styles.tileContent, styles.avatarTile)}
+      style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+      src={"https://hub.aptero.co/data/app-thumbnail.png"}
+    />)
 
     // Inline mp4s directly since far/nearspark cannot resize them.
     const thumbnailElement =
