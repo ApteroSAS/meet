@@ -715,7 +715,13 @@ AFRAME.registerComponent("media-video", {
               texture.hls = null;
             }
 
+            //https://github.com/video-dev/hls.js/blob/master/docs/API.md#livesyncduration
             const hls = new HLS({
+              "liveSyncDuration": 0.5,
+              //"liveMaxLatencyDuration": 4,
+              "liveBackBufferLength": 0,
+              "nudgeMaxRetry": 10,
+              "enableWorker": true,
               xhrSetup: (xhr, u) => {
                 if (u.startsWith(corsProxyPrefix)) {
                   u = u.substring(corsProxyPrefix.length);
