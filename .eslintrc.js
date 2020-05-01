@@ -12,8 +12,8 @@ module.exports = {
   },
   plugins: ["prettier", "react"],
   rules: {
-    "prettier/prettier": "warn",
-    "prefer-const": "error",
+    "prettier/prettier": "off",
+    "prefer-const": "off",
     "no-use-before-define": "error",
     "no-var": "error",
     "no-throw-literal": "error",

@@ -265,6 +265,7 @@ AFRAME.registerComponent("media-video", {
     this.videoMutedAt = 0;
     this.localSnapCount = 0;
     this.isSnapping = false;
+    this.isChangingVideo = false;
     this.videoIsLive = null; // value null until we've determined if the video is live or not.
     this.onSnapImageLoaded = () => (this.isSnapping = false);
 
@@ -282,6 +283,7 @@ AFRAME.registerComponent("media-video", {
       this.seekForwardButton = this.el.querySelector(".video-seek-forward-button");
       this.seekBackButton = this.el.querySelector(".video-seek-back-button");
       this.snapButton = this.el.querySelector(".video-snap-button");
+      this.changeButton = this.el.querySelector(".video-change-button");
       this.timeLabel = this.el.querySelector(".video-time-label");
       this.volumeLabel = this.el.querySelector(".video-volume-label");
 
@@ -291,6 +293,7 @@ AFRAME.registerComponent("media-video", {
       this.volumeUpButton.object3D.addEventListener("interact", this.volumeUp);
       this.volumeDownButton.object3D.addEventListener("interact", this.volumeDown);
       this.snapButton.object3D.addEventListener("interact", this.snap);
+      this.changeButton.object3D.addEventListener("interact", ()=>{this.changeVideo()});
 
       this.updateVolumeLabel();
       this.updateHoverMenu();
@@ -372,6 +375,17 @@ AFRAME.registerComponent("media-video", {
 
   volumeDown() {
     this.changeVolumeBy(-0.1);
+  },
+
+  async changeVideo() {
+    window.APP.mediaSearchStore.sourceNavigateWithResult(this.data.projection==="360-equirectangular"?"videos360":"videos").then(entry => {
+      console.log ("change video");
+      const oldData = {...this.data};
+      this.lastUpdate = 0;
+      this.videoIsLive = null; // value null until we've determined if the video is live or not.
+      this.data.src = entry.url;
+      this.update(oldData);
+    });
   },
 
   async snap() {
@@ -565,6 +579,7 @@ AFRAME.registerComponent("media-video", {
 
       if (texture.hls) {
         const updateLiveState = () => {
+          this.video.play();
           if (texture.hls.currentLevel >= 0) {
             const videoWasLive = !!this.videoIsLive;
             this.videoIsLive = texture.hls.levels[texture.hls.currentLevel].details.live;
@@ -601,6 +616,10 @@ AFRAME.registerComponent("media-video", {
         });
       }
 
+
+      if (this.videoTexture) {
+        disposeTexture(this.videoTexture);
+      }
       this.videoTexture = texture;
       this.audioSource = audioSourceEl;
     } catch (e) {
@@ -696,7 +715,13 @@ AFRAME.registerComponent("media-video", {
               texture.hls = null;
             }
 
+            //https://github.com/video-dev/hls.js/blob/master/docs/API.md#livesyncduration
             const hls = new HLS({
+              "liveSyncDuration": 0.5,
+              //"liveMaxLatencyDuration": 4,
+              "liveBackBufferLength": 0,
+              "nudgeMaxRetry": 10,
+              "enableWorker": true,
               xhrSetup: (xhr, u) => {
                 if (u.startsWith(corsProxyPrefix)) {
                   u = u.substring(corsProxyPrefix.length);
@@ -717,6 +742,7 @@ AFRAME.registerComponent("media-video", {
             hls.attachMedia(videoEl);
 
             hls.on(HLS.Events.ERROR, function(event, data) {
+              console.error("hls error:",data);
               if (data.fatal) {
                 switch (data.type) {
                   case HLS.ErrorTypes.NETWORK_ERROR:
