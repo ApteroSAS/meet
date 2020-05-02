@@ -2,6 +2,7 @@ import { EventTarget } from "event-target-shim";
 import configs from "../utils/configs";
 import { getReticulumFetchUrl, fetchReticulumAuthenticated, hasReticulumServer } from "../utils/phoenix-utils";
 import { pushHistoryPath, sluglessPath, withSlug } from "../utils/history";
+
 const EventEmitter = require("eventemitter3");
 
 const EMPTY_RESULT = { entries: [], meta: {} };
@@ -11,7 +12,7 @@ const URL_SOURCE_TO_TO_API_SOURCE = {
   videos360: "videos360",
   scenes: "scene_listings",
   images: "bing_images",
-  videos: "bing_videos",
+  videos: "videos",
   youtube: "youtube_videos",
   gifs: "tenor",
   sketchfab: "sketchfab",
@@ -28,7 +29,7 @@ const availableSources = desiredSources.filter(source => {
 });
 
 //export const SOURCES = ["objects", "videos360", "videos", "scenes", "avatars"];
-export const SOURCES = ["objects", "videos","videos360"];
+export const SOURCES = ["objects", "videos", "videos360"];
 
 export const MEDIA_SOURCE_DEFAULT_FILTERS = {
   gifs: "trending",
@@ -45,6 +46,7 @@ const SEARCH_CONTEXT_PARAMS = ["q", "filter", "cursor", "similar_to"];
 // convenience API for performing history updates relevant to search navigation.
 export default class MediaSearchStore extends EventTarget {
   eventEmitter = new EventEmitter();
+
   constructor() {
     super();
 
@@ -80,9 +82,9 @@ export default class MediaSearchStore extends EventTarget {
     const searchParams = new URLSearchParams();
     const locationSearchParams = new URLSearchParams(location.search);
     let filter = locationSearchParams.get("filter");
-    if(urlSource==="objects"){
-      filter="my-objects";
-      searchParams.set("filter","model/gltf-binary");// filter in request
+    if (urlSource === "objects") {
+      filter = "my-objects";
+      searchParams.set("filter", "model/gltf-binary");// filter in request
     }
     const isMy = filter && filter.startsWith("my-");
 
@@ -105,11 +107,11 @@ export default class MediaSearchStore extends EventTarget {
 
     let fetch = true;
 
-      if (isMy) {
-        if (window.APP.store.credentialsAccountId) {
-          searchParams.set("user", window.APP.store.credentialsAccountId);
-        } else {
-          fetch = false; // Don't fetch my-* if not signed in
+    if (isMy) {
+      if (window.APP.store.credentialsAccountId) {
+        searchParams.set("user", window.APP.store.credentialsAccountId);
+      } else {
+        fetch = false; // Don't fetch my-* if not signed in
       }
     }
 
@@ -121,19 +123,21 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
-    result.entries.forEach(entry => {
-      if(!entry.url.startsWith("https://") && entry.url.startsWith("http://")){
-        entry.url = entry.url.replace("http://","https://");//promote insecure content
-      }
-      if(entry.type==="hub") {
-        entry.images.preview.url = configs.PROTOCOL+configs.RETICULUM_SERVER + "/assets/images/default-room.png";
-        if (window.location.href.startsWith("https://localhost")) {
-          entry.url = "/hub.html?hub_id=" + entry.id;
-        } else {
-          entry.url = "/room/" + entry.id + "/" + entry.name;
+    if (result.entries) {
+      result.entries.forEach(entry => {
+        if (!entry.url.startsWith("https://") && entry.url.startsWith("http://")) {
+          entry.url = entry.url.replace("http://", "https://");//promote insecure content
         }
-      }
-    });
+        if (entry.type === "hub") {
+          entry.images.preview.url = configs.PROTOCOL + configs.RETICULUM_SERVER + "/assets/images/default-room.png";
+          if (window.location.href.startsWith("https://localhost")) {
+            entry.url = "/hub.html?hub_id=" + entry.id;
+          } else {
+            entry.url = "/room/" + entry.id + "/" + entry.name;
+          }
+        }
+      });
+    }
 
     if (this.requestIndex != currentRequestIndex) return;
 
@@ -244,10 +248,10 @@ export default class MediaSearchStore extends EventTarget {
     this._sourceNavigate(this._stashedSource ? this._stashedSource : SOURCES[0], false, true);
   };
 
-  async sourceNavigateWithResult(source){
+  async sourceNavigateWithResult(source) {
     return new Promise((resolve) => {
-      this._sourceNavigate(source, true, false, "use");
-      this.eventEmitter.once("action_selected_media_result_entry", (data)=>{
+      this._sourceNavigate(source, true, false, "result");
+      this.eventEmitter.once("action_selected_media_result_entry", (data) => {
         resolve(data.entry);
       });
     });

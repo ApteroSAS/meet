@@ -18,8 +18,10 @@ import { SOURCES } from "../storage/media-search-store";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
 import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
 import MediaTiles from "./media-tiles";
-import axios from "axios";
-import { propertiesService } from "../propertiesService";
+import RoomInfoDialog from "./room-info-dialog";
+import LiveStreamInfoDialog from "./live-stream-info-dialog";
+import { liveStreamService } from "../systems/service/liveStreamService";
+import {sceneEntryManagerEventEmitter} from "../scene-entry-manager";
 
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
@@ -97,7 +99,8 @@ class MediaBrowser extends Component {
     performConditionalSignIn: PropTypes.func
   };
 
-  state = { query: "", facets: [], showNav: true, selectNextResult: false, clearStashedQueryOnClose: false };
+  state = { query: "", facets: [], showNav: true, selectNextResult: false, clearStashedQueryOnClose: false,
+    dialog: null, };
 
   constructor(props) {
     super(props);
@@ -184,19 +187,21 @@ class MediaBrowser extends Component {
       const searchParams = new URLSearchParams(this.props.history.location.search);
       const urlSource = this.getUrlSource(searchParams);
       const is360 = urlSource === "videos360";
-      const randDigits = Math.floor(100000 + Math.random() * 900000);
-      const name = "live-" + (is360 ? "360-" : "" )+ randDigits;
-      axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/live/create", {
-        user: "myself",
-        name: name
-      }).then(resp => {
-        const entry = resp.data;
+      liveStreamService.createStream(is360).then(entry => {
         this.setState((state) => {
           const newState = { ...state };
           newState.result.entries.push(entry);
           return newState;
         });
-      });
+      })
+    }if(entry.camera){
+      const searchParams = new URLSearchParams(this.props.history.location.search);
+      const urlSource = this.getUrlSource(searchParams);
+      const is360 = urlSource === "videos360";
+      entry.camera.type = is360?"360-equirectangular":"2d";
+      entry.camera.selectAction = this.state.selectAction;
+      this.selectEntry(entry);
+      sceneEntryManagerEventEmitter.emit(`action_share_camera`,entry.camera);
     } else if (!entry.lucky_query) {
       this.selectEntry(entry);
     } else {
@@ -279,6 +284,29 @@ class MediaBrowser extends Component {
     this.browserDiv.scrollTop = 0;
   };
 
+  showRoomInfo = hubEntry => {
+    if(hubEntry.type === "room") {
+      this.showDialog(RoomInfoDialog, {
+        hubName: hubEntry.name,
+        hubDescription: hubEntry.description
+      });
+    }else{
+      this.showDialog(LiveStreamInfoDialog, {
+        entry: hubEntry
+      });
+    }
+  };
+
+  showDialog = (DialogClass, props = {}) => {
+    this.setState({
+      dialog: <DialogClass {...{ onClose: this.closeDialog, ...props }} />
+    });
+  };
+
+  closeDialog = () => {
+    this.setState({ dialog: null });
+  };
+
   render() {
     const { formatMessage } = this.props.intl;
     const searchParams = new URLSearchParams(this.props.history.location.search);
@@ -289,7 +317,7 @@ class MediaBrowser extends Component {
       !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
-    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects" && urlSource !== "videos360";
+    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects" && urlSource !== "videos360" && urlSource !== "videos";
 
     const facets = this.state.facets && this.state.facets.length > 0 && this.state.facets;
 
@@ -317,6 +345,7 @@ class MediaBrowser extends Component {
     const page = (meta && meta.page) || 0;
     const apiSource = (meta && meta.source) || null;
     const isVariableWidth = ["bing_images", "tenor"].includes(apiSource);
+    const showinfo = activeFilter.indexOf("live")!==-1;
 
     return (
       <div className={styles.mediaBrowser} ref={browserDiv => (this.browserDiv = browserDiv)}>
@@ -480,6 +509,7 @@ class MediaBrowser extends Component {
               history={this.props.history}
               urlSource={urlSource}
               handleEntryClicked={this.handleEntryClicked}
+              handleEntryInfoClicked={showinfo?this.showRoomInfo:undefined}
               onCopyAvatar={this.onCopyAvatar}
               onCopyScene={this.onCopyScene}
               onShowSimilar={this.onShowSimilar}
@@ -491,6 +521,7 @@ class MediaBrowser extends Component {
             </div>
           )}
         </div>
+        {this.state.dialog}
       </div>
     );
   }

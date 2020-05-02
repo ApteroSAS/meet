@@ -362,6 +362,10 @@ AFRAME.registerComponent("media-loader", {
       let contentType = this.data.contentType;
       let thumbnail;
 
+      if((contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
+        this.data.mediaOptions.projection = "360-equirectangular";
+      }
+
       const parsedUrl = new URL(src);
 
       // We want to resolve and proxy some hubs urls, like rooms and scene links,

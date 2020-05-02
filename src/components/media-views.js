@@ -37,6 +37,9 @@ for (let i = 0; i <= 20; i++) {
   VOLUME_LABELS[i] = s;
 }
 
+const EventEmitter = require("eventemitter3");
+export const mediaViewEventEmitter = new EventEmitter();
+
 class GIFTexture extends THREE.Texture {
   constructor(frames, delays, disposals) {
     super(document.createElement("canvas"));
@@ -379,12 +382,23 @@ AFRAME.registerComponent("media-video", {
 
   async changeVideo() {
     window.APP.mediaSearchStore.sourceNavigateWithResult(this.data.projection==="360-equirectangular"?"videos360":"videos").then(entry => {
-      console.log ("change video");
-      const oldData = {...this.data};
-      this.lastUpdate = 0;
-      this.videoIsLive = null; // value null until we've determined if the video is live or not.
-      this.data.src = entry.url;
-      this.update(oldData);
+      if(entry.camera){
+        mediaViewEventEmitter.once("camera_created",(data)=>{
+          console.log ("change video");
+          const oldData = {...this.data};
+          this.lastUpdate = 0;
+          this.videoIsLive = null; // value null until we've determined if the video is live or not.
+          this.data.src = data.src;
+          this.update(oldData);
+        });
+      }else{
+        console.log ("change video");
+        const oldData = {...this.data};
+        this.lastUpdate = 0;
+        this.videoIsLive = null; // value null until we've determined if the video is live or not.
+        this.data.src = entry.url;
+        this.update(oldData);
+      }
     });
   },
 
@@ -571,11 +585,16 @@ AFRAME.registerComponent("media-video", {
           this.setupAudio();
         }
       }
-
       this.video = texture.image;
       this.video.loop = this.data.loop;
       this.video.addEventListener("pause", this.onPauseStateChange);
       this.video.addEventListener("play", this.onPauseStateChange);
+
+      if(src.startsWith("hubs://")){
+        setTimeout(()=>{
+          this.video.play();
+        },2000);
+      }
 
       if (texture.hls) {
         const updateLiveState = () => {

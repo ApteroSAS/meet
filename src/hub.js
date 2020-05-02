@@ -582,7 +582,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   remountUI({
     onSendMessage: messageDispatch.dispatch,
     onLoaded: () => store.executeOnLoadActions(scene),
-    onMediaSearchResultEntrySelected: (entry, selectAction) => {
+     onMediaSearchResultEntrySelected: (entry, selectAction) => {
       scene.emit("action_selected_media_result_entry", { entry, selectAction })
       mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry, selectAction });
     },

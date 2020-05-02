@@ -9,6 +9,7 @@ const forceEnableTouchscreen = hackyMobileSafariTest();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 const isDebug = qsTruthy("debug");
 const qs = new URLSearchParams(location.search);
+const EventEmitter = require("eventemitter3");
 
 import { addMedia, getPromotionTokenForFile } from "./utils/media-utils";
 import {
@@ -21,8 +22,11 @@ import { ObjectContentOrigins } from "./object-types";
 import { getAvatarSrc, getAvatarType } from "./utils/avatar-utils";
 import { pushHistoryState } from "./utils/history";
 import { SOUND_ENTER_SCENE } from "./systems/sound-effects-system";
+import { mediaViewEventEmitter } from "./components/media-views";
 
 const isIOS = AFRAME.utils.device.isIOS();
+
+export const sceneEntryManagerEventEmitter = new EventEmitter();
 
 export default class SceneEntryManager {
   constructor(hubChannel, authChannel, history) {
@@ -272,7 +276,7 @@ export default class SceneEntryManager {
 
   _setupMedia = mediaStream => {
     const offset = { x: 0, y: 0, z: -1.5 };
-    const spawnMediaInfrontOfPlayer = (src, contentOrigin) => {
+    const spawnMediaInfrontOfPlayer = (src, contentOrigin,data) => {
       if (!this.hubChannel.can("spawn_and_move_media")) return;
       const { entity, orientation } = addMedia(
         src,
@@ -280,7 +284,9 @@ export default class SceneEntryManager {
         contentOrigin,
         null,
         !(src instanceof MediaStream),
-        true
+        true,
+        true,
+        data?data:{}
       );
       orientation.then(or => {
         entity.setAttribute("offset-relative-to", {
@@ -395,7 +401,7 @@ export default class SceneEntryManager {
     let currentVideoShareEntity;
     let isHandlingVideoShare = false;
 
-    const shareVideoMediaStream = async (constraints, isDisplayMedia) => {
+    const shareVideoMediaStream = async (constraints, isDisplayMedia,data) => {
       if (isHandlingVideoShare) return;
       isHandlingVideoShare = true;
 
@@ -424,10 +430,14 @@ export default class SceneEntryManager {
       if (videoTracks.length > 0) {
         newStream.getVideoTracks().forEach(track => mediaStream.addTrack(track));
         await NAF.connection.adapter.setLocalMediaStream(mediaStream);
-        currentVideoShareEntity = spawnMediaInfrontOfPlayer(mediaStream, undefined);
-
-        // Wire up custom removal event which will stop the stream.
-        currentVideoShareEntity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
+        if(data.selectAction==="result"){
+          data.src = `hubs://clients/${NAF.clientId}/video`
+          mediaViewEventEmitter.emit("camera_created",data);
+        }else{
+          currentVideoShareEntity = spawnMediaInfrontOfPlayer(mediaStream, undefined,data);
+          // Wire up custom removal event which will stop the stream.
+          currentVideoShareEntity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
+        }
       }
 
       this.scene.emit("share_video_enabled", { source: isDisplayMedia ? "screen" : "camera" });
@@ -435,15 +445,22 @@ export default class SceneEntryManager {
       isHandlingVideoShare = false;
     };
 
-    this.scene.addEventListener("action_share_camera", () => {
-      shareVideoMediaStream({
+    const processCamera = (data) => {
+      let constraint = {
         video: {
           mediaSource: "camera",
-          width: isIOS ? { max: 1280 } : { max: 1280, ideal: 720 },
+          width: isIOS ? { max: 1280 } : { ideal: 720 },
           frameRate: 30
         }
-      });
-    });
+      };
+      if(data.deviceId) {
+        constraint.video.deviceId =  { ideal: data.deviceId};
+      }
+      shareVideoMediaStream(constraint,false,data);
+    };
+
+    sceneEntryManagerEventEmitter.on("action_share_camera",processCamera);
+    this.scene.addEventListener("action_share_camera", processCamera);
 
     this.scene.addEventListener("action_share_screen", () => {
       shareVideoMediaStream(
@@ -457,7 +474,7 @@ export default class SceneEntryManager {
           },
           audio: true
         },
-        true
+        true,{}
       );
     });
 
@@ -493,10 +510,10 @@ export default class SceneEntryManager {
       // If user has HMD lifted up or gone through interstitial, delay spawning for now. eventually show a modal
       if (delaySpawn) {
         setTimeout(() => {
-          spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL);
+          spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL,entry);
         }, 3000);
       } else {
-        spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL);
+        spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL,entry);
       }
     });
 

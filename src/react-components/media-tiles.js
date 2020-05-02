@@ -8,24 +8,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons/faExternalLinkAlt";
-import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faInfo } from "@fortawesome/free-solid-svg-icons/faInfo";
-import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
-import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
-import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
 import { faUsers } from "@fortawesome/free-solid-svg-icons/faUsers";
-import { faStar } from "@fortawesome/free-solid-svg-icons/faStar";
-
-import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
-import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
-import { getReticulumFetchUrl } from "../utils/phoenix-utils";
 import RemoteThumbnailRenderer from "../utils/thumnail/thumbnail/RemoteThumbnailRenderer";
-import axios from "axios";
-import { propertiesService } from "../propertiesService";
 
 dayjs.extend(relativeTime);
 
@@ -38,7 +27,7 @@ const PUBLISHER_FOR_ENTRY_TYPE = {
 const sessionCache = {};
 
 class MediaTiles extends Component {
-  state = { thumbnailCache: { ...sessionCache }, thumbnailInProgress: {} };
+  state = { thumbnailCache: { ...sessionCache }, thumbnailInProgress: {}, webcamlist: {} };
   static propTypes = {
     intl: PropTypes.object,
     entries: PropTypes.array,
@@ -80,6 +69,7 @@ class MediaTiles extends Component {
         <div className={classNames({ [styles.tiles]: true, [styles.tilesVariable]: isVariableWidth })}>
           {(this.props.history && this.props.history.location.search.search("live") !== -1) &&
           this.createStreamTile()}
+          {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
           {/*(urlSource === "avatars" || urlSource === "scenes") && (
             <div
               style={{ width: `${createTileWidth}px`, height: `${createTileHeight}px` }}
@@ -164,7 +154,7 @@ class MediaTiles extends Component {
 
   createStreamTile() {
     const clickAction = (e) => {
-      this.props.handleEntryClicked && this.props.handleEntryClicked(e, {createLiveEntry:true});
+      this.props.handleEntryClicked && this.props.handleEntryClicked(e, { createLiveEntry: true });
     };
     const [imageWidth, imageHeight] = this.getTileDimensions(false, false, 16 / 9);
     return (<div style={{ width: `${imageWidth}px` }} className={styles.tile} key={`create-live`}>
@@ -191,12 +181,64 @@ class MediaTiles extends Component {
     </div>);
   }
 
+  createWebcamTile(device) {
+    const clickAction = (e) => {
+      this.props.handleEntryClicked && this.props.handleEntryClicked(e, { camera: device });
+    };
+    const [imageWidth, imageHeight] = this.getTileDimensions(false, false, 16 / 9);
+    return (<div style={{ width: `${imageWidth}px` }} className={styles.tile} key={`camera-live` + device.deviceId}>
+      <a rel="noreferrer noopener"
+         onClick={clickAction}
+         className={styles.tileLink}
+         style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+      ><img
+        className={classNames(styles.tileContent, styles.avatarTile)}
+        style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+        src={"../assets/static/app-thumbnail.png"}
+      />
+      </a>
+      <div className={styles.info}>
+        <a
+          rel="noreferrer noopener"
+          className={styles.name}
+          style={{ textAlign: "center" }}
+          onClick={clickAction}
+        >
+          {device.label + " " + device.deviceId || "\u00A0"}
+        </a>
+      </div>
+    </div>);
+  }
+
+
+  createWebcamTiles() {
+    //1 try to update the camera list
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      let camlist = {};
+      devices.forEach((device) => {
+        //console.log(device.kind + ": " + device.label +" id = " + device.deviceId);
+        if(device.kind==="videoinput") {
+          camlist[device.deviceId] = device;
+        }
+      });
+      if (Object.keys(this.state.webcamlist).length !== Object.keys(camlist).length) {
+        this.setState({ webcamlist: camlist });
+      }
+    }).catch((err) => {
+      console.log(err.name + ": " + err.message);
+    });
+
+    return Object.keys(this.state.webcamlist).map(key => {
+      return this.createWebcamTile(this.state.webcamlist[key]);
+    });
+  }
+
   entryToTile = (entry, idx) => {
-    if(!entry.images.preview){
-      entry.images.preview={
-        url:"https://hub.aptero.co/data/app-thumbnail.png",
+    if (!entry.images.preview) {
+      entry.images.preview = {
+        url: "https://hub.aptero.co/data/app-thumbnail.png",
         height: 1280,
-        width: 720,
+        width: 720
       };
     }
     const imageSrc = entry.images.preview.url;
@@ -323,11 +365,9 @@ class MediaTiles extends Component {
                 <FontAwesomeIcon icon={faPencilAlt} />
               </a>
             )*/}
-          {entry.type === "room" &&
-          this.props.handleEntryInfoClicked &&
-          entry.description && (
+          {this.props.handleEntryInfoClicked && (
             <a
-              title="room info"
+              title="info"
               onClick={e => {
                 e.preventDefault();
                 this.props.handleEntryInfoClicked(entry);
