@@ -14,7 +14,7 @@ import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
-import RemoteThumbnailRenderer from "../utils/thumnail/thumbnail/RemoteThumbnailRenderer";
+import RemoteThumbnailRenderer from "../aptero/thumnail/thumbnail/RemoteThumbnailRenderer";
 
 dayjs.extend(relativeTime);
 

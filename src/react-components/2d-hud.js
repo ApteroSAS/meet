@@ -8,7 +8,7 @@ import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { micLevelForVolume } from "../components/audio-feedback";
-import { video360Service } from "../systems/Video360Service";
+import { video360Service } from "../aptero/service/Video360Service";
 import SpawnIcon from "../assets/images/spawn.svgi";
 import ShareScreenIconActive from "../assets/images/share_screen_active.svgi";
 import ShareScreenIcon from "../assets/images/share_screen.svgi";

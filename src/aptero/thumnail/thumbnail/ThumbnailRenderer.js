@@ -2,7 +2,7 @@ import { AmbientLight, DirectionalLight, PerspectiveCamera, Box3, Vector3, Scene
 import { getCanvasBlob } from "../utils/thumbnails";
 import makeRenderer from "./makeRenderer";
 import { loadGLTF } from "../../../components/gltf-model-plus";
-import { findNode } from "../../three-utils";
+import { findNode } from "../../../utils/three-utils";
 import { createDefaultEnvironmentMap } from "../../../components/environment-map";
 import {propertiesService} from "../../../propertiesService";
 

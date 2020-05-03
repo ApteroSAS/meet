@@ -1,5 +1,5 @@
 import { SOUND_SPAWN_PEN } from "../systems/sound-effects-system";
-import { video360Service } from "../systems/Video360Service";
+import { video360Service } from "../aptero/service/Video360Service";
 /**
  * HUD panel for muting, freezing, and other controls that don't necessarily have hardware buttons.
  * @namespace ui

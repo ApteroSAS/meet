@@ -243,7 +243,8 @@ import { getAvailableVREntryTypes, VR_DEVICE_AVAILABILITY, ONLY_SCREEN_AVAILABLE
 import detectConcurrentLoad from "./utils/concurrent-load-detector";
 
 import qsTruthy from "./utils/qs_truthy";
-import {video360Service } from "./systems/Video360Service";
+import {video360Service } from "./aptero/service/Video360Service";
+import { networkService } from "./aptero/service/network";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -1348,6 +1349,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   hubChannel.setPhoenixChannel(hubPhxChannel);
+  networkService.setPhoenixChannel(hubPhxChannel);
 
   hubPhxChannel
     .join()
@@ -1569,6 +1571,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   hubPhxChannel.on("message", ({ session_id, type, body, from }) => {
+    //TODO hack waitting for server implementation
+    networkService.processMessage({ session_id, type, body, from });
     const getAuthor = () => {
       const userInfo = hubChannel.presence.state[session_id];
       if (from) {
