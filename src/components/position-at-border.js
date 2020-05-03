@@ -5,10 +5,10 @@ const MIN_SCALE = 0.05;
 const MAX_SCALE = 4;
 const ROTATE_Y = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
 
-const getCurrentDataFromLocalBB = (function() {
+const updateFromLocalBB = (function() {
   const currentPosition = new THREE.Vector3();
   const currentScale = new THREE.Vector3();
-  return function getCurrentDataFromLocalBB(object3D, localBox, center, halfExtents, offsetToCenter) {
+  return function updateFromLocalBB(object3D, localBox, center, halfExtents, offsetToCenter) {
     object3D.updateMatrices();
     const min = localBox.min;
     const max = localBox.max;
@@ -26,17 +26,17 @@ const getCurrentDataFromLocalBB = (function() {
   };
 })();
 
-const calculateDesiredTargetQuaternion = (function() {
+const updateTargetRotationFromCamera = (function() {
   const right = new THREE.Vector3();
   const up = new THREE.Vector3();
   const back = new THREE.Vector3();
   const forward = new THREE.Vector3();
   const rotation = new THREE.Matrix4();
-  return function calculateDesiredTargetQuaternion(
+  return function updateTargetRotationFromCamera(
     cameraPosition,
     cameraRotation,
     isVR,
-    intersectionPoint,
+    vrFocalPoint,
     desiredTargetQuaternion
   ) {
     if (!isVR) {
@@ -45,17 +45,18 @@ const calculateDesiredTargetQuaternion = (function() {
         .applyMatrix4(cameraRotation)
         .normalize();
     } else {
-      back.subVectors(cameraPosition, intersectionPoint).normalize();
+      back.subVectors(cameraPosition, vrFocalPoint).normalize();
     }
     up.set(0, 1, 0);
     forward.copy(back).multiplyScalar(-1);
     right.crossVectors(forward, up).normalize();
     up.crossVectors(right, forward);
     rotation.makeBasis(right, up, back);
-    return desiredTargetQuaternion.setFromRotationMatrix(rotation);
+    desiredTargetQuaternion.setFromRotationMatrix(rotation);
   };
 })();
 
+const positionAtBorderComponents = [];
 AFRAME.registerComponent("position-at-border", {
   multiple: true,
   schema: {
@@ -67,15 +68,22 @@ AFRAME.registerComponent("position-at-border", {
 
   init() {
     this.ready = false;
-    this.didTryToGetReady = false;
-    this.tick = this.tick.bind(this);
+    this.didInit = false;
+    this.tick2 = this.tick2.bind(this);
+    this.doInit = this.doInit.bind(this);
+    positionAtBorderComponents.push(this);
   },
-  tryToGetReady() {
-    this.didTryToGetReady = true;
-    this.cam = document.getElementById("viewing-camera").object3D;
+
+  doInit() {
+    this.didInit = true;
+    this.cam = document.getElementById("viewing-camera").object3DMap.camera;
+    if (!this.data.target) {
+      console.error("No target for position-at-border on element:", this.el);
+      return;
+    }
     const targetEl = this.el.querySelector(this.data.target);
     if (!targetEl) {
-      console.error(`could not find ${this.data.target} underneath element:`, this.el);
+      console.error(`Could not find ${this.data.target} underneath element:`, this.el);
       return;
     }
     if (this.data.animate) {
@@ -101,16 +109,17 @@ AFRAME.registerComponent("position-at-border", {
     if (this.didRegisterWithAnimationSystem) {
       this.el.sceneEl.systems["hubs-systems"].menuAnimationSystem.unregister(this);
     }
+    positionAtBorderComponents.splice(positionAtBorderComponents.indexOf(this), 1);
   },
 
   markDirty() {
     this.isTargetBoundingBoxDirty = true;
   },
 
-  tick: (function() {
+  tick2: (function() {
     const cameraPosition = new THREE.Vector3();
     const cameraRotation = new THREE.Matrix4();
-    const camToCenter = new THREE.Vector3();
+    const centerToCamera = new THREE.Vector3();
     const intersectionToCam = new THREE.Vector3();
     const desiredCenterPoint = new THREE.Vector3();
     const desiredTargetPosition = new THREE.Vector3();
@@ -123,10 +132,9 @@ AFRAME.registerComponent("position-at-border", {
     const currentMeshScale = new THREE.Vector3();
     const meshForward = new THREE.Vector3();
     const boxCorners = new THREE.Vector3();
-    return function tick() {
-      if (!this.didTryToGetReady) {
-        this.tryToGetReady();
-        return;
+    return function tick2() {
+      if (!this.didInit) {
+        this.doInit();
       }
       if (!this.ready) {
         return;
@@ -149,7 +157,7 @@ AFRAME.registerComponent("position-at-border", {
         }
         this.isTargetBoundingBoxDirty = false;
       }
-      getCurrentDataFromLocalBB(
+      updateFromLocalBB(
         this.target,
         this.targetLocalBoundingBox,
         this.targetCenter,
@@ -161,7 +169,7 @@ AFRAME.registerComponent("position-at-border", {
         computeLocalBoundingBox(currentMesh, this.meshLocalBoundingBox, true);
         this.previousMesh = currentMesh;
       }
-      getCurrentDataFromLocalBB(
+      updateFromLocalBB(
         currentMesh,
         this.meshLocalBoundingBox,
         this.meshCenter,
@@ -173,8 +181,8 @@ AFRAME.registerComponent("position-at-border", {
       this.cam.updateMatrices();
       cameraPosition.setFromMatrixPosition(this.cam.matrixWorld);
       cameraRotation.extractRotation(this.cam.matrixWorld);
-      camToCenter.subVectors(cameraPosition, this.meshCenter);
-      const needsYRotate = this.data.isFlat && meshForward.dot(camToCenter) > 0;
+      centerToCamera.subVectors(cameraPosition, this.meshCenter);
+      const needsYRotate = this.data.isFlat && meshForward.dot(centerToCamera) > 0;
       const intersection = this.el.sceneEl.systems.interaction.getActiveIntersection();
       const meshSphereRadius =
         boxCorners
@@ -185,11 +193,11 @@ AFRAME.registerComponent("position-at-border", {
         // Put in front of the flat media, on the side where the user is
         desiredCenterPoint.copy(this.meshCenter).add(
           centerToBorder
-            .set(0, 0, this.meshHalfExtents.z + this.targetHalfExtents.z + 0.02)
+            .set(0, 0, this.meshHalfExtents.z + this.targetHalfExtents.z + 1)
             .multiplyScalar(needsYRotate ? -1 : 1)
             .applyMatrix4(currentMeshRotation)
         );
-      } else if (meshSphereRadius * 1.01 > camToCenter.length()) {
+      } else if (meshSphereRadius + 2 > centerToCamera.length()) {
         // Inside the bounding sphere, put it close to the intersection, or close to the camera if there is no intersection
         desiredCenterPoint.lerpVectors(
           cameraPosition,
@@ -198,16 +206,16 @@ AFRAME.registerComponent("position-at-border", {
         );
       } else if (intersection) {
         // Put it in the line towards the intersection, outside the bounding sphere
-        const distanceToSphere = camToCenter.length() - meshSphereRadius;
+        const distanceToSphere = centerToCamera.length() - meshSphereRadius;
         intersectionToCam.subVectors(intersection.point, cameraPosition);
         desiredCenterPoint.copy(cameraPosition).add(intersectionToCam.normalize().multiplyScalar(distanceToSphere));
       } else {
         // Put it on the bounding sphere
-        camToCenter.normalize().multiplyScalar(meshSphereRadius);
-        desiredCenterPoint.copy(this.meshCenter).add(camToCenter);
+        centerToCamera.normalize().multiplyScalar(meshSphereRadius);
+        desiredCenterPoint.copy(this.meshCenter).add(centerToCamera);
       }
       if (this.data.scale) {
-        const distanceToCenter = camToCenter.subVectors(cameraPosition, desiredCenterPoint).length();
+        const distanceToCenter = centerToCamera.subVectors(cameraPosition, desiredCenterPoint).length();
         desiredTargetScale.setScalar(THREE.Math.clamp(0.45 * distanceToCenter, MIN_SCALE, MAX_SCALE));
       } else {
         desiredTargetScale.setFromMatrixScale(this.target.matrixWorld);
@@ -234,7 +242,7 @@ AFRAME.registerComponent("position-at-border", {
           desiredTargetQuaternion.multiply(ROTATE_Y);
         }
       } else {
-        calculateDesiredTargetQuaternion(
+        updateTargetRotationFromCamera(
           cameraPosition,
           cameraRotation,
           this.el.sceneEl.is("vr-mode"),
@@ -251,3 +259,12 @@ AFRAME.registerComponent("position-at-border", {
     };
   })()
 });
+
+export class PositionAtBorderSystem {
+  constructor() {}
+  tick() {
+    for (let i = 0; i < positionAtBorderComponents.length; i++) {
+      positionAtBorderComponents[i].tick2();
+    }
+  }
+}

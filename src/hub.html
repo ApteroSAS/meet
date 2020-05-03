@@ -13,8 +13,8 @@
     <!-- iOS (for "Add to Homescreen") -->
     <meta name="mobile-web-app-capable" content="yes">
     <title>Aptero</title>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700" rel="stylesheet">
     <script type="text/javascript" src="/properties.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700" rel="stylesheet">
     <!-- Google Analytics -->
     <!-- NOTE GA tracking is disabled by default. You'll need to set the GA_TRACKING_ID build variable to enable it. -->
     <script>
@@ -183,7 +183,7 @@
 
                         <template data-name="Head">
                             <a-entity
-                                networked-audio-source="rolloffFactor: 2.0;positional:false;"
+                                networked-audio-source="rolloffFactor: 2.0;"
                                 audio-source="type: avatar"
                                 personal-space-invader="radius: 0.15; useMaterial: true;"
                                 bone-visibility
@@ -278,9 +278,9 @@
                     floaty-object="modifyGravityOnRelease: true; autoLockOnLoad: true;"
                     set-yxz-order
                     matrix-auto-update
-                    position-at-box-shape-border__freeze="target:.freeze-menu;"
-                    position-at-box-shape-border__freeze-unprivileged="target:.freeze-unprivileged-menu;"
                     hoverable-visuals
+                    position-at-border__freeze="target:.freeze-menu"
+                    position-at-border__freeze-unprivileged="target:.freeze-unprivileged-menu"
                     listed-media
                     audio-source="type: media"
                 >
@@ -517,7 +517,7 @@
                     floaty-object="modifyGravityOnRelease: true; autoLockOnLoad: true;"
                     set-yxz-order
                     matrix-auto-update
-                    position-at-box-shape-border__freeze="target:.freeze-menu;"
+                    position-at-border__freeze="target:.freeze-menu;"
                     hoverable-visuals
                 >
                     <a-entity
@@ -575,7 +575,7 @@
                     matrix-auto-update
                     scale="0.5 0.5 0.5"
                     action-to-remove__pen="path: /actions/pen/remove;"
-                    position-at-box-shape-border="target:.pen-menu"
+                    position-at-border="target:.pen-menu"
                     set-yxz-order
                 >
                     <a-entity
@@ -610,7 +610,7 @@
                     owned-object-limiter="counter: #camera-counter"
                     set-unowned-body-kinematic
                     scalable-when-grabbed
-                    position-at-box-shape-border__freeze="target: .camera-menu"
+                    position-at-border="target:.camera-menu; isFlat: true"
                     set-yxz-order
                 >
                     <a-entity class="ui interactable-ui camera-snap-menu" visible-if-permitted="spawn_camera">
@@ -1135,10 +1135,10 @@
                         material="alphaTest:0.1;"
                     ></a-entity>
                     <a-entity
-                            is-remote-hover-target
-                            tags="singleActionButton: true"
-                            sprite
-                            icon-button="
+                        is-remote-hover-target
+                        tags="singleActionButton: true"
+                        sprite
+                        icon-button="
                             tooltip: #hud-tooltip;
                             tooltipText: play;
                             activeTooltipText: play;
@@ -1193,10 +1193,10 @@
                             image: close-action.png;
                             hoverImage: close-action.png;
                             disabledImage: exit-disabled.png;"
-                            scale="0.1 0.1 0.1"
+                        scale="0.1 0.1 0.1"
                             position="0.30 0 0.001"
                             class="hud quitbtn"
-                            material="alphaTest:0.1;"
+                        material="alphaTest:0.1;"
                     ></a-entity>
                 </a-entity>
             </a-entity>

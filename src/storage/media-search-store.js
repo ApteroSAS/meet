@@ -128,12 +128,9 @@ export default class MediaSearchStore extends EventTarget {
         if (!entry.url.startsWith("https://") && entry.url.startsWith("http://")) {
           entry.url = entry.url.replace("http://", "https://");//promote insecure content
         }
-        if (entry.type === "hub") {
-          entry.images.preview.url = configs.PROTOCOL + configs.RETICULUM_SERVER + "/assets/images/default-room.png";
+        if (entry.type === "room") {
           if (window.location.href.startsWith("https://localhost")) {
             entry.url = "/hub.html?hub_id=" + entry.id;
-          } else {
-            entry.url = "/room/" + entry.id + "/" + entry.name;
           }
         }
       });

@@ -17,7 +17,7 @@ export default class RemoteThumbnailRenderer {
           } else {
             axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/thumbnail/generate", { url: glbFileUrl }).then(data => {
               const res = data.data;
-              const imageUrl = res;
+              const imageUrl = res.url;
               resolve(imageUrl);
             }).catch(reason => {
               reject(reason);

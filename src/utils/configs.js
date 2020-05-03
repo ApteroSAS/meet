@@ -3,7 +3,6 @@ import companyLogo from "../assets/images/company-logo.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
 import pdfjs from "pdfjs-dist";
 import { propertiesService, registerProperties } from "../propertiesService";
-
 registerProperties();
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.

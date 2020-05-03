@@ -60,8 +60,8 @@ const remountUI = function() {
     <HashRouter>
       <>
         {root}
-        <Route path="/join-us" render={() => <JoinUsDialog onClose={returnToRoot}/>}/>
-        <Route path="/report" render={() => <ReportDialog onClose={returnToRoot}/>}/>
+        <Route path="/join-us" render={() => <JoinUsDialog onClose={returnToRoot} />} />
+        <Route path="/report" render={() => <ReportDialog onClose={returnToRoot} />} />
       </>
     </HashRouter>
   );
@@ -84,16 +84,18 @@ async function fetchFeaturedRooms() {
   const [favoriteRoomsResult, publicRoomsResult] = await Promise.all([
     authChannel.signedIn
       ? fetchReticulumAuthenticated(
-      `/api/v1/media/search?source=favorites&type=rooms&user=${store.credentialsAccountId}`
-      )
+          `/api/v1/media/search?source=favorites&type=rooms&user=${store.credentialsAccountId}`
+        )
       : Promise.resolve({ entries: [] }),
     fetchReticulumAuthenticated("/api/v1/media/search?source=rooms&filter=public")
   ]);
 
   const entries = [...publicRoomsResult.entries, ...favoriteRoomsResult.entries];
   entries.forEach(entry => {
-    if (entry.type === "room" && window.location.href.startsWith("https://localhost")) {
-      entry.url = "/hub.html?hub_id=" + entry.id;
+    if (entry.type === "room") {
+      if (window.location.href.startsWith("https://localhost")) {
+        entry.url = "/hub.html?hub_id=" + entry.id;
+      }
     }
   });
   const ids = entries.map(h => h.id);

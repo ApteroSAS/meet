@@ -400,6 +400,11 @@ AFRAME.registerComponent("media-loader", {
       // we don't think we can infer it from the extension, we need to make a HEAD request to find it out
       contentType = contentType || guessContentType(canonicalUrl) || (await fetchContentType(accessibleUrl));
 
+      // Some servers treat m3u8 playlists as "audio/x-mpegurl", we always want to treat them as HLS videos
+      if (contentType === "audio/x-mpegurl") {
+        contentType = "application/vnd.apple.mpegurl";
+      }
+
       // We don't want to emit media_resolved for index updates.
       if (forceLocalRefresh || srcChanged) {
         this.el.emit("media_resolved", { src, raw: accessibleUrl, contentType });
@@ -450,6 +455,9 @@ AFRAME.registerComponent("media-loader", {
         if (this.el.components["position-at-box-shape-border__freeze"]) {
           this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
+        if (this.el.components["position-at-border__freeze-unprivileged"]) {
+          this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
+        }
       } else if (contentType.startsWith("image/")) {
         this.el.removeAttribute("gltf-model-plus");
         this.el.removeAttribute("media-video");
@@ -487,6 +495,9 @@ AFRAME.registerComponent("media-loader", {
         if (this.el.components["position-at-box-shape-border__freeze"]) {
           this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
+        if (this.el.components["position-at-border__freeze-unprivileged"]) {
+          this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
+        }
       } else if (contentType.startsWith("application/pdf")) {
         this.el.removeAttribute("gltf-model-plus");
         this.el.removeAttribute("media-video");
@@ -512,6 +523,9 @@ AFRAME.registerComponent("media-loader", {
 
         if (this.el.components["position-at-box-shape-border__freeze"]) {
           this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
+        }
+        if (this.el.components["position-at-border__freeze-unprivileged"]) {
+          this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
         }
       } else if (
         contentType.includes("application/octet-stream") ||
@@ -589,10 +603,19 @@ AFRAME.registerComponent("media-loader", {
         if (this.el.components["position-at-box-shape-border__freeze"]) {
           this.el.setAttribute("position-at-box-shape-border__freeze", { dirs: ["forward", "back"] });
         }
+        if (this.el.components["position-at-border__freeze-unprivileged"]) {
+          this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
+        }
       } else {
         throw new Error(`Unsupported content type: ${contentType}`);
       }
     } catch (e) {
+      if (this.el.components["position-at-border__freeze"]) {
+        this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+      }
+      if (this.el.components["position-at-border__freeze-unprivileged"]) {
+        this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
+      }
       console.error("Error adding media", e);
       this.onError();
     }

@@ -74,7 +74,7 @@ import "./components/media-views";
 import "./components/avatar-volume-controls";
 import "./components/pinch-to-move";
 import "./components/pitch-yaw-rotator";
-import "./components/position-at-box-shape-border";
+import "./components/position-at-border";
 import "./components/pinnable";
 import "./components/pin-networked-object-button";
 import "./components/mirror-media-button";
@@ -346,18 +346,30 @@ function remountUI(props) {
 
 function setupPeerConnectionConfig(adapter, host, turn) {
   const forceTurn = qs.get("force_turn");
+  const forceTcp = qs.get("force_tcp");
   const peerConnectionConfig = {};
 
   if (turn && turn.enabled) {
-    const iceServers = turn.transports.map(ts => {
-      return { urls: `turns:${host}:${ts.port}?transport=tcp`, username: turn.username, credential: turn.credential };
+    const iceServers = [];
+
+    turn.transports.forEach(ts => {
+      // Try both TURN DTLS and TCP/TLS
+      if (!forceTcp) {
+        iceServers.push({ urls: `turns:${host}:${ts.port}`, username: turn.username, credential: turn.credential });
+      }
+
+      iceServers.push({
+        urls: `turns:${host}:${ts.port}?transport=tcp`,
+        username: turn.username,
+        credential: turn.credential
+      });
     });
 
     iceServers.push({ urls: "stun:stun1.l.google.com:19302" });
 
     peerConnectionConfig.iceServers = iceServers;
 
-    if (forceTurn) {
+    if (forceTurn || forceTcp) {
       peerConnectionConfig.iceTransportPolicy = "relay";
     }
   } else {
@@ -583,6 +595,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   remountUI({
     onSendMessage: messageDispatch.dispatch,
     onLoaded: () => store.executeOnLoadActions(scene),
+
      onMediaSearchResultEntrySelected: (entry, selectAction) => {
       scene.emit("action_selected_media_result_entry", { entry, selectAction })
       mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry, selectAction });
@@ -1142,7 +1155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (isMobileVR) {
       remountUI({ availableVREntryTypes, forcedVREntryType: "vr", checkingForDeviceAvailability: false });
 
-      if (/Oculus/.test(navigator.userAgent)) {
+      if (/Oculus/.test(navigator.userAgent) && "getVRDisplays" in navigator) {
         // HACK - The polyfill reports Cardboard as the primary VR display on startup out ahead of
         // Oculus Go on Oculus Browser 5.5.0 beta. This display is cached by A-Frame,
         // so we need to resolve that and get the real VRDisplay before entering as well.
