@@ -2,13 +2,11 @@ import { EventTarget } from "event-target-shim";
 import configs from "../utils/configs";
 import { getReticulumFetchUrl, fetchReticulumAuthenticated, hasReticulumServer } from "../utils/phoenix-utils";
 import { pushHistoryPath, sluglessPath, withSlug } from "../utils/history";
-const EventEmitter = require("eventemitter3");
 
 const EMPTY_RESULT = { entries: [], meta: {} };
 
 const URL_SOURCE_TO_TO_API_SOURCE = {
   objects: "objects",
-  videos360: "videos360",
   scenes: "scene_listings",
   images: "bing_images",
   videos: "bing_videos",
@@ -20,23 +18,19 @@ const URL_SOURCE_TO_TO_API_SOURCE = {
   favorites: "favorites"
 };
 
-const desiredSources = ["objects", "videos360", "poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
+const desiredSources = ["poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
 const availableIntegrations = configs.AVAILABLE_INTEGRATIONS;
 const availableSources = desiredSources.filter(source => {
   const apiSource = URL_SOURCE_TO_TO_API_SOURCE[source];
   return !availableIntegrations.hasOwnProperty(apiSource) || availableIntegrations[apiSource];
 });
-
-//export const SOURCES = ["objects", "videos360", "videos", "scenes", "avatars"];
-export const SOURCES = ["objects", "videos","videos360"];
+export const SOURCES = ["objects"];
 
 export const MEDIA_SOURCE_DEFAULT_FILTERS = {
   gifs: "trending",
   sketchfab: "featured",
   scenes: "featured",
-  favorites: "my-favorites",
-  objects: "my-objects",
-  video360: "my-videos-360"
+  favorites: "my-favorites"
 };
 
 const SEARCH_CONTEXT_PARAMS = ["q", "filter", "cursor", "similar_to"];
@@ -44,7 +38,6 @@ const SEARCH_CONTEXT_PARAMS = ["q", "filter", "cursor", "similar_to"];
 // This class is responsible for fetching and storing media search results and provides a
 // convenience API for performing history updates relevant to search navigation.
 export default class MediaSearchStore extends EventTarget {
-  eventEmitter = new EventEmitter();
   constructor() {
     super();
 
@@ -105,11 +98,13 @@ export default class MediaSearchStore extends EventTarget {
 
     let fetch = true;
 
+    if (source === "avatars" || source === "scenes" || source === "favorites" || source === "objects") {
       if (isMy) {
         if (window.APP.store.credentialsAccountId) {
           searchParams.set("user", window.APP.store.credentialsAccountId);
         } else {
           fetch = false; // Don't fetch my-* if not signed in
+        }
       }
     }
 
@@ -243,16 +238,6 @@ export default class MediaSearchStore extends EventTarget {
   sourceNavigateToDefaultSource = () => {
     this._sourceNavigate(this._stashedSource ? this._stashedSource : SOURCES[0], false, true);
   };
-
-  async sourceNavigateWithResult(source){
-    return new Promise((resolve) => {
-      this._sourceNavigate(source, true, false, "use");
-      this.eventEmitter.once("action_selected_media_result_entry", (data)=>{
-        resolve(data.entry);
-      });
-    });
-  }
-
 
   sourceNavigateWithNoNav = (source, selectAction) => {
     this._sourceNavigate(source, true, false, selectAction);

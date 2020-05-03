@@ -24,8 +24,6 @@ import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
 import { getReticulumFetchUrl } from "../utils/phoenix-utils";
 import RemoteThumbnailRenderer from "../utils/thumnail/thumbnail/RemoteThumbnailRenderer";
-import axios from "axios";
-import { propertiesService } from "../propertiesService";
 
 dayjs.extend(relativeTime);
 
@@ -36,9 +34,8 @@ const PUBLISHER_FOR_ENTRY_TYPE = {
 };
 
 const sessionCache = {};
-
 class MediaTiles extends Component {
-  state = { thumbnailCache: { ...sessionCache }, thumbnailInProgress: {} };
+  state = {thumbnailCache:{...sessionCache},thumbnailInProgress:{}};
   static propTypes = {
     intl: PropTypes.object,
     entries: PropTypes.array,
@@ -78,8 +75,6 @@ class MediaTiles extends Component {
     return (
       <div className={styles.body}>
         <div className={classNames({ [styles.tiles]: true, [styles.tilesVariable]: isVariableWidth })}>
-          {(this.props.history && this.props.history.location.search.search("live") !== -1) &&
-          this.createStreamTile()}
           {/*(urlSource === "avatars" || urlSource === "scenes") && (
             <div
               style={{ width: `${createTileWidth}px`, height: `${createTileHeight}px` }}
@@ -119,23 +114,23 @@ class MediaTiles extends Component {
         </div>
 
         {(hasNext || hasPrevious) &&
-        this.props.handlePager && (
-          <div className={styles.pager}>
-            <a
-              className={classNames({ [styles.previousPage]: true, [styles.pagerButtonDisabled]: !hasPrevious })}
-              onClick={() => this.props.handlePager(-1)}
-            >
-              <FontAwesomeIcon icon={faAngleLeft}/>
-            </a>
-            <div className={styles.pageNumber}>{page}</div>
-            <a
-              className={classNames({ [styles.nextPage]: true, [styles.pagerButtonDisabled]: !hasNext })}
-              onClick={() => this.props.handlePager(1)}
-            >
-              <FontAwesomeIcon icon={faAngleRight}/>
-            </a>
-          </div>
-        )}
+          this.props.handlePager && (
+            <div className={styles.pager}>
+              <a
+                className={classNames({ [styles.previousPage]: true, [styles.pagerButtonDisabled]: !hasPrevious })}
+                onClick={() => this.props.handlePager(-1)}
+              >
+                <FontAwesomeIcon icon={faAngleLeft} />
+              </a>
+              <div className={styles.pageNumber}>{page}</div>
+              <a
+                className={classNames({ [styles.nextPage]: true, [styles.pagerButtonDisabled]: !hasNext })}
+                onClick={() => this.props.handlePager(1)}
+              >
+                <FontAwesomeIcon icon={faAngleRight} />
+              </a>
+            </div>
+          )}
       </div>
     );
   }
@@ -158,47 +153,8 @@ class MediaTiles extends Component {
 
     return [imageWidth, imageHeight];
   };
-
   thumbnailRenderer = null;
-
-
-  createStreamTile() {
-    const clickAction = (e) => {
-      this.props.handleEntryClicked && this.props.handleEntryClicked(e, {createLiveEntry:true});
-    };
-    const [imageWidth, imageHeight] = this.getTileDimensions(false, false, 16 / 9);
-    return (<div style={{ width: `${imageWidth}px` }} className={styles.tile} key={`create-live`}>
-      <a rel="noreferrer noopener"
-         onClick={clickAction}
-         className={styles.tileLink}
-         style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-      ><img
-        className={classNames(styles.tileContent, styles.avatarTile)}
-        style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-        src={"../assets/static/app-thumbnail.png"}
-      />
-      </a>
-      <div className={styles.info}>
-        <a
-          rel="noreferrer noopener"
-          className={styles.name}
-          style={{ textAlign: "center" }}
-          onClick={clickAction}
-        >
-          {"Create à new live stream" || "\u00A0"}
-        </a>
-      </div>
-    </div>);
-  }
-
   entryToTile = (entry, idx) => {
-    if(!entry.images.preview){
-      entry.images.preview={
-        url:"https://hub.aptero.co/data/app-thumbnail.png",
-        height: 1280,
-        width: 720,
-      };
-    }
     const imageSrc = entry.images.preview.url;
     const creator = entry.attributions && entry.attributions.creator;
     const isImage = entry.type.endsWith("_image") || entry.type.startsWith("image");
@@ -213,7 +169,7 @@ class MediaTiles extends Component {
       if (!this.thumbnailRenderer) {
         this.thumbnailRenderer = new RemoteThumbnailRenderer();
       }
-      if (!this.state.thumbnailInProgress[entry.url] && !this.state.thumbnailCache[entry.url]) {
+      if(!this.state.thumbnailInProgress[entry.url] && !this.state.thumbnailCache[entry.url]) {
         this.setState((prevState) => {
           const newstate = { ...prevState };
           newstate.thumbnailInProgress[entry.url] = true;
@@ -246,16 +202,11 @@ class MediaTiles extends Component {
           src={scaledThumbnailUrlFor(imageSrc, imageWidth, imageHeight)}
         />));
 
-    const thumbnailElementModel = (this.state.thumbnailCache[entry.url] && !this.state.thumbnailInProgress[entry.url] ?
-      <img
-        className={classNames(styles.tileContent, styles.avatarTile)}
-        style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-        src={this.state.thumbnailCache[entry.url]}
-      /> : <img
-        className={classNames(styles.tileContent, styles.avatarTile)}
-        style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
-        src={"../assets/static/app-thumbnail.png"}
-      />);
+    const thumbnailElementModel = (this.state.thumbnailCache[entry.url] && !this.state.thumbnailInProgress[entry.url] ? <img
+      className={classNames(styles.tileContent, styles.avatarTile)}
+      style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+      src={this.state.thumbnailCache[entry.url]}
+    /> : <div></div>)
 
     // Inline mp4s directly since far/nearspark cannot resize them.
     const thumbnailElement =
@@ -324,18 +275,18 @@ class MediaTiles extends Component {
               </a>
             )*/}
           {entry.type === "room" &&
-          this.props.handleEntryInfoClicked &&
-          entry.description && (
-            <a
-              title="room info"
-              onClick={e => {
-                e.preventDefault();
-                this.props.handleEntryInfoClicked(entry);
-              }}
-            >
-              <FontAwesomeIcon icon={faInfo}/>
-            </a>
-          )}
+            this.props.handleEntryInfoClicked &&
+            entry.description && (
+              <a
+                title="room info"
+                onClick={e => {
+                  e.preventDefault();
+                  this.props.handleEntryInfoClicked(entry);
+                }}
+              >
+                <FontAwesomeIcon icon={faInfo} />
+              </a>
+            )}
         </div>
         {(!isImage && !isModel) && (
           <div className={styles.info}>
@@ -343,47 +294,46 @@ class MediaTiles extends Component {
               href={entry.url}
               rel="noreferrer noopener"
               className={styles.name}
-              style={{ textAlign: "center" }}
               onClick={e => this.props.handleEntryClicked && this.props.handleEntryClicked(e, entry)}
             >
               {entry.name || "\u00A0"}
             </a>
             {!isAvatar &&
-            !isHub && (
-              <div className={styles.attribution}>
-                <div className={styles.creator}>
-                  {creator && creator.name === undefined && <span>{creator}</span>}
-                  {creator && creator.name && !creator.url && <span>{creator.name}</span>}
-                  {creator &&
-                  creator.name &&
-                  creator.url && (
-                    <a href={creator.url} target="_blank" rel="noopener noreferrer">
-                      {creator.name}
-                    </a>
+              !isHub && (
+                <div className={styles.attribution}>
+                  <div className={styles.creator}>
+                    {creator && creator.name === undefined && <span>{creator}</span>}
+                    {creator && creator.name && !creator.url && <span>{creator.name}</span>}
+                    {creator &&
+                      creator.name &&
+                      creator.url && (
+                        <a href={creator.url} target="_blank" rel="noopener noreferrer">
+                          {creator.name}
+                        </a>
+                      )}
+                  </div>
+                  {publisherName && (
+                    <div className={styles.publisher}>
+                      <i>
+                        <FontAwesomeIcon icon={faExternalLinkAlt} />
+                      </i>
+                      &nbsp;<a href={entry.url} target="_blank" rel="noopener noreferrer">
+                        {publisherName}
+                      </a>
+                    </div>
                   )}
                 </div>
-                {publisherName && (
-                  <div className={styles.publisher}>
-                    <i>
-                      <FontAwesomeIcon icon={faExternalLinkAlt}/>
-                    </i>
-                    &nbsp;<a href={entry.url} target="_blank" rel="noopener noreferrer">
-                    {publisherName}
-                  </a>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
             {isHub && (
               <>
                 <div className={styles.attribution}>
                   <div className={styles.lastJoined}>
-                    <FormattedMessage id="media-browser.hub.joined-prefix"/>
+                    <FormattedMessage id="media-browser.hub.joined-prefix" />
                     {dayjs(entry.last_activated_at).fromNow()}
                   </div>
                 </div>
                 <div className={styles.presence}>
-                  <FontAwesomeIcon icon={faUsers}/>
+                  <FontAwesomeIcon icon={faUsers} />
                   <span>{entry.member_count}</span>
                 </div>
               </>
@@ -394,5 +344,4 @@ class MediaTiles extends Component {
     );
   };
 }
-
 export default injectIntl(MediaTiles);

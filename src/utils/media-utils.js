@@ -41,8 +41,6 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
       return {"meta":{"expected_content_type":"image/jpeg"},"origin":url}
   }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".mp4")){
       return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".m3u8")){
-    return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
   }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".glb")|| urlWithoutParams.endsWith(".gltf"))){
     return {"meta":{"expected_content_type":"model/gltf-binary"},"origin":url}
   }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".pdf")){

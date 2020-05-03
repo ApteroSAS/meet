@@ -18,8 +18,6 @@ import { SOURCES } from "../storage/media-search-store";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
 import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
 import MediaTiles from "./media-tiles";
-import axios from "axios";
-import { propertiesService } from "../propertiesService";
 
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
@@ -68,23 +66,11 @@ const DEFAULT_FACETS = {
     { text: "Scenes", params: { filter: "scenes" } },
     { text: "Transport", params: { filter: "transport" } }
   ],
-  objects: [
-    { text: "My Objects", params: { filter: "" }},
-  ],
-  videos: [
-    { text: "My Video", params: { filter: "my-videos" }},
-    { text: "Live", params: { filter: "my-videos-live" } }
-  ],
-  videos360: [
-    { text: "My Video", params: { filter: "my-videos-360" }},
-    { text: "Live", params: { filter: "my-videos-360-live" } }
-  ],
   avatars: [
     { text: "Avatars", params: { filter: "" } }
   ],
   favorites: [],
-  scenes: [{ text: "My Scenes", params: { filter: "my-scenes" } },
-    { text: "Library", params: { filter: "" } }]
+  scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }]
 };
 
 class MediaBrowser extends Component {
@@ -180,24 +166,7 @@ class MediaBrowser extends Component {
   handleEntryClicked = (evt, entry) => {
     evt.preventDefault();
 
-    if(entry.createLiveEntry){
-      const searchParams = new URLSearchParams(this.props.history.location.search);
-      const urlSource = this.getUrlSource(searchParams);
-      const is360 = urlSource === "videos360";
-      const randDigits = Math.floor(100000 + Math.random() * 900000);
-      const name = "live-" + (is360 ? "360-" : "" )+ randDigits;
-      axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/live/create", {
-        user: "myself",
-        name: name
-      }).then(resp => {
-        const entry = resp.data;
-        this.setState((state) => {
-          const newState = { ...state };
-          newState.result.entries.push(entry);
-          return newState;
-        });
-      });
-    } else if (!entry.lucky_query) {
+    if (!entry.lucky_query) {
       this.selectEntry(entry);
     } else {
       // Entry has a pointer to another "i'm feeling lucky" query -- used for trending videos
@@ -289,7 +258,7 @@ class MediaBrowser extends Component {
       !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
-    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects" && urlSource !== "videos360";
+    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes" && urlSource !== "objects";
 
     const facets = this.state.facets && this.state.facets.length > 0 && this.state.facets;
 
