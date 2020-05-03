@@ -15,7 +15,7 @@ import { applyPersistentSync } from "../utils/permissions-utils";
 import { refreshMediaMirror, getCurrentMirroredMedia } from "../utils/mirror-utils";
 
 // Using external CDN to reduce build size
-pdfjs.GlobalWorkerOptions.workerSrc = configs.PROTOCOL+configs.RETICULUM_SERVER+"/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
+pdfjs.GlobalWorkerOptions.workerSrc = configs.PROTOCOL + configs.RETICULUM_SERVER + "/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
 
 const ONCE_TRUE = { once: true };
 const TYPE_IMG_PNG = { type: "image/png" };
@@ -132,21 +132,23 @@ function scaleToAspectRatio(el, ratio) {
 }
 
 function disposeTexture(texture) {
-  if (texture.image instanceof HTMLVideoElement) {
-    const video = texture.image;
-    video.pause();
-    video.src = "";
-    video.load();
-  }
+  if(texture) {
+    if (texture.image instanceof HTMLVideoElement) {
+      const video = texture.image;
+      video.pause();
+      video.src = "";
+      video.load();
+    }
 
-  if (texture.hls) {
-    texture.hls.stopLoad();
-    texture.hls.detachMedia();
-    texture.hls.destroy();
-    texture.hls = null;
-  }
+    if (texture.hls) {
+      texture.hls.stopLoad();
+      texture.hls.detachMedia();
+      texture.hls.destroy();
+      texture.hls = null;
+    }
 
-  texture.dispose();
+    texture.dispose();
+  }
 }
 
 class TextureCache {
@@ -296,13 +298,18 @@ AFRAME.registerComponent("media-video", {
       this.volumeUpButton.object3D.addEventListener("interact", this.volumeUp);
       this.volumeDownButton.object3D.addEventListener("interact", this.volumeDown);
       this.snapButton.object3D.addEventListener("interact", this.snap);
-      this.changeButton.object3D.addEventListener("interact", ()=>{this.changeVideo()});
+      this.changeButton.object3D.addEventListener("interact", () => {
+        this.changeVideo();
+      });
 
       this.updateVolumeLabel();
       this.updateHoverMenu();
       this.updatePlaybackState();
     });
 
+    /*this.reloadSrcCallBack = (event)=>{
+      this.reloadSrc(event.detail)
+    };*/
     NAF.utils
       .getNetworkedEntity(this.el)
       .then(networkedEl => {
@@ -312,6 +319,7 @@ AFRAME.registerComponent("media-video", {
 
         this.networkedEl.addEventListener("pinned", this.updateHoverMenu);
         this.networkedEl.addEventListener("unpinned", this.updateHoverMenu);
+        //this.networkedEl.addEventListener("reload_src_after_change", this.reloadSrcCallBack);
         window.APP.hubChannel.addEventListener("permissions_updated", this.updateHoverMenu);
 
         // For scene-owned videos, take ownership after a random delay if nobody
@@ -381,25 +389,31 @@ AFRAME.registerComponent("media-video", {
   },
 
   async changeVideo() {
-    window.APP.mediaSearchStore.sourceNavigateWithResult(this.data.projection==="360-equirectangular"?"videos360":"videos").then(entry => {
-      if(entry.camera){
-        mediaViewEventEmitter.once("camera_created",(data)=>{
-          console.log ("change video");
-          const oldData = {...this.data};
-          this.lastUpdate = 0;
-          this.videoIsLive = null; // value null until we've determined if the video is live or not.
-          this.data.src = data.src;
-          this.update(oldData);
+    window.APP.mediaSearchStore.sourceNavigateWithResult(this.data.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
+      if (entry.camera) {
+        mediaViewEventEmitter.once("camera_created", (data) => {
+          this.reloadSrc(data.src);
+          //this.networkedEl.emit("reload_src_after_change",data.src);
         });
-      }else{
-        console.log ("change video");
-        const oldData = {...this.data};
-        this.lastUpdate = 0;
-        this.videoIsLive = null; // value null until we've determined if the video is live or not.
-        this.data.src = entry.url;
-        this.update(oldData);
+      } else {
+        this.reloadSrc(entry.url);
+        //this.networkedEl.emit("reload_src_after_change",entry.src);
       }
     });
+  },
+
+  reloadSrc(newSrc) {
+    const oldData = { ...this.data };
+    this.data.src = newSrc;
+    //network update of attribute
+    //const mediaOptions = this.el.components["media-loader"].el.getAttribute("mediaOptions");
+    //mediaOptions.src = newSrc;
+    //this.el.components["media-loader"].el.setAttribute("mediaOptions", mediaOptions);
+    //this.el.components["media-loader"].el.setAttribute("src", newSrc);
+    //this.el.setAttribute("src", newSrc);
+    this.el.setAttribute("media-loader", "src", newSrc);
+    this.el.setAttribute("media-video", "src", newSrc);
+    this.update(oldData);
   },
 
   async snap() {
@@ -511,6 +525,8 @@ AFRAME.registerComponent("media-video", {
     this.updatePlaybackState();
 
     if (!src || src === oldData.src) return;
+    this.lastUpdate = 0;
+    this.videoIsLive = null; // value null until we've determined if the video is live or not.
     return this.updateSrc(oldData);
   },
 
@@ -590,10 +606,10 @@ AFRAME.registerComponent("media-video", {
       this.video.addEventListener("pause", this.onPauseStateChange);
       this.video.addEventListener("play", this.onPauseStateChange);
 
-      if(src.startsWith("hubs://")){
-        setTimeout(()=>{
+      if (src.startsWith("hubs://")) {
+        setTimeout(() => {
           this.video.play();
-        },2000);
+        }, 2000);
       }
 
       if (texture.hls) {
@@ -761,7 +777,7 @@ AFRAME.registerComponent("media-video", {
             hls.attachMedia(videoEl);
 
             hls.on(HLS.Events.ERROR, function(event, data) {
-              console.error("hls error:",data);
+              console.error("hls error:", data);
               if (data.fatal) {
                 switch (data.type) {
                   case HLS.ErrorTypes.NETWORK_ERROR:
@@ -971,6 +987,7 @@ AFRAME.registerComponent("media-video", {
     if (this.networkedEl) {
       this.networkedEl.removeEventListener("pinned", this.updateHoverMenu);
       this.networkedEl.removeEventListener("unpinned", this.updateHoverMenu);
+      //this.networkedEl.removeEventListener("reload_src_after_change", this.reloadSrcCallBack);
     }
 
     window.APP.hubChannel.removeEventListener("permissions_updated", this.updateHoverMenu);
