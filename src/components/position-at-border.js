@@ -193,7 +193,7 @@ AFRAME.registerComponent("position-at-border", {
         // Put in front of the flat media, on the side where the user is
         desiredCenterPoint.copy(this.meshCenter).add(
           centerToBorder
-            .set(0, 0, this.meshHalfExtents.z + this.targetHalfExtents.z + 1)
+            .set(0, 0, this.meshHalfExtents.z + this.targetHalfExtents.z + 0.02)
             .multiplyScalar(needsYRotate ? -1 : 1)
             .applyMatrix4(currentMeshRotation)
         );
