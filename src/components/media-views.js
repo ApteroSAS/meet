@@ -405,12 +405,6 @@ AFRAME.registerComponent("media-video", {
   reloadSrc(newSrc) {
     const oldData = { ...this.data };
     this.data.src = newSrc;
-    //network update of attribute
-    //const mediaOptions = this.el.components["media-loader"].el.getAttribute("mediaOptions");
-    //mediaOptions.src = newSrc;
-    //this.el.components["media-loader"].el.setAttribute("mediaOptions", mediaOptions);
-    //this.el.components["media-loader"].el.setAttribute("src", newSrc);
-    //this.el.setAttribute("src", newSrc);
     this.el.setAttribute("media-loader", "src", newSrc);
     this.el.setAttribute("media-video", "src", newSrc);
     this.update(oldData);
