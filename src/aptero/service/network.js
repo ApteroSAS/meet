@@ -12,15 +12,23 @@ export class NetworkService {
    * @param callback { session_id, type, body, from }
    * @returns {Function}
    */
-  onMessage(callback){
+  onMessageRecv(callback){
     this.eventEmitter.on("msg_recv",callback);
     return ()=>{
       this.eventEmitter.off("msg_recv",callback);
     }
   }
 
+  onMessage(type,callback){
+    this.eventEmitter.on(type,callback);
+    return ()=>{
+      this.eventEmitter.off(type,callback);
+    }
+  }
+
   processMessage({ session_id, type, body, from }) {
     this.eventEmitter.emit("msg_recv",{ session_id, type, body, from })
+    this.eventEmitter.emit(type,body);
   }
 
   setPhoenixChannel(hubPhxChannel) {

@@ -9,7 +9,7 @@ export class Video360Service {
 
   constructor() {
     // eslint-disable-next-line no-unused-vars
-    networkService.onMessage(({ session_id, type, body, from }) => {
+    networkService.onMessageRecv(({ session_id, type, body, from }) => {
       const action_type = type;
       if (action_type === "events:play_video_360") {
         console.log("events:play_video_360");

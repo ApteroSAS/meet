@@ -53,6 +53,8 @@ AFRAME.registerComponent("media-loader", {
     moveTheParentNotTheMesh: { default: false },
     resolve: { default: false },
     contentType: { default: null },
+    type: { default: null },
+    contentChanged: { default: null },
     contentSubtype: { default: null },
     animate: { default: true },
     linkedEl: { default: null }, // This is the element of which this is a linked derivative. See linked-media.js
@@ -326,10 +328,27 @@ AFRAME.registerComponent("media-loader", {
     this.el.setAttribute("media-loader", { version: Math.floor(Date.now() / 1000) });
   },
 
+  reloadSrc(newSrc) {
+    console.log("reloadSrc media view "+newSrc);
+    const oldData = { ...this.data };
+    this.el.components["media-loader"].contentChanged =(this.el.components["media-loader"].contentChanged?this.el.components["media-loader"].contentChanged:oldData.src);
+    this.data.src = newSrc;
+    this.el.setAttribute("media-loader",{src:newSrc});
+    this.update(oldData,true);
+  },
+
   async update(oldData, forceLocalRefresh) {
-    const { src, version, contentSubtype } = this.data;
+    let { src, version, contentSubtype } = this.data;
     if (!src) return;
 
+    const isOriginalContent = this.el.components["media-loader"].contentChanged===src;
+    console.log("update media loader recv src "+src);
+    if(isOriginalContent){
+      this.el.setAttribute("media-loader","src", oldData.src);
+      this.data.src = oldData.src;
+      src = oldData.src;
+      return;
+    }
     const srcChanged = oldData.src !== src;
     const versionChanged = !!(oldData.version && oldData.version !== version);
 
@@ -363,6 +382,10 @@ AFRAME.registerComponent("media-loader", {
       let thumbnail;
 
       if((contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
+        this.el.setAttribute("media-loader","type", "360-equirectangular");
+      }
+      const attrType = this.el.components["media-loader"].data.type;
+      if( attrType && attrType.includes("360")){
         this.data.mediaOptions.projection = "360-equirectangular";
       }
 
@@ -455,7 +478,7 @@ AFRAME.registerComponent("media-loader", {
             contentType,
             linkedVideoTexture,
             linkedAudioSource,
-            linkedMediaElementAudioSource
+            linkedMediaElementAudioSource,
           })
         );
         if (this.el.components["position-at-border__freeze"]) {

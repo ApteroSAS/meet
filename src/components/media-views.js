@@ -14,6 +14,7 @@ import { promisifyWorker } from "../utils/promisify-worker.js";
 import pdfjs from "pdfjs-dist";
 import { applyPersistentSync } from "../utils/permissions-utils";
 import { refreshMediaMirror, getCurrentMirroredMedia } from "../utils/mirror-utils";
+import { changeVideoService } from "../aptero/service/ChangeVideoService";
 
 // Using external CDN to reduce build size
 pdfjs.GlobalWorkerOptions.workerSrc = configs.PROTOCOL + configs.RETICULUM_SERVER + "/workers/pdfjs-dist@2.1.266/build/pdf.worker.js";
@@ -303,9 +304,12 @@ AFRAME.registerComponent("media-video", {
       this.volumeUpButton.object3D.addEventListener("interact", this.volumeUp);
       this.volumeDownButton.object3D.addEventListener("interact", this.volumeDown);
       this.snapButton.object3D.addEventListener("interact", this.snap);
-      this.changeButton.object3D.addEventListener("interact", () => {
-        this.changeVideo();
-      });
+      this.changeVideo = () => {
+        NAF.utils.getNetworkedEntity(this.el).then(networkedEl => {
+          changeVideoService.changeVideo(NAF.utils.getNetworkId(networkedEl));
+        });
+      };
+      this.changeButton.object3D.addEventListener("interact", this.changeVideo);
 
       this.updateVolumeLabel();
       this.updateHoverMenu();
@@ -402,28 +406,6 @@ AFRAME.registerComponent("media-video", {
 
   volumeDown() {
     this.changeVolumeBy(-0.1);
-  },
-
-  async changeVideo() {
-    window.APP.mediaSearchStore.sourceNavigateWithResult(this.data.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
-      if (entry.camera) {
-        mediaViewEventEmitter.once("camera_created", (data) => {
-          this.reloadSrc(data.src);
-          //this.networkedEl.emit("reload_src_after_change",data.src);
-        });
-      } else {
-        this.reloadSrc(entry.url);
-        //this.networkedEl.emit("reload_src_after_change",entry.src);
-      }
-    });
-  },
-
-  reloadSrc(newSrc) {
-    const oldData = { ...this.data };
-    this.data.src = newSrc;
-    this.el.setAttribute("media-loader", "src", newSrc);
-    this.el.setAttribute("media-video", "src", newSrc);
-    this.update(oldData);
   },
 
   async snap() {
@@ -1044,6 +1026,7 @@ AFRAME.registerComponent("media-video", {
       this.volumeDownButton.object3D.removeEventListener("interact", this.volumeDown);
       this.seekForwardButton.object3D.removeEventListener("interact", this.seekForward);
       this.seekBackButton.object3D.removeEventListener("interact", this.seekBack);
+      this.changeButton.object3D.removeEventListener("interact", this.changeVideo);
     }
 
     window.APP.store.removeEventListener("statechanged", this.onPreferenceChanged);
