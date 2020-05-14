@@ -35,12 +35,16 @@ export class ChangeVideoService {
     entity.object3D.rotation.copy(orientationRecv);
     entity.object3D.scale.set(scale.x,scale.y,scale.z);
     entity.object3D.matrixNeedsUpdate = true;
+
+    //Pin the new object by default
+    entity.setAttribute("pinnable", "pinned", true);
+    entity.emit("pinned", { el: entity });
   }
 
   async changeVideo(networkID) {
+    const entity = NAF.entities.entities[networkID];
+    const mediaOptions = entity.components["media-loader"].data.mediaOptions;
     window.APP.mediaSearchStore.sourceNavigateWithResult(mediaOptions.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
-      const entity = NAF.entities.entities[networkID];
-      const mediaOptions = entity.components["media-loader"].data.mediaOptions;
       const rotation = entity.object3D.rotation;
       const position = entity.object3D.position;
       const scale = new THREE.Vector3();

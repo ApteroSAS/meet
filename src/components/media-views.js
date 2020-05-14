@@ -609,6 +609,7 @@ AFRAME.registerComponent("media-video", {
       }
 
       this.video = texture.image;
+      console.log(this.video.videoHeight,this.video.videoWidth);
       this.video.loop = this.data.loop;
       this.video.addEventListener("pause", this.onPauseStateChange);
       this.video.addEventListener("play", this.onPauseStateChange);
@@ -1257,6 +1258,7 @@ AFRAME.registerComponent("media-pdf", {
 
       this.canvas.width = pw;
       this.canvas.height = ph;
+
 
       this.renderTask = page.render({ canvasContext: this.canvasContext, viewport });
 

@@ -447,10 +447,11 @@ export default class SceneEntryManager {
     };
 
     const processCamera = (data) => {
+      const idealWidth = data.type.indexOf("360")!==-1? 3840 : 720;
       let constraint = {
         video: {
           mediaSource: "camera",
-          width: isIOS ? { max: 1280 } : { ideal: 720 },
+          width: isIOS ? { max: 1280 } : { ideal: idealWidth },
           frameRate: 30
         }
       };
