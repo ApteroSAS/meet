@@ -20,20 +20,23 @@ export class ChangeVideoService {
     });
   }*/
 
-  addMediaAndSetTransform(src,position,orientationRecv,scale,mediaOptions){
+  addMediaAndSetTransform(src, position, orientationRecv, scale, mediaOptions, contentOrigin) {
+    if (!contentOrigin) {
+      contentOrigin = ObjectContentOrigins.URL;
+    }
     const { entity, orientation } = addMedia(
       src,
       "#interactable-media",
-      ObjectContentOrigins.URL,
+      contentOrigin,
       null,
       !(src instanceof MediaStream),
       true,
       true,
-      mediaOptions?mediaOptions:{}
+      mediaOptions ? mediaOptions : {}
     );
-    entity.object3D.position.set(position.x,position.y,position.z);
+    entity.object3D.position.set(position.x, position.y, position.z);
     entity.object3D.rotation.copy(orientationRecv);
-    entity.object3D.scale.set(scale.x,scale.y,scale.z);
+    entity.object3D.scale.set(scale.x, scale.y, scale.z);
     entity.object3D.matrixNeedsUpdate = true;
 
     //Pin the new object by default
@@ -48,15 +51,15 @@ export class ChangeVideoService {
       const rotation = entity.object3D.rotation;
       const position = entity.object3D.position;
       const scale = new THREE.Vector3();
-      scale.set(entity.object3D.scale.x,entity.object3D.scale.y,entity.object3D.scale.z);
+      scale.set(entity.object3D.scale.x, entity.object3D.scale.y, entity.object3D.scale.z);
       console.log(entity);
       roomInteractableRemover.removeNode(networkID);
       if (entry.camera) {
         mediaViewEventEmitter.once("camera_created", (data) => {
-          this.addMediaAndSetTransform(data.src,position,rotation,scale,mediaOptions)
+          this.addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL);
         });
       } else {
-        this.addMediaAndSetTransform(entry.url,position,rotation,scale,mediaOptions)
+        this.addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin);
       }
     });
   }

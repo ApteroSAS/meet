@@ -265,7 +265,10 @@ class MediaBrowser extends Component {
     const isSceneApiType = source === "scenes";
     const isAvatarApiType = source === "avatars";
     this.pushExitMediaBrowserHistory(!isAvatarApiType);
-    const dialog = isSceneApiType ? "change_scene" : isAvatarApiType ? "avatar_url" : "create";
+    let dialog = isSceneApiType ? "change_scene" : isAvatarApiType ? "avatar_url" : "create";
+    if(this.state.selectAction==="result"){
+      dialog = "result"
+    }
     pushHistoryState(this.props.history, "modal", dialog);
   };
 

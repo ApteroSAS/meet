@@ -1805,7 +1805,13 @@ class UIRoot extends Component {
               stateKey="modal"
               stateValue="create"
               history={this.props.history}
-              render={() => this.renderDialog(CreateObjectDialog, { onCreate: this.createObject })}
+              render={() => this.renderDialog(CreateObjectDialog, { onCreate: this.createObject,mode:"direct" })}
+            />
+            <StateRoute
+              stateKey="modal"
+              stateValue="result"
+              history={this.props.history}
+              render={() => this.renderDialog(CreateObjectDialog, { onCreate: this.createObject,mode:"result" })}
             />
             <StateRoute
               stateKey="modal"

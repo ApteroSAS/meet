@@ -12,6 +12,7 @@ import DialogContainer from "./dialog-container.js";
 import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
 import { getAbsoluteHref } from "../utils/media-url-utils";
 import { WithHoverSound } from "./wrap-with-audio";
+import { ObjectContentOrigins } from "../object-types";
 
 const attributionHostnames = {
   "giphy.com": giphyLogo,
@@ -72,7 +73,8 @@ export default class CreateObjectDialog extends Component {
 
   static propTypes = {
     onCreate: PropTypes.func,
-    onClose: PropTypes.func
+    onClose: PropTypes.func,
+    mode: PropTypes.string
   };
 
   componentDidMount() {
@@ -114,7 +116,14 @@ export default class CreateObjectDialog extends Component {
 
   onCreateClicked = e => {
     e.preventDefault();
-    this.props.onCreate(this.state.file || this.state.url || getAbsoluteHref(location.href));
+    if(this.props.mode==="result") {
+      window.APP.mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry:{
+          contentOrigin : this.state.file ? ObjectContentOrigins.FILE : ObjectContentOrigins.URL,
+          url:this.state.file || this.state.url || getAbsoluteHref(location.href)
+        } });
+    }else{
+      this.props.onCreate(this.state.file || this.state.url || getAbsoluteHref(location.href));
+    }
     this.props.onClose();
   };
 

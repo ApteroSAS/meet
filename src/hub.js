@@ -212,9 +212,7 @@ window.APP.quality =
     ? "low"
     : window.APP.store.state.preferences.materialQualitySetting === "high"
       ? "high"
-      : isMobile || isMobileVR
-        ? "low"
-        : "high";
+      : "low";
 
 import "./components/owned-object-limiter";
 import "./components/owned-object-cleanup-timeout";

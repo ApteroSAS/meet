@@ -96,7 +96,7 @@ export default class PreferencesScreen extends Component {
         key: "materialQualitySetting",
         prefType: PREFERENCE_LIST_ITEM_TYPE.SELECT,
         options: [{ value: "low", text: "Low" }, { value: "high", text: "High" }],
-        defaultString: isMobile ? "low" : "high"
+        defaultString: isMobile ? "low" : "low"
       },
       { key: "disableAutoPixelRatio", prefType: PREFERENCE_LIST_ITEM_TYPE.CHECK_BOX, defaultBool: false },
       { key: "allowMultipleHubsInstances", prefType: PREFERENCE_LIST_ITEM_TYPE.CHECK_BOX, defaultBool: false },
