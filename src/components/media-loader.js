@@ -53,7 +53,7 @@ AFRAME.registerComponent("media-loader", {
     moveTheParentNotTheMesh: { default: false },
     resolve: { default: false },
     contentType: { default: null },
-    type: { default: null },
+    type: { default: "none" },
     contentChanged: { default: null },
     contentSubtype: { default: null },
     animate: { default: true },
@@ -381,7 +381,9 @@ AFRAME.registerComponent("media-loader", {
       let contentType = this.data.contentType;
       let thumbnail;
 
-      if((contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
+      if((this.data.contentSubtype && this.data.contentSubtype.includes("360")) || (contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
+        this.networkedEl.setAttribute("media-loader","contentSubtype", "360-equirectangular");
+        this.el.setAttribute("media-loader","contentSubtype", "360-equirectangular");
         this.el.setAttribute("media-loader","type", "360-equirectangular");
       }
       const attrType = this.el.components["media-loader"].data.type;

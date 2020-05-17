@@ -1,7 +1,20 @@
 import { networkService } from "./network";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
-const floatEqual = require('float-equal');
 
+
+const floatEqual = (a, b,ep) => {
+  if (a === b) {
+    return true;
+  }
+
+  const diff = Math.abs(a - b);
+
+  if (diff < ep) {
+    return true;
+  }
+
+  return diff <= ep * Math.min(Math.abs(a), Math.abs(b));
+};
 
 export class RoomInteractableRemover {
 
@@ -15,28 +28,32 @@ export class RoomInteractableRemover {
       console.log("remove all net "+removedEntity);
       this.removeNode(removedEntity);
     });
+
+
     networkService.eventEmitter.once("adapter_ready",()=>{
-      const entKeys = Object.keys(NAF.entities.entities);
-      entKeys.forEach(keyA => {
-        const ax = NAF.entities.entities[keyA].object3D.position.x;
-        const ay = NAF.entities.entities[keyA].object3D.position.y;
-        const az = NAF.entities.entities[keyA].object3D.position.z;
-        entKeys.forEach(keyB => {
-          const bx = NAF.entities.entities[keyB].object3D.position.x;
-          const by = NAF.entities.entities[keyB].object3D.position.y;
-          const bz = NAF.entities.entities[keyB].object3D.position.z;
-          if(floatEqual(ax,bx) && floatEqual(ay , by) && floatEqual(az , bz) && keyA!==keyB){
-            console.error("object colision")
-            if(NAF.entities.entities[keyA].children.length == 2){
-              //HACK this mean that this object is a room attached object
-              this.removeNode(keyA);
-            }else if(NAF.entities.entities[keyB].children.length == 2){
-              //HACK this mean that this object is a room attached object
-              this.removeNode(keyB);
+        const entKeys = Object.keys(NAF.entities.entities);
+        console.error(entKeys)
+        entKeys.forEach(keyA => {
+          const ax = NAF.entities.entities[keyA].object3D.position.x;
+          const ay = NAF.entities.entities[keyA].object3D.position.y;
+          const az = NAF.entities.entities[keyA].object3D.position.z;
+          entKeys.forEach(keyB => {
+            const bx = NAF.entities.entities[keyB].object3D.position.x;
+            const by = NAF.entities.entities[keyB].object3D.position.y;
+            const bz = NAF.entities.entities[keyB].object3D.position.z;
+            if(floatEqual(ax,bx,0.001) && floatEqual(ay , by,0.001) && floatEqual(az , bz,0.001) && keyA!==keyB){
+              if(keyA.length >= 15){
+                console.error("object colision "+keyA)
+                //HACK this mean that this object is a room attached object
+                this.removeNode(keyA);
+              }else if(keyB.length >= 15){
+                console.error("object colision"+keyB)
+                //HACK this mean that this object is a room attached object
+                this.removeNode(keyB);
+              }
             }
-          }
+          })
         })
-      })
     });
     waitForDOMContentLoaded().then(() => {
       document.body.addEventListener('clientConnected', (evt) => {

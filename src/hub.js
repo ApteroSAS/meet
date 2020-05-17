@@ -1559,7 +1559,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         await adapter.setLocalMediaStream(stream);
-        networkService.notifyAdapterReady();
       });
       subscriptions.setHubChannel(hubChannel);
 
