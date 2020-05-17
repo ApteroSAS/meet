@@ -5,6 +5,22 @@ import Store from "../../storage/store";
 
 export class LiveStreamService {
 
+  async start(){
+    //if no stream create one 360 and one 2d
+    {
+      let retData = await this.listStream(true);
+      if (retData && retData.entries.length == 0) {
+        await this.createStream(true);
+      }
+    }
+    {
+      let retData = await this.listStream(false);
+      if (retData && retData.entries.length == 0) {
+        await this.createStream(false);
+      }
+    }
+  }
+
   secureUrl(url,data){
     data["proxy_url"] = url;
     const store = new Store();
@@ -17,6 +33,20 @@ export class LiveStreamService {
         headers:headers
       }).then(resp => {
         resolve(resp);
+      }).catch(reason => {
+        reject(reason);
+      });
+    })
+  }
+
+  async listStream(is360){
+    return new Promise((resolve, reject) => {
+      const filter = "live-" + (is360 ? "360-" : "2d-" );
+      this.secureUrl(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/live/get", {
+        filter: filter
+      }).then(resp => {
+        const reticulumData = resp.data;
+        resolve(reticulumData);
       }).catch(reason => {
         reject(reason);
       });
@@ -45,3 +75,4 @@ export class LiveStreamService {
 }
 
 export const liveStreamService = new LiveStreamService();
+liveStreamService.start();

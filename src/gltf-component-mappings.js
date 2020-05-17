@@ -22,7 +22,6 @@ function registerRootSceneComponent(componentName) {
 registerRootSceneComponent("fog");
 registerRootSceneComponent("background");
 
-
 AFRAME.GLTFModelPlus.registerComponent("sound", "sound");
 AFRAME.GLTFModelPlus.registerComponent("css-class", "css-class");
 AFRAME.GLTFModelPlus.registerComponent("interactable", "css-class", (el, componentName) => {

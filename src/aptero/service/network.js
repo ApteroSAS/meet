@@ -34,6 +34,10 @@ export class NetworkService {
   setPhoenixChannel(hubPhxChannel) {
     this.hubPhxChannel = hubPhxChannel;
   }
+
+  notifyAdapterReady(){
+    this.eventEmitter.emit("adapter_ready");
+  }
 }
 
 export const networkService = new NetworkService();

@@ -67,8 +67,6 @@ class MediaTiles extends Component {
     return (
       <div className={styles.body}>
         <div className={classNames({ [styles.tiles]: true, [styles.tilesVariable]: isVariableWidth })}>
-          {(this.props.history && this.props.history.location.search.search("live") !== -1) &&
-          this.createStreamTile()}
           {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
           {/*(urlSource === "avatars" || urlSource === "scenes") && (
             <div

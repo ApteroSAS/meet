@@ -20,7 +20,7 @@ import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
 import MediaTiles from "./media-tiles";
 import RoomInfoDialog from "./room-info-dialog";
 import LiveStreamInfoDialog from "./live-stream-info-dialog";
-import { liveStreamService } from "../systems/service/liveStreamService";
+import { liveStreamService } from "../aptero/service/liveStreamService";
 import {sceneEntryManagerEventEmitter} from "../scene-entry-manager";
 
 const isMobile = AFRAME.utils.device.isMobile();
