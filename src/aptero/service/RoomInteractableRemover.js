@@ -22,17 +22,14 @@ export class RoomInteractableRemover {
 
   constructor(){
     networkService.onMessage("RoomRemover-remove-entity",(networkID)=>{
-      console.log("remove net "+networkID);
     });
     networkService.onMessage("RoomRemover-remove-entity-all",(removedEntity)=>{
-      console.log("remove all net "+removedEntity);
       this.removeNode(removedEntity);
     });
 
 
     networkService.eventEmitter.once("adapter_ready",()=>{
         const entKeys = Object.keys(NAF.entities.entities);
-        console.error(entKeys)
         entKeys.forEach(keyA => {
           const ax = NAF.entities.entities[keyA].object3D.position.x;
           const ay = NAF.entities.entities[keyA].object3D.position.y;
@@ -43,11 +40,9 @@ export class RoomInteractableRemover {
             const bz = NAF.entities.entities[keyB].object3D.position.z;
             if(floatEqual(ax,bx,0.001) && floatEqual(ay , by,0.001) && floatEqual(az , bz,0.001) && keyA!==keyB){
               if(keyA.length >= 15){
-                console.error("object colision "+keyA)
                 //HACK this mean that this object is a room attached object
                 this.removeNode(keyA);
               }else if(keyB.length >= 15){
-                console.error("object colision"+keyB)
                 //HACK this mean that this object is a room attached object
                 this.removeNode(keyB);
               }
@@ -79,7 +74,6 @@ export class RoomInteractableRemover {
 
     ent.addEventListener("animationcomplete", () => {
       NAF.utils.takeOwnership(ent);
-      console.log("removed "+NAF.utils.getNetworkId(ent))
       if(ent.parentNode) {
         ent.parentNode.removeChild(ent);
         this.entityRemoved(NAF.utils.getNetworkId(ent));

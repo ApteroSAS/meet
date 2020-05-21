@@ -194,6 +194,14 @@ class MediaBrowser extends Component {
           return newState;
         });
       })
+    }else if(entry.shareScreen){
+      const searchParams = new URLSearchParams(this.props.history.location.search);
+      const urlSource = this.getUrlSource(searchParams);
+      const is360 = urlSource === "videos360";
+      entry.shareScreen.type = is360?"360-equirectangular":"2d";
+      entry.shareScreen.selectAction = this.state.selectAction;
+      this.selectEntry(entry);
+      sceneEntryManagerEventEmitter.emit(`action_share_screen`,entry.shareScreen);
     }if(entry.camera){
       const searchParams = new URLSearchParams(this.props.history.location.search);
       const urlSource = this.getUrlSource(searchParams);
@@ -277,6 +285,8 @@ class MediaBrowser extends Component {
     const urlSource = this.getUrlSource(new URLSearchParams(this.props.history.location.search));
     this.pushExitMediaBrowserHistory(urlSource !== "avatars" && urlSource !== "favorites");
     if (this.state.clearStashedQueryOnClose) {
+      const mediaSearchStore = window.APP.mediaSearchStore;
+      mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry:{}, result:"cancel" });
       this.props.mediaSearchStore.clearStashedQuery();
     }
   };

@@ -186,6 +186,7 @@ import { App } from "./App";
 import * as JanusAdapter from "naf-janus-adapter";
 JanusAdapter.setGlobalPeerConnectionConfig(PEER_CONNECTION_CONFIG);*/
 
+
 window.APP = new App();
 window.APP.RENDER_ORDER = {
   HUD_BACKGROUND: 1,

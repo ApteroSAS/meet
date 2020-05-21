@@ -20,7 +20,7 @@ export class ChangeVideoService {
     });
   }*/
 
-  addMediaAndSetTransform(src, position, orientationRecv, scale, mediaOptions, contentOrigin) {
+  addMediaAndSetTransform(src, position, orientationRecv, scale, mediaOptions, contentOrigin,shouldPin) {
     if (!contentOrigin) {
       contentOrigin = ObjectContentOrigins.URL;
     }
@@ -38,10 +38,12 @@ export class ChangeVideoService {
     entity.object3D.rotation.copy(orientationRecv);
     entity.object3D.scale.set(scale.x, scale.y, scale.z);
     entity.object3D.matrixNeedsUpdate = true;
-
-    //Pin the new object by default
-    entity.setAttribute("pinnable", "pinned", true);
-    entity.emit("pinned", { el: entity });
+    entity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
+    if(shouldPin) {
+      //Pin the new object by default
+      entity.setAttribute("pinnable", "pinned", true);
+      entity.emit("pinned", { el: entity });
+    }
   }
 
   async changeVideo(networkID) {
@@ -54,12 +56,12 @@ export class ChangeVideoService {
       scale.set(entity.object3D.scale.x, entity.object3D.scale.y, entity.object3D.scale.z);
       console.log(entity);
       roomInteractableRemover.removeNode(networkID);
-      if (entry.camera) {
-        mediaViewEventEmitter.once("camera_created", (data) => {
-          this.addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL);
+      if (entry.camera || entry.shareScreen) {
+        mediaViewEventEmitter.once("share_video_media_stream_created", (data) => {
+          this.addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL,false);
         });
       } else {
-        this.addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin);
+        this.addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin,true);
       }
     });
   }

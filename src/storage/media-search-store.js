@@ -246,10 +246,14 @@ export default class MediaSearchStore extends EventTarget {
   };
 
   async sourceNavigateWithResult(source) {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       this._sourceNavigate(source, true, false, "result");
       this.eventEmitter.once("action_selected_media_result_entry", (data) => {
-        resolve(data.entry);
+        if(data.result === "cancel"){
+          reject("cancel");
+        }else {
+          resolve(data.entry);
+        }
       });
     });
   }

@@ -435,7 +435,7 @@ export default class SceneEntryManager {
         await NAF.connection.adapter.setLocalMediaStream(mediaStream);
         if(data.selectAction==="result"){
           data.src = `hubs://clients/${NAF.clientId}/video`
-          mediaViewEventEmitter.emit("camera_created",data);
+          mediaViewEventEmitter.emit("share_video_media_stream_created",data);
         }else{
           currentVideoShareEntity = spawnMediaInfrontOfPlayer(mediaStream, undefined,data);
           // Wire up custom removal event which will stop the stream.
@@ -464,11 +464,10 @@ export default class SceneEntryManager {
       }
       shareVideoMediaStream(constraint,false,data);
     };
-
     sceneEntryManagerEventEmitter.on("action_share_camera",processCamera);
     this.scene.addEventListener("action_share_camera", processCamera);
 
-    this.scene.addEventListener("action_share_screen", () => {
+    const processShareVideo = (data) => {
       shareVideoMediaStream(
         {
           video: {
@@ -480,11 +479,13 @@ export default class SceneEntryManager {
           },
           audio: true
         },
-        true,{}
+        true,data||{}
       );
-    });
+    }
+    sceneEntryManagerEventEmitter.on("action_share_screen",processShareVideo);
+    this.scene.addEventListener("action_share_screen", processShareVideo);
 
-    this.scene.addEventListener("action_end_video_sharing", async () => {
+    const endVideoSharing = async () => {
       if (isHandlingVideoShare) return;
       isHandlingVideoShare = true;
 
@@ -503,7 +504,9 @@ export default class SceneEntryManager {
       this.scene.emit("share_video_disabled");
       this.scene.removeState("sharing_video");
       isHandlingVideoShare = false;
-    });
+    };
+    sceneEntryManagerEventEmitter.on("action_end_video_sharing", endVideoSharing);
+    this.scene.addEventListener("action_end_video_sharing", endVideoSharing);
 
     this.scene.addEventListener("action_selected_media_result_entry", async e => {
       // TODO spawn in space when no rights
