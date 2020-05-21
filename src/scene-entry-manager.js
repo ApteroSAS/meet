@@ -285,7 +285,7 @@ export default class SceneEntryManager {
         src,
         "#interactable-media",
         contentOrigin,
-        null,
+        data && data.type && data.type.includes("360")?"360-equirectangular":null,
         !(src instanceof MediaStream),
         true,
         true,

@@ -34,7 +34,8 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
     //auto promote anythings to https since we cannot serve on http
     url = url.replace("http://","https://");
   }
-  const urlWithoutParams = url.split("?")[0];
+  let urlWithoutParams = url.split("?")[0];
+  urlWithoutParams = urlWithoutParams.toLowerCase();
   if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".png")){
       return {"meta":{"expected_content_type":"image/png"},"origin":url}
   }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".jpg")|| urlWithoutParams.endsWith(".jpeg"))){

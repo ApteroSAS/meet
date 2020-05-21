@@ -28,7 +28,7 @@ export class ChangeVideoService {
       src,
       "#interactable-media",
       contentOrigin,
-      null,
+      mediaOptions.type && mediaOptions.type.includes("360")?"360-equirectangular":null,
       !(src instanceof MediaStream),
       true,
       true,
