@@ -100,7 +100,8 @@ module.exports = (env, argv) => ({
     hub: path.join(__dirname, "src", "hub.js"),
     scene: path.join(__dirname, "src", "scene.js"),
     avatar: path.join(__dirname, "src", "avatar.js"),
-    link: path.join(__dirname, "src", "link.js")
+    link: path.join(__dirname, "src", "link.js"),
+    microsoft: path.join(__dirname, "src", "microsoft.js")
   },
   output: {
     filename: "assets/js/[name]-[chunkhash].js",
@@ -311,6 +312,12 @@ module.exports = (env, argv) => ({
       filename: "whats-new.html",
       template: path.join(__dirname, "src", "whats-new.html"),
       chunks: ["vendor", "whats-new"],
+      inject: "head"
+    }),
+    new HTMLWebpackPlugin({
+      filename: "microsoft.html",
+      template: path.join(__dirname, "src", "microsoft.html"),
+      chunks: ["vendor", "microsoft"],
       inject: "head"
     }),
     new CopyWebpackPlugin([

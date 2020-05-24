@@ -1,4 +1,5 @@
 import { fetchReticulumAuthenticated } from "./phoenix-utils";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 const names = [
   "Guest"

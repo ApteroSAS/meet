@@ -24,6 +24,7 @@ import { cloneObject3D, setMatrixWorld } from "../utils/three-utils";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 import { SHAPE } from "three-ammo/constants";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 let loadingObjectEnvMap;
 let loadingObject;
@@ -351,6 +352,7 @@ AFRAME.registerComponent("media-loader", {
     }
     const srcChanged = oldData.src !== src;
     const versionChanged = !!(oldData.version && oldData.version !== version);
+    await microsoftService.preFetchConvertMicrosoftUrl(src);
 
     if (versionChanged) {
       this.el.emit("media_refreshing");

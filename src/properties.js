@@ -26,7 +26,9 @@ window.APP_PROPS = {
 
   DEFAULT_SCENE_SID:"h8xwUAc",
 
+
   APP_CONFIG: {
+    MICROSOFT_APP_ID:"1e74dfa7-e000-4923-818d-a756a7a93e62",
     features: {
       hide_powered_by: true,
       show_feedback_ui : false

@@ -81,6 +81,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import qsTruthy from "../utils/qs_truthy";
 import { CAMERA_MODE_INSPECT } from "../systems/camera-system";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 const avatarEditorDebug = qsTruthy("avatarEditorDebug");
 
 addLocaleData([...en]);
@@ -237,7 +238,7 @@ class UIRoot extends Component {
   componentDidUpdate(prevProps) {
     const { hubChannel, showSignInDialog } = this.props;
     if (hubChannel) {
-      const { signedIn } = hubChannel;
+      let { signedIn } = hubChannel;
       if (signedIn !== this.state.signedIn) {
         this.setState({ signedIn });
       }
@@ -2114,7 +2115,7 @@ class UIRoot extends Component {
               presences={this.props.presences}
               sessionId={this.props.sessionId}
               signedIn={this.state.signedIn}
-              email={this.props.store.state.credentials.email}
+              email={ microsoftService.getName() || this.props.store.state.credentials.email}
               onSignIn={this.showSignInDialog}
               onSignOut={this.signOut}
               expanded={!this.state.isObjectListExpanded && this.state.isPresenceListExpanded}

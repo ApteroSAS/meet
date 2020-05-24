@@ -13,6 +13,7 @@ import ReportDialog from "./react-components/report-dialog";
 import jwtDecode from "jwt-decode";
 import "./utils/theme";
 import configs from "./utils/configs";
+import { microsoftService } from "./aptero/service/MicrosoftService";
 
 const qs = new URLSearchParams(location.search);
 registerTelemetry("/home", "Hubs Home Page");
@@ -78,6 +79,8 @@ window.addEventListener("beforeinstallprompt", e => {
     remountUI();
   }
 });
+
+microsoftService.start();
 
 // Fetch favorite + public rooms and merge, sorting by member count
 async function fetchFeaturedRooms() {

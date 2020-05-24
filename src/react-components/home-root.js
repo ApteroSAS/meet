@@ -27,6 +27,7 @@ import styles from "../assets/stylesheets/index.scss";
 import AuthDialog from "./auth-dialog.js";
 import SignInDialog from "./sign-in-dialog.js";
 import MediaTiles from "./media-tiles";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 addLocaleData([...en]);
 
@@ -167,6 +168,7 @@ class HomeRoot extends Component {
   };
 
   render() {
+
     const mainContentClassNames = classNames({
       [styles.mainContent]: true,
       [styles.noninteractive]: !!this.state.dialog

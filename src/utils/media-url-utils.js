@@ -1,5 +1,6 @@
 import { hasReticulumServer } from "./phoenix-utils";
 import configs from "./configs";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
 if (configs.CORS_PROXY_SERVER) {
@@ -77,7 +78,9 @@ export const isNonCorsProxyDomain = hostname => {
   return nonCorsProxyDomains.find(domain => hostname.endsWith(domain));
 };
 
+
 export const proxiedUrlFor = url => {
+  url = microsoftService.convertMicrosoftUrlSync(url);
   if (url.startsWith("hubs:")) return url;
   if (url.startsWith("https:")) return url;
 

@@ -9,6 +9,7 @@ const OAUTH_FLOW_CREDENTIALS_KEY = "ret-oauth-flow-account-credentials";
 const validator = new Validator();
 import { EventTarget } from "event-target-shim";
 import { fetchRandomDefaultAvatarId, generateRandomName } from "../utils/identity.js";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 // Durable (via local-storage) schema-enforced state that is meant to be consumed via forward data flow.
 // (Think flux but with way less incidental complexity, at least for now :))
@@ -232,7 +233,7 @@ export default class Store extends EventTarget {
 
     // Regenerate name to encourage users to change it.
     if (!this.state.activity.hasChangedName) {
-      this.update({ profile: { displayName: generateRandomName() } });
+      this.update({ profile: { displayName: microsoftService.getName() || generateRandomName() } });
     }
   };
 
