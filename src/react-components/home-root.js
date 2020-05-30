@@ -255,11 +255,11 @@ class HomeRoot extends Component {
                     </div>
                   )}
                   <div>
-                    <div className={styles.secondaryLink}>
+                    {/*<div className={styles.secondaryLink}>
                       <a href="/link">
                         <FormattedMessage id="home.have_code" />
                       </a>
-                    </div>
+                    </div>*/}
 
                     <IfFeature name="show_discord_bot_link">
                       <div className={styles.secondaryLink}>
@@ -380,6 +380,20 @@ class HomeRoot extends Component {
     );
   }
 
+  renderHaveRoomCodeButton(){
+    return (
+      <button
+        className={classNames(styles.primaryButton, styles.ctaButton)}
+        onClick={e => {
+          e.preventDefault();
+          window.location.href = window.location.origin+"/link"
+        }}
+      >
+        <FormattedMessage id="home.have_code" />
+      </button>
+    );
+  }
+
   renderCreateButton() {
     return (
       <button
@@ -403,6 +417,7 @@ class HomeRoot extends Component {
           </div>
         </div>
         <div className={styles.ctaButtons}>
+          {this.renderHaveRoomCodeButton()}
           {this.props.showCreate && this.renderCreateButton()}
           {this.renderPwaButton()}
         </div>

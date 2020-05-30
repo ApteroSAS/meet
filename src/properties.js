@@ -29,7 +29,8 @@ window.APP_PROPS = {
   APP_CONFIG: {
     features: {
       hide_powered_by: true,
-      show_feedback_ui : false
+      show_feedback_ui : false,
+      disable_room_creation : true
     },
     theme:{
       "dark-theme":false,

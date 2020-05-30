@@ -128,7 +128,7 @@ async function fetchFeaturedRooms() {
         showAdmin = true;
       }
 
-      showCreate = !!perms.create_hub;
+      showCreate = (!!perms.create_hub) && !configs.APP_CONFIG.features["disable_room_creation"];
       remountUI();
 
       retPhxChannel.leave();
