@@ -416,6 +416,9 @@ AFRAME.registerComponent("media-loader", {
 
         contentType = (result.meta && result.meta.expected_content_type) || contentType;
         thumbnail = result.meta && result.meta.thumbnail && proxiedUrlFor(result.meta.thumbnail);
+        if(!thumbnail){
+          thumbnail = "https://hub.aptero.co/data/app-thumbnail.png";
+        }
       }
 
       // todo: we don't need to proxy for many things if the canonical URL has permissive CORS headers
@@ -598,7 +601,8 @@ AFRAME.registerComponent("media-loader", {
         this.el.addEventListener(
           "image-loaded",
           async () => {
-            const mayChangeScene = this.el.sceneEl.systems.permissions.can("update_hub");
+            //const mayChangeScene = this.el.sceneEl.systems.permissions.can("update_hub");
+            const mayChangeScene = true;
 
             if (await isLocalHubsAvatarUrl(src)) {
               this.el.setAttribute("hover-menu__hubs-item", {
