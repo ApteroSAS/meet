@@ -172,7 +172,8 @@ export class RoomInteractableRemover {
       this.staticEntities[staticKey].position,
       this.staticEntities[staticKey].entity.object3D.rotation,
       this.staticEntities[staticKey].scale,
-      this.staticEntities[staticKey].entity.components["media-loader"].data.mediaOptions, undefined, false);
+      this.staticEntities[staticKey].entity.components["media-loader"].data.mediaOptions, undefined, true);
+    //you should pin the respawned object otherwise user will move it
     console.log("respawn entity :" + this.staticEntities[staticKey].src);
   }
 

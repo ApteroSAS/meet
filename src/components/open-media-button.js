@@ -47,8 +47,13 @@ AFRAME.registerComponent("open-media-button", {
       } else if ((await isLocalHubsSceneUrl(this.src)) && mayChangeScene) {
         this.el.sceneEl.emit("scene_media_selected", this.src);
       } else if (await isHubsRoomUrl(this.src)) {
-        await exitImmersive();
-        location.href = this.src;
+        //?vr_entry_type=2d_now
+        let mode = "?vr_entry_type=2d_now";
+        if(this.el.sceneEl.is("vr-mode")) {
+          mode = "?vr_entry_type=vr_now";
+        }
+        //await exitImmersive();
+        location.href = this.src+mode;
       } else {
         await exitImmersive();
         window.open(this.src);

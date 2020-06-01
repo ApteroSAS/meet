@@ -418,6 +418,7 @@ class HomeRoot extends Component {
         </div>
         <div className={styles.ctaButtons}>
           {this.renderHaveRoomCodeButton()}
+          <br/>
           {this.props.showCreate && this.renderCreateButton()}
           {this.renderPwaButton()}
         </div>
@@ -448,6 +449,8 @@ class HomeRoot extends Component {
           </div>
         </div>
         <div className={styles.ctaButtons}>
+          {this.renderHaveRoomCodeButton()}
+          <br/>
           {this.props.showCreate && this.renderCreateButton()}
           {this.renderPwaButton()}
         </div>
