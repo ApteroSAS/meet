@@ -131,7 +131,10 @@ async function fetchFeaturedRooms() {
         showAdmin = true;
       }
 
-      showCreate = !!perms.create_hub;
+      showCreate = (!!perms.create_hub) && !configs.APP_CONFIG.features["disable_room_creation"];
+      if (perms.postgrest_role === "ret_admin") {
+        showCreate = true;
+      }
       remountUI();
 
       retPhxChannel.leave();

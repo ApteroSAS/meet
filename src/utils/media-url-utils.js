@@ -155,11 +155,12 @@ async function isHubsServer(url) {
   }
 
   let isHubsServer;
-  try {
+  /*try {
     isHubsServer = (await fetch(proxiedUrlFor(origin), { method: "HEAD" })).headers.has("hub-name");
   } catch (e) {
     isHubsServer = false;
-  }
+  }*/
+  isHubsServer = true;
   originIsHubsServer.set(origin, isHubsServer);
   return isHubsServer;
 }

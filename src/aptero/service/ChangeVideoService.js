@@ -1,7 +1,8 @@
 import { roomInteractableRemover } from "./RoomInteractableRemover";
 import { mediaViewEventEmitter } from "../../components/media-views";
-import { addMedia } from "../../utils/media-utils";
 import { ObjectContentOrigins } from "../../object-types";
+import { addMediaAndSetTransform } from "./Media";
+import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
 
 export class ChangeVideoService {
 
@@ -20,48 +21,39 @@ export class ChangeVideoService {
     });
   }*/
 
-  addMediaAndSetTransform(src, position, orientationRecv, scale, mediaOptions, contentOrigin,shouldPin) {
-    if (!contentOrigin) {
-      contentOrigin = ObjectContentOrigins.URL;
-    }
-    const { entity, orientation } = addMedia(
-      src,
-      "#interactable-media",
-      contentOrigin,
-      mediaOptions.type && mediaOptions.type.includes("360")?"360-equirectangular":null,
-      !(src instanceof MediaStream),
-      true,
-      true,
-      mediaOptions ? mediaOptions : {}
-    );
-    entity.object3D.position.set(position.x, position.y, position.z);
-    entity.object3D.rotation.copy(orientationRecv);
-    entity.object3D.scale.set(scale.x, scale.y, scale.z);
-    entity.object3D.matrixNeedsUpdate = true;
-    entity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
-    if(shouldPin) {
-      //Pin the new object by default
-      entity.setAttribute("pinnable", "pinned", true);
-      entity.emit("pinned", { el: entity });
-    }
-  }
-
   async changeVideo(networkID) {
     const entity = NAF.entities.entities[networkID];
     const mediaOptions = entity.components["media-loader"].data.mediaOptions;
+    const scene = entity.sceneEl;
+    scene.emit("action_end_video_sharing");
     window.APP.mediaSearchStore.sourceNavigateWithResult(mediaOptions.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
       const rotation = entity.object3D.rotation;
       const position = entity.object3D.position;
       const scale = new THREE.Vector3();
       scale.set(entity.object3D.scale.x, entity.object3D.scale.y, entity.object3D.scale.z);
       console.log(entity);
-      roomInteractableRemover.removeNode(networkID);
       if (entry.camera || entry.shareScreen) {
         mediaViewEventEmitter.once("share_video_media_stream_created", (data) => {
-          this.addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL,false);
+          roomInteractableRemover.removeNode(networkID);
+          const currentVideoShareEntity = addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL,true);
+          setTimeout(()=>{
+            scene.addEventListener("action_end_video_sharing", ()=>{
+              if (currentVideoShareEntity && currentVideoShareEntity.parentNode) {
+                NAF.utils.takeOwnership(currentVideoShareEntity);
+                currentVideoShareEntity.parentNode.removeChild(currentVideoShareEntity);
+              }
+              setTimeout(()=> {
+                console.log("respawnStaticAt");
+                roomInteractableRemover.respawnStaticAt(position);
+              },2000);
+            },{
+              once : true
+            });
+          },0)
         });
       } else {
-        this.addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin,true);
+        roomInteractableRemover.removeNode(networkID);
+        addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin,true);
       }
     });
   }

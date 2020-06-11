@@ -486,6 +486,7 @@ export default class SceneEntryManager {
     this.scene.addEventListener("action_share_screen", processShareVideo);
 
     const endVideoSharing = async () => {
+      console.log("endVideoSharing");
       if (isHandlingVideoShare) return;
       isHandlingVideoShare = true;
 

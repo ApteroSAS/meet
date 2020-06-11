@@ -358,7 +358,7 @@ class MediaBrowser extends Component {
     const page = (meta && meta.page) || 0;
     const apiSource = (meta && meta.source) || null;
     const isVariableWidth = ["bing_images", "tenor"].includes(apiSource);
-    const showinfo = activeFilter.indexOf("live")!==-1;
+    const showinfo = activeFilter && activeFilter.indexOf("live")!==-1;
 
     return (
       <div className={styles.mediaBrowser} ref={browserDiv => (this.browserDiv = browserDiv)}>

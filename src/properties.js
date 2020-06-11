@@ -31,7 +31,8 @@ window.APP_PROPS = {
     MICROSOFT_APP_ID:"1e74dfa7-e000-4923-818d-a756a7a93e62",
     features: {
       hide_powered_by: true,
-      show_feedback_ui : false
+      show_feedback_ui : false,
+      disable_room_creation : true
     },
     theme:{
       "dark-theme":false,
