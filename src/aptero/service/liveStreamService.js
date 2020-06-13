@@ -8,9 +8,14 @@ export class LiveStreamService {
   async start(){
     //if no stream create one 360 and one 2d
     {
-      let retData = await this.listStream(true);
-      if (retData && retData.entries.length == 0) {
-        await this.createStream(true);
+      try {
+        let retData = await this.listStream(true);
+        if (retData && retData.entries.length == 0) {
+          await this.createStream(true);
+        }
+      }catch (e) {
+        //ignore this error
+        //401 can happens in case the user is not logged
       }
     }
     {
@@ -25,17 +30,19 @@ export class LiveStreamService {
     data["proxy_url"] = url;
     const store = new Store();
     let headers = {};
-    if (store.state && store.state.credentials.token) {
-      headers.authorization = `bearer ${store.state.credentials.token}`;
-    }
     return new Promise((resolve, reject) => {
-      axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/api/v1/secure/proxy", data,{
-        headers:headers
-      }).then(resp => {
-        resolve(resp);
-      }).catch(reason => {
-        reject(reason);
-      });
+      if (store.state && store.state.credentials.token) {
+        headers.authorization = `bearer ${store.state.credentials.token}`;
+        axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/api/v1/secure/proxy", data,{
+          headers:headers
+        }).then(resp => {
+          resolve(resp);
+        }).catch(reason => {
+          reject(reason);
+        });
+      }else{
+        reject("unauthorized")
+      }
     })
   }
 

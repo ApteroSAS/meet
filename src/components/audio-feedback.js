@@ -67,7 +67,6 @@ AFRAME.registerComponent("networked-audio-analyser", {
   async init() {
     this.volume = 0;
     this.prevVolume = 0;
-    this.loudest = 0;
 
     this._updateAnalysis = this._updateAnalysis.bind(this);
     this._runScheduledWork = this._runScheduledWork.bind(this);
@@ -125,16 +124,6 @@ AFRAME.registerComponent("networked-audio-analyser", {
   }
 });
 
-function connectAnalyser(mediaStream) {
-  const ctx = THREE.AudioContext.getContext();
-  const source = ctx.createMediaStreamSource(mediaStream);
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = 32;
-  const levels = new Uint8Array(analyser.fftSize);
-  source.connect(analyser);
-  return { analyser, levels };
-}
-
 function getAnalyser(el) {
   // Is this the local player
   const ikRootEl = findAncestorWithComponent(el, "ik-root");
@@ -153,21 +142,14 @@ function getAnalyser(el) {
 AFRAME.registerSystem("local-audio-analyser", {
   init() {
     this.volume = 0;
-    this.loudest = 0;
     this.prevVolume = 0;
     this.avatarIsQuiet = true;
     this.lastSeenVolume = 0;
 
-    this.el.addEventListener("local-media-stream-created", e => {
-      const mediaStream = e.detail.mediaStream;
-      if (this.stream) {
-        console.warn("media stream changed", this.stream, mediaStream);
-        // TODO: cleanup?
-      }
-      this.stream = mediaStream;
-      const { analyser, levels } = connectAnalyser(mediaStream);
-      this.analyser = analyser;
-      this.levels = levels;
+    this.el.addEventListener("local-media-stream-created", () => {
+      const audioSystem = this.el.sceneEl.systems["hubs-systems"].audioSystem;
+      this.analyser = audioSystem.outboundAnalyser;
+      this.levels = audioSystem.analyserLevels;
     });
   },
 
