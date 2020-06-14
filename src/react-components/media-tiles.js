@@ -156,7 +156,7 @@ class MediaTiles extends Component {
   entryToTile = (entry, idx) => {
     if (!entry.images.preview) {
       entry.images.preview = {
-        url: "https://hub.aptero.co/data/app-thumbnail.png",
+        url: window.APP_PROPS.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png",
         height: 1280,
         width: 720
       };

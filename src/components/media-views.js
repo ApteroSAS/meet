@@ -2,6 +2,8 @@
 import configs from "../utils/configs";
 import GIFWorker from "../workers/gifparsing.worker.js";
 import errorImageSrc from "!!url-loader!../assets/images/media-error.gif";
+import microsoftErrorImageSrc from "!!url-loader!../assets/images/media-error_microsoft_not_authorized.png";
+
 import audioIcon from "../assets/images/audio.png";
 import { paths } from "../systems/userinput/paths";
 import HLS from "hls.js";
@@ -210,6 +212,14 @@ class TextureCache {
 const textureCache = new TextureCache();
 const inflightTextures = new Map();
 
+const microsoftErrorImage = new Image();
+microsoftErrorImage.src = microsoftErrorImageSrc;
+const microsoftErrorTexture = new THREE.Texture(microsoftErrorImage);
+microsoftErrorTexture.magFilter = THREE.NearestFilter;
+microsoftErrorImage.onload = () => {
+  microsoftErrorTexture.needsUpdate = true;
+};
+
 const errorImage = new Image();
 errorImage.src = errorImageSrc;
 const errorTexture = new THREE.Texture(errorImage);
@@ -217,7 +227,22 @@ errorTexture.magFilter = THREE.NearestFilter;
 errorImage.onload = () => {
   errorTexture.needsUpdate = true;
 };
-const errorCacheItem = { texture: errorTexture, ratio: 1 };
+
+function getErrorTexture(src) {
+  if(src.endsWith("microsoft_not_authorized")){
+    return microsoftErrorTexture;
+  }else{
+    return errorTexture;
+  }
+}
+
+function getErrorCacheItem(src){
+  return { texture: getErrorTexture(src), ratio: 1 }
+}
+
+function isErrorTexture(texture) {
+  return texture === errorTexture || texture === microsoftErrorTexture;
+}
 
 function timeFmt(t) {
   let s = Math.floor(t),
@@ -667,7 +692,7 @@ AFRAME.registerComponent("media-video", {
       this.audioSource = audioSourceEl;
     } catch (e) {
       console.error("Error loading video", this.data.src, e);
-      texture = errorTexture;
+      texture = getErrorTexture(this.data.src);
       this.videoTexture = this.audioSource = null;
     }
 
@@ -1069,7 +1094,7 @@ AFRAME.registerComponent("media-image", {
       if (this.mesh && this.mesh.material.map && (src !== oldData.src || version !== oldData.version)) {
         this.mesh.material.map = null;
         this.mesh.material.needsUpdate = true;
-        if (this.mesh.material.map !== errorTexture) {
+        if (!isErrorTexture(this.mesh.material.map)) {
           textureCache.release(oldData.src, oldData.version);
           this.currentSrcIsRetained = false;
         }
@@ -1085,8 +1110,8 @@ AFRAME.registerComponent("media-image", {
       } else {
         const inflightKey = textureCache.key(src, version);
 
-        if (src === "error") {
-          cacheItem = errorCacheItem;
+        if (src.startsWith("error")) {
+          cacheItem = getErrorCacheItem(src);
         } else if (inflightTextures.has(inflightKey)) {
           await inflightTextures.get(inflightKey);
           cacheItem = textureCache.retain(src, version);
@@ -1120,7 +1145,7 @@ AFRAME.registerComponent("media-image", {
       this.currentSrcIsRetained = true;
     } catch (e) {
       console.error("Error loading image", this.data.src, e);
-      texture = errorTexture;
+      texture = getErrorTexture(this.data.src);
       this.currentSrcIsRetained = false;
     }
 
@@ -1162,7 +1187,7 @@ AFRAME.registerComponent("media-image", {
     // We only support transparency on gifs. Other images will support cutout as part of batching, but not alpha transparency for now
     this.mesh.material.transparent =
       !this.data.batch ||
-      texture == errorTexture ||
+      isErrorTexture(texture) ||
       this.data.contentType.includes("image/gif") ||
       !!(texture.image && texture.image.hasAlpha);
 
@@ -1173,7 +1198,7 @@ AFRAME.registerComponent("media-image", {
       scaleToAspectRatio(this.el, ratio);
     }
 
-    if (texture !== errorTexture && this.data.batch && !texture.isCompressedTexture) {
+    if (!isErrorTexture(texture) && this.data.batch && !texture.isCompressedTexture) {
       batchManagerSystem.addObject(this.mesh);
     }
 
@@ -1270,7 +1295,7 @@ AFRAME.registerComponent("media-pdf", {
       if (src !== this.data.src || index !== this.data.index) return;
     } catch (e) {
       console.error("Error loading PDF", this.data.src, e);
-      texture = errorTexture;
+      texture = getErrorTexture(this.data.src);
     }
 
     if (!this.mesh) {
@@ -1282,14 +1307,14 @@ AFRAME.registerComponent("media-pdf", {
       this.el.setObject3D("mesh", this.mesh);
     }
 
-    this.mesh.material.transparent = texture == errorTexture;
+    this.mesh.material.transparent = isErrorTexture(texture);
     this.mesh.material.map = texture;
     this.mesh.material.map.needsUpdate = true;
     this.mesh.material.needsUpdate = true;
 
     scaleToAspectRatio(this.el, ratio);
 
-    if (texture !== errorTexture && this.data.batch) {
+    if (!isErrorTexture(texture) && this.data.batch) {
       this.el.sceneEl.systems["hubs-systems"].batchManagerSystem.addObject(this.mesh);
     }
 

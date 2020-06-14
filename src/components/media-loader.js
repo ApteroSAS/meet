@@ -24,7 +24,7 @@ import { cloneObject3D, setMatrixWorld } from "../utils/three-utils";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 import { SHAPE } from "three-ammo/constants";
-import { microsoftService } from "../aptero/service/MicrosoftService";
+import { MICROSOFT_AUTH_ERROR, microsoftService } from "../aptero/service/MicrosoftService";
 
 let loadingObjectEnvMap;
 let loadingObject;
@@ -170,12 +170,12 @@ AFRAME.registerComponent("media-loader", {
     }
   },
 
-  onError() {
+  onError(error = "error") {
     this.el.removeAttribute("gltf-model-plus");
     this.el.removeAttribute("media-pager");
     this.el.removeAttribute("media-video");
     this.el.removeAttribute("media-pdf");
-    this.el.setAttribute("media-image", { src: "error" });
+    this.el.setAttribute("media-image", { src: error });
     this.clearLoadingTimeout();
   },
 
@@ -419,12 +419,22 @@ AFRAME.registerComponent("media-loader", {
         contentType = (result.meta && result.meta.expected_content_type) || contentType;
         thumbnail = result.meta && result.meta.thumbnail && proxiedUrlFor(result.meta.thumbnail);
         if(!thumbnail){
-          thumbnail = "https://hub.aptero.co/data/app-thumbnail.png";
+          thumbnail = window.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png";
         }
       }
 
       // todo: we don't need to proxy for many things if the canonical URL has permissive CORS headers
       accessibleUrl = proxiedUrlFor(canonicalUrl);
+      if(accessibleUrl.endsWith(MICROSOFT_AUTH_ERROR)){
+        if (this.el.components["position-at-border__freeze"]) {
+          this.el.setAttribute("position-at-border__freeze", { isFlat: true });
+        }
+        if (this.el.components["position-at-border__freeze-unprivileged"]) {
+          this.el.setAttribute("position-at-border__freeze-unprivileged", { isFlat: true });
+        }
+        this.onError(MICROSOFT_AUTH_ERROR);
+        return;
+      }
 
       // if the component creator didn't know the content type, we didn't get it from reticulum, and
       // we don't think we can infer it from the extension, we need to make a HEAD request to find it out

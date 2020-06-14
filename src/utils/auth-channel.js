@@ -26,18 +26,27 @@ export default class AuthChannel {
   };
 
   get email() {
-    return (microsoftService.getUserAccount() && microsoftService.getUserAccount().name) || this.store.state.credentials.email;
+    return (microsoftService.getUserAccount() && (microsoftService.getUserAccount().name+" (SSO)")) || this.store.state.credentials.email;
   }
+
 
   get signedIn() {
     return this._signedIn;
   }
 
   async syncMicrosoftAccount(hubChannel) {
-    if (this.store.state.credentials.email && this.store.state.credentials.email.endsWith("_microsoft") && !microsoftService.getUserAccount()) {
-      //if microsoft account is logged off we log of the aptero account
-      //console.log("sign out sync");
-      await this.signOut(hubChannel);
+    if (!microsoftService.getUserAccount()) {
+      if (this.store.state.credentials.email && this.store.state.credentials.email.endsWith("_microsoft")) {
+        //if microsoft account is logged off we log of the aptero account
+        //console.log("sign out sync");
+        await this.signOut(hubChannel);
+        window.location.reload();
+      }
+    }else if(microsoftService.getUserAccount() && !this.store.state.credentials.email){
+      // microsoft account logged propagate to hubs account
+      let user = microsoftService.getUserAccount();
+      await this.convertToHubToken(user);
+      console.log("sync microsoft to hubs");
       window.location.reload();
     }
   }

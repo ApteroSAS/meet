@@ -248,6 +248,7 @@ import qsTruthy from "./utils/qs_truthy";
 import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/network";
 import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
+import { microsoftService } from "./aptero/service/MicrosoftService";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -412,6 +413,8 @@ async function updateEnvironmentForHub(hub, entryManager) {
     const hasExtension = /\.gltf/i.test(sceneUrl) || /\.glb/i.test(sceneUrl);
     isLegacyBundle = !(glbAsset || hasExtension);
   }
+
+  await microsoftService.preFetchConvertMicrosoftUrl(sceneUrl);
 
   if (isLegacyBundle) {
     // Deprecated

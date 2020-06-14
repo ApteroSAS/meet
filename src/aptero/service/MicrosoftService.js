@@ -7,15 +7,24 @@ import configs from "../../utils/configs";
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
 const EventEmitter = require("eventemitter3");
+export const MICROSOFT_AUTH_ERROR = "error_microsoft_not_authorized";
 
 export class MicrosoftService{
   eventEmitter = new EventEmitter();
+  defaultNoAuthImage = configs.APP_CONFIG.GLOBAL_ASSETS_PATH+"microsoft_not_authorized.png";
   acessToken = null;
   preloaded = {};
-  scopes = ["user.read","Files.Read.All"];
+  scopes = ["User.Read","Files.Read"];
   msalConfig = {
     auth: {
       clientId: configs.APP_CONFIG.MICROSOFT_APP_ID,
+      //https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration
+      //https://myaccount.microsoft.com/organizations
+      //https://stackoverflow.com/questions/47240071/msal-and-azure-ad-what-scopes-should-i-pass-when-i-just-want-to-get-the-user-id
+      authority:configs.APP_CONFIG.MICROSOFT_APP_AUTHORITY || "https://login.microsoftonline.com/common",
+      //authority:"https://login.microsoftonline.com/loreal.onmicrosoft.com",
+      //authority:"https://login.microsoftonline.com/apteroco.onmicrosoft.com",
+      postLogoutRedirectUri: window.location,
     },
     cache: {
       cacheLocation: 'localStorage'
@@ -46,7 +55,10 @@ export class MicrosoftService{
     };
     this.client = Client.initWithMiddleware(options2);
     await microsoftTeams.initialize();
-    this.passiveLogin().then((res) => console.log(res)).catch(err => console.error(err));
+
+    if (this.msalInstance.getAccount()) {
+      this.processLogged(this.msalInstance.getAccount());
+    }
   }
 
   urlToToSharingToken(url) {
@@ -65,6 +77,7 @@ export class MicrosoftService{
   }
 
   convertMicrosoftUrlSync(url){
+    this.preFetchConvertMicrosoftUrl(url);
     return this.preloaded[url] || url;
   }
 
@@ -102,7 +115,9 @@ export class MicrosoftService{
       this.client.api('/shares/'+stoken+'/driveItem').get().then((res) => {
         resolve(res["@microsoft.graph.downloadUrl"]);
       }).catch((err)=>{
-        reject(err);
+        console.warn(err);
+        //reject(err);
+        resolve(MICROSOFT_AUTH_ERROR);
       });
     });
   }
@@ -110,6 +125,14 @@ export class MicrosoftService{
   processLogged(response){
     this.acessToken = response.accessToken;
     this.eventEmitter.emit("auth",this.getUserAccount());
+    console.log("processLogged :",this.getUserAccount())
+    const url = "https://graph.microsoft.com/v1.0/organization";
+    //const url = "https://graph.microsoft.com/v1.0/sites/loreal.sharepoint.com:/sites/-FR-pocAptero"
+    this.client.api(url).get().then((res) => {
+      console.log(res);
+    }).catch((err)=>{
+      console.error(err);
+    });
   }
 
   async passiveLogin() {
