@@ -3,6 +3,12 @@ const EventEmitter = require("eventemitter3");
 export class NetworkService {
   eventEmitter = new EventEmitter();
 
+  constructor(){}
+
+  start(){
+    /* empty start to ensure the import is made*/
+  }
+
   sendMessage(type,data){
     this.hubPhxChannel.push("message", { type: type, body:data });
   }
@@ -41,4 +47,3 @@ export class NetworkService {
 }
 
 export const networkService = new NetworkService();
-

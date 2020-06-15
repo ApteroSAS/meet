@@ -246,7 +246,7 @@ import detectConcurrentLoad from "./utils/concurrent-load-detector";
 
 import qsTruthy from "./utils/qs_truthy";
 import {video360Service } from "./aptero/service/Video360Service";
-import { networkService } from "./aptero/service/network";
+import { networkService } from "./aptero/service/NetworkService";
 import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
 import { microsoftService } from "./aptero/service/MicrosoftService";
 

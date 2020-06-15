@@ -24,7 +24,8 @@ export class MicrosoftService{
       authority:configs.APP_CONFIG.MICROSOFT_APP_AUTHORITY || "https://login.microsoftonline.com/common",
       //authority:"https://login.microsoftonline.com/loreal.onmicrosoft.com",
       //authority:"https://login.microsoftonline.com/apteroco.onmicrosoft.com",
-      postLogoutRedirectUri: window.location,
+      redirectUri:window.location.origin+"/microsoft.html",
+      postLogoutRedirectUri: window.location.href,
     },
     cache: {
       cacheLocation: 'localStorage'
@@ -36,6 +37,7 @@ export class MicrosoftService{
     scopes: this.scopes, // optional Array<string>
   };
 
+  constructor(){}
 
   async start(defaultRedirectAction){
     if(!defaultRedirectAction){
@@ -55,10 +57,7 @@ export class MicrosoftService{
     };
     this.client = Client.initWithMiddleware(options2);
     await microsoftTeams.initialize();
-
-    if (this.msalInstance.getAccount()) {
-      this.processLogged(this.msalInstance.getAccount());
-    }
+    this.passiveLogin();
   }
 
   urlToToSharingToken(url) {
@@ -82,7 +81,11 @@ export class MicrosoftService{
   }
 
   getName(){
-    return this.getUserAccount() && this.getUserAccount().name;
+    if(this.msalInstance) {
+      return this.getUserAccount() && this.getUserAccount().name;
+    }else{
+      return null;
+    }
   }
 
   async convertMicrosoftUrl(url){
@@ -126,13 +129,22 @@ export class MicrosoftService{
     this.acessToken = response.accessToken;
     this.eventEmitter.emit("auth",this.getUserAccount());
     console.log("processLogged :",this.getUserAccount())
-    const url = "https://graph.microsoft.com/v1.0/organization";
-    //const url = "https://graph.microsoft.com/v1.0/sites/loreal.sharepoint.com:/sites/-FR-pocAptero"
+    const url = "https://graph.microsoft.com/v1.0/me";
     this.client.api(url).get().then((res) => {
       console.log(res);
     }).catch((err)=>{
-      console.error(err);
+      console.error(err)
     });
+  }
+
+  handleError(error) {
+    if (error.errorCode === 'consent_required'
+      || error.errorCode === 'interaction_required'
+      || error.errorCode === 'login_required') {
+      this.loginWithRedirect();
+      return;
+    }
+    console.warn(error);
   }
 
   async passiveLogin() {
@@ -143,11 +155,11 @@ export class MicrosoftService{
         this.msalInstance.acquireTokenSilent(this.loginRequest)
           .then(response => {
             // get access token from response
-            this.processLogged(response);
+            this.acessToken = response.accessToken;
             resolve(response);
           })
           .catch(err => {
-            reject(err);
+            this.handleError(err);
           });
       }else{
         resolve(null);
@@ -194,4 +206,3 @@ export class MicrosoftService{
 }
 
 export const microsoftService = new MicrosoftService();
-microsoftService.start();

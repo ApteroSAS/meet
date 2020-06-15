@@ -15,7 +15,7 @@ import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
 import RemoteThumbnailRenderer from "../aptero/thumnail/thumbnail/RemoteThumbnailRenderer";
-import { MediaTilesLib } from "../aptero/service/media-tiles-lib";
+import { MediaTilesLib } from "../aptero/util/media-tiles-lib";
 
 dayjs.extend(relativeTime);
 

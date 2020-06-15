@@ -5,12 +5,14 @@ import Store from "../../storage/store";
 
 export class LiveStreamService {
 
+  constructor(){}
+
   async start(){
     //if no stream create one 360 and one 2d
     {
       try {
         let retData = await this.listStream(true);
-        if (retData && retData.entries.length == 0) {
+        if (retData && retData.entries.length === 0) {
           await this.createStream(true);
         }
       }catch (e) {
@@ -19,9 +21,14 @@ export class LiveStreamService {
       }
     }
     {
-      let retData = await this.listStream(false);
-      if (retData && retData.entries.length == 0) {
-        await this.createStream(false);
+      try {
+        let retData = await this.listStream(false);
+        if (retData && retData.entries.length === 0) {
+          await this.createStream(false);
+        }
+      }catch (e) {
+        //ignore this error
+        //401 can happens in case the user is not logged
       }
     }
   }
@@ -82,4 +89,3 @@ export class LiveStreamService {
 }
 
 export const liveStreamService = new LiveStreamService();
-liveStreamService.start();

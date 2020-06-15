@@ -17,7 +17,9 @@ if (microsoftService.getUserAccount()) {
     if (microsoftService.getUserAccount()) {
       //logged
       console.log("logged");
-      window.location.href = window.location.origin;
+      setTimeout(() => {
+        window.location.href = window.location.origin;
+      }, 4000);
     } else {
       console.log("loginWithRedirectInternal");
       microsoftService.loginWithRedirectInternal();

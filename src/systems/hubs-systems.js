@@ -26,6 +26,7 @@ import { MenuAnimationSystem } from "./menu-animation-system";
 import { AudioSettingsSystem } from "./audio-settings-system";
 import { EnterVRButtonSystem } from "./enter-vr-button-system";
 import { AudioSystem } from "./audio-system";
+import { apteroService } from "../aptero/service/ApteroServices";
 
 AFRAME.registerSystem("hubs-systems", {
   init() {
@@ -61,6 +62,8 @@ AFRAME.registerSystem("hubs-systems", {
     this.enterVRButtonSystem = new EnterVRButtonSystem(this.el);
     this.animationMixerSystem = new AnimationMixerSystem();
     this.boneVisibilitySystem = new BoneVisibilitySystem();
+    this.apteroService = apteroService;
+    this.apteroService.start();
   },
 
   tick(t, dt) {
@@ -104,9 +107,12 @@ AFRAME.registerSystem("hubs-systems", {
 
     // We run this late in the frame so that its the last thing to have an opinion about the scale of an object
     this.boneVisibilitySystem.tick();
+
+    this.apteroService.tick();
   },
 
   remove() {
     this.cursorTargettingSystem.remove();
+    this.apteroService.remove();
   }
 });

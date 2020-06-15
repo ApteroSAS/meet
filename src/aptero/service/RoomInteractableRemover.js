@@ -1,6 +1,6 @@
-import { networkService } from "./network";
+import { networkService } from "./NetworkService";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
-import { addMediaAndSetTransform } from "./Media";
+import { addMediaAndSetTransform } from "../util/Media";
 
 
 const floatEqual = (a, b, ep) => {
@@ -23,6 +23,9 @@ export class RoomInteractableRemover {
   staticEntities = {};
 
   constructor() {
+  }
+
+  start(){
     networkService.onMessage("RoomRemover-remove-entity", (networkID) => {
     });
     networkService.onMessage("RoomRemover-remove-entity-all", (removedEntity) => {
@@ -198,5 +201,5 @@ export class RoomInteractableRemover {
   }
 }
 
-export const roomInteractableRemover = new RoomInteractableRemover();
 
+export const roomInteractableRemover = new RoomInteractableRemover();

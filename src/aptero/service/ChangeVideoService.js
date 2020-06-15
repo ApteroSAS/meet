@@ -1,10 +1,17 @@
 import { roomInteractableRemover } from "./RoomInteractableRemover";
 import { mediaViewEventEmitter } from "../../components/media-views";
 import { ObjectContentOrigins } from "../../object-types";
-import { addMediaAndSetTransform } from "./Media";
-import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
+import { addMediaAndSetTransform } from "../util/Media";
 
 export class ChangeVideoService {
+
+  constructor(){
+
+  }
+
+  start(){
+    /* empty start to ensure the import is made*/
+  }
 
   /*async changeVideo() {
     this.removeNode();
@@ -59,5 +66,6 @@ export class ChangeVideoService {
   }
 
 }
+
 
 export const changeVideoService = new ChangeVideoService();
