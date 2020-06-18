@@ -1,3 +1,5 @@
+import { getMaterialImpl } from "../../aptero/service/DeviceDetector";
+
 const InterpolationBuffer = require("buffered-interpolation");
 import MobileStandardMaterial from "../../materials/MobileStandardMaterial";
 
@@ -16,10 +18,7 @@ AFRAME.registerComponent("pen-laser", {
   },
 
   init() {
-    let material = new THREE.MeshStandardMaterial({ color: "red", opacity: 0.5, transparent: true, visible: true });
-    if (window.APP && window.APP.quality === "low") {
-      material = MobileStandardMaterial.fromStandardMaterial(material);
-    }
+    let material = getMaterialImpl({ color: "red", opacity: 0.5, transparent: true, visible: true });
 
     const tipMaterial = material.clone();
 

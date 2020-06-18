@@ -9,6 +9,7 @@ import en from "react-intl/locale-data/en";
 import { FormattedMessage, IntlProvider, addLocaleData } from "react-intl";
 import styles from "../assets/stylesheets/preferences-screen.scss";
 import { lang, messages } from "../utils/i18n";
+import { computeDefaultAppQuality } from "../aptero/service/DeviceDetector";
 
 const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
 addLocaleData([...en]);
@@ -577,8 +578,8 @@ const DEFINITIONS = new Map([
       {
         key: "materialQualitySetting",
         prefType: PREFERENCE_LIST_ITEM_TYPE.SELECT,
-        options: [{ value: "low", text: "Low" }, { value: "high", text: "High" }],
-        defaultString: isMobile ? "low" : "low"
+        options: [{ value: "low", text: "Low" },{ value: "medium", text: "Medium" }, { value: "high", text: "High" }],
+        defaultString: computeDefaultAppQuality()
       },
       { key: "disableAutoPixelRatio", prefType: PREFERENCE_LIST_ITEM_TYPE.CHECK_BOX, defaultBool: false },
       { key: "allowMultipleHubsInstances", prefType: PREFERENCE_LIST_ITEM_TYPE.CHECK_BOX, defaultBool: false },

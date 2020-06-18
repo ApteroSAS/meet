@@ -1,4 +1,5 @@
 import resizeShadowCameraFrustum from "../utils/resizeShadowCameraFrustum";
+import { directionalLightActivated } from "../aptero/service/DeviceDetector";
 
 AFRAME.registerComponent("directional-light", {
   schema: {
@@ -62,7 +63,7 @@ AFRAME.registerComponent("directional-light", {
   },
 
   tick() {
-    if (window.APP && window.APP.quality === "low") {
+    if (!directionalLightActivated()) {
       return;
     }
 

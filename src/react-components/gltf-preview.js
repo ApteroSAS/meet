@@ -9,6 +9,7 @@ import { loadGLTF } from "../components/gltf-model-plus";
 import { disposeNode, findNode } from "../utils/three-utils";
 import { createImageBitmap, disposeImageBitmap } from "../utils/image-bitmap-utils";
 import styles from "../assets/stylesheets/avatar-preview.scss";
+import { getPreferredTechnique } from "../aptero/service/DeviceDetector";
 
 const TEXTURE_PROPS = {
   base_map: ["map"],
@@ -205,7 +206,7 @@ class GLTFPreview extends Component {
   loadPreviewGLTF = async gltfGltfUrl => {
     let gltf;
     try {
-      const preferredTechnique = window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
+      const preferredTechnique = getPreferredTechnique();
       gltf = await loadGLTF(gltfGltfUrl, "model/gltf", preferredTechnique, null, null);
     } catch (e) {
       console.error("Failed to load gltf preview", e);

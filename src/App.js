@@ -4,7 +4,7 @@ import MediaSearchStore from "./storage/media-search-store";
 export class App {
   constructor() {
     this.scene = null;
-    this.quality = "low";
+    this.quality = "medium";
     this.store = new Store();
     this.mediaSearchStore = new MediaSearchStore();
   }

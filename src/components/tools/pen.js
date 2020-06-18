@@ -8,6 +8,7 @@ import {
 } from "../../systems/sound-effects-system";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
 import MobileStandardMaterial from "../../materials/MobileStandardMaterial";
+import { getMaterialImpl } from "../../aptero/service/DeviceDetector";
 
 const pathsMap = {
   "player-right-controller": {
@@ -130,10 +131,8 @@ AFRAME.registerComponent("pen", {
     this.setDirty = this.setDirty.bind(this);
     this.dirty = true;
 
-    let material = new THREE.MeshStandardMaterial();
-    if (window.APP && window.APP.quality === "low") {
-      material = MobileStandardMaterial.fromStandardMaterial(material);
-    }
+    let material = getMaterialImpl({});
+
     this.penTip = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 16, 12), material);
     this.penTip.scale.setScalar(this.data.radius / this.el.parentEl.object3D.scale.x);
     this.penTip.matrixNeedsUpdate = true;

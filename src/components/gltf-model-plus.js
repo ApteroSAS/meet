@@ -11,6 +11,7 @@ import StandardMaterial from "../materials/StandardMaterial";
 import ImprovedMobileStandardMaterial from "../materials/ImprovedMobileStandardMaterial";
 import HubsTextureLoader from "../loaders/HubsTextureLoader";
 import HubsBasisTextureLoader from "../loaders/HubsBasisTextureLoader";
+import { getMaterialImpl, getPreferredTechnique } from "../aptero/service/DeviceDetector";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -418,13 +419,7 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
     object.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 
     object.material = mapMaterials(object, material => {
-      if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
-        return ImprovedMobileStandardMaterial.fromStandardMaterial(material);
-      } else if (material.name.startsWith("PBR_")) {
-        return ImprovedStandardMaterial.fromStandardMaterial(material);
-      } else {
-        return material;
-      }
+      return getMaterialImpl({},material);
     });
   });
 
@@ -440,7 +435,7 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
 
 export async function loadModel(src, contentType = null, useCache = false, jsonPreprocessor = null) {
   const preferredTechnique =
-    window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
+    window.APP && window.APP.quality === getPreferredTechnique();
 
   if (useCache) {
     if (gltfCache.has(src)) {

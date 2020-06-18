@@ -11,6 +11,7 @@ import { ensureAvatarMaterial, MAT_NAME } from "../utils/avatar-utils";
 import { createImageBitmap, disposeImageBitmap } from "../utils/image-bitmap-utils";
 import { proxiedUrlFor } from "../utils/media-url-utils";
 import styles from "../assets/stylesheets/avatar-preview.scss";
+import { getPreferredTechnique } from "../aptero/service/DeviceDetector";
 
 const TEXTURE_PROPS = {
   base_map: ["map"],
@@ -218,7 +219,7 @@ class AvatarPreview extends Component {
   loadPreviewAvatar = async avatarGltfUrl => {
     let gltf;
     try {
-      const technique = window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
+      const technique = getPreferredTechnique();
       gltf = await loadGLTF(avatarGltfUrl, "model/gltf", technique, null, ensureAvatarMaterial);
     } catch (e) {
       console.error("Failed to load avatar preview", e);

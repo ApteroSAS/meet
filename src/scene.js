@@ -34,13 +34,13 @@ import { App } from "./App";
 window.APP = new App();
 
 const qs = new URLSearchParams(location.search);
-const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
 
-window.APP.quality = window.APP.store.state.preferences.materialQualitySetting || isMobile ? "low" : "high";
+window.APP.quality = computeAppQuality();
 
 import "./components/event-repeater";
 
 import registerTelemetry from "./telemetry";
+import { computeAppQuality, shadowActivated } from "./aptero/service/DeviceDetector";
 
 disableiOSZoom();
 
@@ -64,7 +64,7 @@ const onReady = async () => {
   console.log(`Scene ID: ${sceneId}`);
 
   // Disable shadows on low quality
-  scene.setAttribute("shadow", { enabled: window.APP.quality !== "low" });
+  scene.setAttribute("shadow", { enabled: shadowActivated() });
 
   let uiProps = { sceneId: sceneId };
 

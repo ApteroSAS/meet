@@ -12,6 +12,7 @@ import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { addMedia, addMeshScaleAnimation } from "../../utils/media-utils";
 import { ObjectContentOrigins } from "../../object-types";
 import { SOUND_PEN_START_DRAW } from "../../systems/sound-effects-system";
+import { getMaterialImpl } from "../../aptero/service/DeviceDetector";
 
 const MSG_CONFIRM_CONNECT = 0;
 const MSG_BUFFER_DATA = 1;
@@ -58,10 +59,7 @@ AFRAME.registerComponent("networked-drawing", {
     this.radius = this.data.defaultRadius;
     this.segments = this.data.segments;
 
-    let material = new THREE.MeshStandardMaterial(options);
-    if (window.APP && window.APP.quality === "low") {
-      material = MobileStandardMaterial.fromStandardMaterial(material);
-    }
+    let material = getMaterialImpl(options);
 
     this.sharedBufferGeometryManager = new SharedBufferGeometryManager();
     // NOTE: 20 is approximate for how many floats per point are added.

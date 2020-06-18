@@ -210,12 +210,7 @@ if (isEmbed && !qs.get("embed_token")) {
 }
 
 THREE.Object3D.DefaultMatrixAutoUpdate = false;
-window.APP.quality =
-  window.APP.store.state.preferences.materialQualitySetting === "low"
-    ? "low"
-    : window.APP.store.state.preferences.materialQualitySetting === "high"
-      ? "high"
-      : "low";
+window.APP.quality = computeAppQuality();
 
 import "./components/owned-object-limiter";
 import "./components/owned-object-cleanup-timeout";
@@ -249,6 +244,7 @@ import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/NetworkService";
 import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
 import { microsoftService } from "./aptero/service/MicrosoftService";
+import { computeAppQuality, shadowActivated } from "./aptero/service/DeviceDetector";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -870,7 +866,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const scene = document.querySelector("a-scene");
-  scene.setAttribute("shadow", { enabled: window.APP.quality !== "low" }); // Disable shadows on low quality
+  scene.setAttribute("shadow", { enabled: shadowActivated() }); // Disable shadows on low quality
   scene.renderer.debug.checkShaderErrors = false;
 
   // HACK - Trigger initial batch preparation with an invisible object

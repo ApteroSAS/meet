@@ -1,5 +1,6 @@
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
 import waterNormalsUrl from "../assets/waternormals.jpg";
+import { lowQualityWater } from "../aptero/service/DeviceDetector";
 
 const {
   Mesh,
@@ -289,7 +290,7 @@ AFRAME.registerComponent("simple-water", {
     if (!waterNormalMap) {
       waterNormalMap = new TextureLoader().load(waterNormalsUrl);
     }
-    this.water = new SimpleWater(waterNormalMap, undefined, window.APP && window.APP.quality === "low");
+    this.water = new SimpleWater(waterNormalMap, undefined, lowQualityWater());
     this.el.setObject3D("mesh", this.water);
   },
 
