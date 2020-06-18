@@ -168,7 +168,9 @@ export class MicrosoftService{
   }
 
   async loginWithRedirect(){
-    window.location.href = window.location.origin+"/microsoft.html"
+    if(window.location.href !== window.location.origin+"/microsoft.html") {
+      window.location.href = window.location.origin + "/microsoft.html"
+    }
   }
 
   async loginWithRedirectInternal(){
