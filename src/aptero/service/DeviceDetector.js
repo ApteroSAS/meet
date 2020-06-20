@@ -65,5 +65,3 @@ export function getMaterialImpl(options,material) {
 export class DeviceDetector{
 
 }
-
-console.log(" is ",isOculusQuest(),isOculusGo());

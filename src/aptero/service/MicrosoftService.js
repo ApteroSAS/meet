@@ -168,7 +168,7 @@ export class MicrosoftService{
   }
 
   async loginWithRedirect(){
-    if(window.location.href !== window.location.origin+"/microsoft.html") {
+    if(window.location.href !== window.location.origin+"/microsoft.html" && !this.msalInstance.getAccount()) {
       window.location.href = window.location.origin + "/microsoft.html"
     }
   }

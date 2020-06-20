@@ -107,6 +107,7 @@ async function fetchFeaturedRooms() {
 }
 
 (async () => {
+  document.getElementById("version").innerHTML = process.env.BUILD_VERSION;
   if (qs.get("new") !== null) {
     createAndRedirectToNewHub(null, null, true);
     return;

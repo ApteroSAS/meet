@@ -343,7 +343,6 @@ AFRAME.registerComponent("media-loader", {
     if (!src) return;
 
     const isOriginalContent = this.el.components["media-loader"].contentChanged===src;
-    console.log("update media loader recv src "+src);
     if(isOriginalContent){
       this.el.setAttribute("media-loader","src", oldData.src);
       this.data.src = oldData.src;

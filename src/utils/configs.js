@@ -1,8 +1,7 @@
 import appLogo from "../assets/images/app-logo.png";
 import companyLogo from "../assets/images/company-logo.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
-import { propertiesService, registerProperties } from "../propertiesService";
-registerProperties();
+import { propertiesService } from "../propertiesService";
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
 const configs = {};
