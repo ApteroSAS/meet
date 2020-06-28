@@ -10,7 +10,7 @@ export default function registerTelemetry(trackedPage, trackedTitle) {
   if (sentryDsn) {
     console.log("Tracking: Sentry DSN: " + sentryDsn);
     Raven.config(sentryDsn,{
-      environment:configs.SENTRY_ENV || "default",
+      environment:configs.SENTRY_ENV || "web_default",
       release: process.env.BUILD_VERSION
     }).install();
   }

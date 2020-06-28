@@ -4,7 +4,7 @@ import sceneEditorLogo from "../assets/images/editor-logo.png";
 import { propertiesService } from "../propertiesService";
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
-const configs = {};
+const configs = propertiesService;
 let isAdmin = false;
 
 [
