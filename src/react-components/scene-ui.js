@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import { IntlProvider, FormattedMessage, addLocaleData } from "react-intl";
-import en from "react-intl/locale-data/en";
+import { IntlProvider, FormattedMessage } from "react-intl";
 
 import configs from "../utils/configs";
 import IfFeature from "./if-feature";
@@ -16,8 +15,9 @@ import { faCodeBranch } from "@fortawesome/free-solid-svg-icons/faCodeBranch";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 
 import { lang, messages } from "../utils/i18n";
+import { registerLang } from "../aptero/util/intl";
 
-addLocaleData([...en]);
+registerLang();
 
 class SceneUI extends Component {
   static propTypes = {

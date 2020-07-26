@@ -6,13 +6,15 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faUndo } from "@fortawesome/free-solid-svg-icons/faUndo";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons/faExclamationTriangle";
 import en from "react-intl/locale-data/en";
-import { FormattedMessage, IntlProvider, addLocaleData } from "react-intl";
+import { FormattedMessage, IntlProvider } from "react-intl";
 import styles from "../assets/stylesheets/preferences-screen.scss";
 import { lang, messages } from "../utils/i18n";
 import { computeDefaultAppQuality } from "../aptero/service/DeviceDetector";
+import { registerLang } from "../aptero/util/intl";
 
 const isMobile = AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR();
-addLocaleData([...en]);
+
+registerLang();
 
 function round(step, n) {
   return Math.round(n / step) * step;

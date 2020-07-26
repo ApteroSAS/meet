@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { IntlProvider, FormattedMessage, addLocaleData } from "react-intl";
+import { IntlProvider, FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import en from "react-intl/locale-data/en";
 
 import configs from "../utils/configs";
 import IfFeature from "./if-feature";
@@ -27,9 +26,9 @@ import styles from "../assets/stylesheets/index.scss";
 import AuthDialog from "./auth-dialog.js";
 import SignInDialog from "./sign-in-dialog.js";
 import MediaTiles from "./media-tiles";
-import { microsoftService } from "../aptero/service/MicrosoftService";
+import { registerLang } from "../aptero/util/intl";
 
-addLocaleData([...en]);
+registerLang();
 
 const isMobile = checkIsMobile();
 

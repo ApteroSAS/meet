@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { IntlProvider, FormattedMessage, addLocaleData } from "react-intl";
-import en from "react-intl/locale-data/en";
+import { IntlProvider, FormattedMessage } from "react-intl";
 
 import configs from "../utils/configs";
 import { lang, messages } from "../utils/i18n";
@@ -9,11 +8,13 @@ import classNames from "classnames";
 import styles from "../assets/stylesheets/link.scss";
 import { disableiOSZoom } from "../utils/disable-ios-zoom";
 import HeadsetIcon from "../assets/images/generic_vr_headset.svg";
+import { registerLang } from "../aptero/util/intl";
 
 const MAX_DIGITS = 6;
 const MAX_LETTERS = 4;
 
-addLocaleData([...en]);
+registerLang();
+
 disableiOSZoom();
 const hasTouchEvents = "ontouchstart" in document.documentElement;
 

@@ -8,13 +8,15 @@ import React from "react";
 import ReactDOM from "react-dom";
 import copy from "copy-to-clipboard";
 import { detectOS } from "detect-browser";
-import { IntlProvider, FormattedMessage, addLocaleData } from "react-intl";
-import en from "react-intl/locale-data/en";
-addLocaleData([...en]);
+import { IntlProvider, FormattedMessage } from "react-intl";
+
 
 import styles from "./assets/stylesheets/support.scss";
 import configs from "./utils/configs";
 import { lang, messages } from "./utils/i18n";
+
+import { registerLang } from "./aptero/util/intl";
+registerLang();
 
 const SHORTHAND_INITIALIZER = "var foo = 'bar'; var baz = { foo };";
 const SPREAD_SYNTAX = "var foo = {}; var baz = { ...foo };";

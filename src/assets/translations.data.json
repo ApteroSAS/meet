@@ -453,7 +453,7 @@
     "support.supported": "supported",
     "support.unsupported": "unsupported"
   },
-   "cn-zh": {
+   "zh": {
     "app-name": "App",
     "editor-name": "Scene Editor",
     "contact-email": "app@company.com",
