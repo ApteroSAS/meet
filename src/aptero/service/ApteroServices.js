@@ -6,6 +6,8 @@ import { roomInteractableRemover } from "./RoomInteractableRemover";
 import { video360Service } from "./Video360Service";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
 
+import "../custom-controller-button";
+
 export class ApteroServices{
   constructor(){
   }

@@ -12,6 +12,7 @@ import ImprovedMobileStandardMaterial from "../materials/ImprovedMobileStandardM
 import HubsTextureLoader from "../loaders/HubsTextureLoader";
 import HubsBasisTextureLoader from "../loaders/HubsBasisTextureLoader";
 import { getMaterialImpl, getPreferredTechnique } from "../aptero/service/DeviceDetector";
+import { gltfExtensionProcessorService } from "../aptero/service/GLTFExtensionProcessorService";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -537,7 +538,6 @@ AFRAME.registerComponent("gltf-model-plus", {
       // If we started loading something else already
       // TODO: there should be a way to cancel loading instead
       if (src != this.lastSrc) return;
-
       // If we had inflated something already before, clean that up
       this.disposeLastInflatedEl();
 
@@ -612,6 +612,7 @@ AFRAME.registerComponent("gltf-model-plus", {
       rewires.forEach(f => f());
 
       object3DToSet.visible = true;
+      gltfExtensionProcessorService.processGltfFile(gltf,this.el);
       this.el.emit("model-loaded", { format: "gltf", model: this.model });
     } catch (e) {
       gltfCache.release(src);

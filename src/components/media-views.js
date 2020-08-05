@@ -229,7 +229,7 @@ errorImage.onload = () => {
 };
 
 function getErrorTexture(src) {
-  if(src.endsWith("microsoft_not_authorized")){
+  if(typeof src === 'string' && src.endsWith("microsoft_not_authorized")){
     return microsoftErrorTexture;
   }else{
     return errorTexture;
