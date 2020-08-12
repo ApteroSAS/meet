@@ -7,6 +7,7 @@ import { video360Service } from "./Video360Service";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
 
 import "../custom-controller-button";
+import { gltfExtensionProcessorService } from "./GLTFExtensionProcessorService";
 
 export class ApteroServices{
   constructor(){
@@ -20,6 +21,7 @@ export class ApteroServices{
       await microsoftService.start();
       await roomInteractableRemover.start();
       await video360Service.start();
+      await gltfExtensionProcessorService.start();
     });
   }
 

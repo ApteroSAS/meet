@@ -32,8 +32,22 @@ export class NetworkService {
     }
   }
 
+  getClientId(){
+    return NAF.clientId;
+  }
+
+  async getElementNetworkId(element){
+    return new Promise((resolve) => {
+      NAF.utils
+        .getNetworkedEntity(element)
+        .then(networkedEl => {
+          resolve(networkedEl.components.networked.data.networkId);
+        })
+    });
+  }
+
   processMessage({ session_id, type, body, from }) {
-    this.eventEmitter.emit("msg_recv",{ session_id, type, body, from })
+    this.eventEmitter.emit("msg_recv",{ session_id, type, body, from });
     this.eventEmitter.emit(type,body);
   }
 

@@ -1,4 +1,5 @@
 import { customActionRegister } from "./CustomActionRegister";
+import { networkService } from "./NetworkService";
 
 let jquery = require("jquery");
 
@@ -17,6 +18,17 @@ let jquery = require("jquery");
 }];*/
 
 export class GLTFExtensionProcessorService {
+
+  async start(){
+    networkService.onMessage("animation_play",(data)=>{
+      let actionid = data.id;
+      let action = customActionRegister.actions[actionid];
+      if (action) {
+        action();
+      }
+    })
+  }
+
   processGltfFile(gltf, el) {
     let scene = gltf.scene || gltf.scenes[0];
     let sceneuuid = scene.uuid;
@@ -31,22 +43,24 @@ export class GLTFExtensionProcessorService {
         if (typeof jsonData === "string") {
           jsonData = JSON.parse(jsonData);
         }
-        jsonData.forEach(entry => {
-          this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName);
+        jsonData.forEach(async entry => {
+          await this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName);
         });
       }
     });
   }
 
-  processEntry(entry, elid, sceneuuid, meshuuid, meshName) {
+  async processEntry(entry, elid, sceneuuid, meshuuid, meshName) {
     let element = jquery("#" + elid);
+    let htmlElement = element.get()[0];
+    let networkId = await networkService.getElementNetworkId(htmlElement);
     console.log("registered custom animation controller", sceneuuid, meshuuid, meshName, element);
     let actionIds = [];
     entry.actions.forEach(action => {
       if(action.type === "animation") {
-        let actionid = meshuuid + "_" + meshName + "_" + action.data;
+        let actionid = networkId + "_" + meshName + "_" + action.data;
         actionIds.push(actionid);
-        let mixer = element.get()[0].components["animation-mixer"].mixer;
+        let mixer = htmlElement.components["animation-mixer"].mixer;
         let actionAnimation = mixer.clipAction(action.data);
         customActionRegister.actions[actionid] = () => {
           actionAnimation.reset();

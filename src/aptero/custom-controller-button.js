@@ -1,4 +1,5 @@
 import { customActionRegister } from "./service/CustomActionRegister";
+import { networkService } from "./service/NetworkService";
 
 AFRAME.registerComponent("custom-controller-action", {
   schema: {
@@ -6,7 +7,6 @@ AFRAME.registerComponent("custom-controller-action", {
   },
 
   init() {
-    console.log("toto");
     this._updateUI = this._updateUI.bind(this);
     this._updateUIOnStateChange = this._updateUIOnStateChange.bind(this);
     this.onHovered = () => {
@@ -20,12 +20,17 @@ AFRAME.registerComponent("custom-controller-action", {
     };
     this.onClick = () => {
       if (this.data.actionIds) {
-        this.data.actionIds.split("+").forEach(id => {
-          let action = customActionRegister.actions[id];
-          if (action) {
-            action();
-          }
-        });
+        if(this.data.type==="animation") {
+          this.data.actionIds.split("+").forEach(id => {
+            let action = customActionRegister.actions[id];
+            if (action) {
+              action();
+              networkService.sendMessage("animation_play", { id })
+            }
+          });
+        }else if(this.data.type==="spawn"){
+          //
+        }
       }
     };
   },
