@@ -27,7 +27,7 @@ export class MediaTilesLib {
     }
 
     return [imageWidth, imageHeight];
-  };
+  }
 
   createStreamTile() {
     const clickAction = (e) => {

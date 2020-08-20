@@ -1,5 +1,7 @@
 import { customActionRegister } from "./service/CustomActionRegister";
 import { networkService } from "./service/NetworkService";
+import { spawnMediaInfrontOfPlayer } from "./util/Media";
+import { ObjectContentOrigins } from "../object-types";
 
 AFRAME.registerComponent("custom-controller-action", {
   schema: {
@@ -19,18 +21,24 @@ AFRAME.registerComponent("custom-controller-action", {
       this._updateUI();
     };
     this.onClick = () => {
-      if (this.data.actionIds) {
-        if(this.data.type==="animation") {
+      try {
+        if (this.data.actionIds) {
           this.data.actionIds.split("+").forEach(id => {
-            let action = customActionRegister.actions[id];
-            if (action) {
-              action();
-              networkService.sendMessage("animation_play", { id })
+            let actionData = customActionRegister.actions[id];
+            if (actionData) {
+              if (actionData.action.type === "animation") {
+                actionData.callback();
+                networkService.sendMessage("animation_play", { id })
+              } else if (actionData.action.type === "spawn") {
+                spawnMediaInfrontOfPlayer(actionData.action.url, ObjectContentOrigins.URL, null);
+              } else if (actionData.action.type === "url") {
+                window.open(actionData.action.url, "_blank");
+              }
             }
           });
-        }else if(this.data.type==="spawn"){
-          //
         }
+      }catch(ex){
+        console.error(ex);
       }
     };
   },

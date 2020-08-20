@@ -19,14 +19,14 @@ let jquery = require("jquery");
 
 export class GLTFExtensionProcessorService {
 
-  async start(){
-    networkService.onMessage("animation_play",(data)=>{
+  async start() {
+    networkService.onMessage("animation_play", (data) => {
       let actionid = data.id;
       let action = customActionRegister.actions[actionid];
       if (action) {
         action();
       }
-    })
+    });
   }
 
   processGltfFile(gltf, el) {
@@ -35,38 +35,48 @@ export class GLTFExtensionProcessorService {
     scene.children.forEach(mesh => {
       let meshuuid = mesh.uuid;
       let meshName = mesh.name;
-      if (mesh.userData && mesh.userData["apt.animation.controller"]) {
-        let jsonData = mesh.userData["apt.animation.controller"];
+      if (mesh.userData && mesh.userData["apt.action.controller"]) {
+        let jsonData = mesh.userData["apt.action.controller"];
         if (typeof jsonData === "string" && jsonData.startsWith("\"") && jsonData.endsWith("\"")) {
           jsonData = jsonData.substring(1, jsonData.length - 1);
         }
         if (typeof jsonData === "string") {
           jsonData = JSON.parse(jsonData);
         }
-        jsonData.forEach(async entry => {
-          await this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName);
+        jsonData.forEach(async (entry, index) => {
+          await this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName, index);
         });
       }
     });
   }
 
-  async processEntry(entry, elid, sceneuuid, meshuuid, meshName) {
+  async processEntry(entry, elid, sceneuuid, meshuuid, meshName, pairIndex) {
     let element = jquery("#" + elid);
     let htmlElement = element.get()[0];
     let networkId = await networkService.getElementNetworkId(htmlElement);
     console.log("registered custom animation controller", sceneuuid, meshuuid, meshName, element);
     let actionIds = [];
-    entry.actions.forEach(action => {
-      if(action.type === "animation") {
-        let actionid = networkId + "_" + meshName + "_" + action.data;
-        actionIds.push(actionid);
+    entry.actions.forEach((action, index) => {
+      let actionid = networkId + "_" + pairIndex + "_" + meshName + "_" + index + "_" + (action.data || "");
+      actionIds.push(actionid);
+      if (action.type === "animation") {
         let mixer = htmlElement.components["animation-mixer"].mixer;
         let actionAnimation = mixer.clipAction(action.data);
-        customActionRegister.actions[actionid] = () => {
-          actionAnimation.reset();
-          actionAnimation.play();
-          actionAnimation.setLoop(THREE.LoopRepeat, 1);
-        };
+        if(actionAnimation) {
+          customActionRegister.actions[actionid] =
+            {
+              action: action,
+              callback: () => {
+                actionAnimation.reset();
+                actionAnimation.play();
+                actionAnimation.setLoop(THREE.LoopRepeat, 1);
+              }
+            };
+        }else{
+          console.warn("invalid extension data on animation "+action.data+" not found on mesh");
+        }
+      } else {
+        customActionRegister.actions[actionid] = {action:action};
       }
     });
     entry.triggers.forEach(trigger => {
