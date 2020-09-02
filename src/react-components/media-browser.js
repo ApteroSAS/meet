@@ -20,7 +20,7 @@ import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
 import MediaTiles from "./media-tiles";
 import RoomInfoDialog from "./room-info-dialog";
 import LiveStreamInfoDialog from "./live-stream-info-dialog";
-import { liveStreamService } from "../aptero/service/liveStreamService";
+import { liveStream } from "../aptero/service/LiveStream";
 import {sceneEntryManagerEventEmitter} from "../scene-entry-manager";
 
 const isMobile = AFRAME.utils.device.isMobile();
@@ -187,7 +187,7 @@ class MediaBrowser extends Component {
       const searchParams = new URLSearchParams(this.props.history.location.search);
       const urlSource = this.getUrlSource(searchParams);
       const is360 = urlSource === "videos360";
-      liveStreamService.createStream(is360).then(entry => {
+      liveStream.createStream(is360).then(entry => {
         this.setState((state) => {
           const newState = { ...state };
           newState.result.entries.push(entry);

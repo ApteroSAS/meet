@@ -1,7 +1,7 @@
-import { customActionRegister } from "./service/CustomActionRegister";
-import { networkService } from "./service/NetworkService";
-import { spawnMediaInfrontOfPlayer } from "./util/Media";
-import { ObjectContentOrigins } from "../object-types";
+import { customActionRegister } from "../service/CustomActionRegister";
+import { networkService } from "../service/NetworkService";
+import { spawnMediaInfrontOfPlayer } from "../util/Media";
+import { ObjectContentOrigins } from "../../object-types";
 
 AFRAME.registerComponent("custom-controller-action", {
   schema: {

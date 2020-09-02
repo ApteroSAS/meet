@@ -1,5 +1,6 @@
 import { customActionRegister } from "./CustomActionRegister";
 import { networkService } from "./NetworkService";
+import { mediaLimiter } from "./MediaLimiter";
 
 let jquery = require("jquery");
 
@@ -24,7 +25,7 @@ export class GLTFExtensionProcessorService {
       let actionid = data.id;
       let action = customActionRegister.actions[actionid];
       if (action) {
-        action();
+        action.callback();
       }
     });
   }
@@ -35,34 +36,41 @@ export class GLTFExtensionProcessorService {
     scene.children.forEach(mesh => {
       let meshuuid = mesh.uuid;
       let meshName = mesh.name;
-      if (mesh.userData && mesh.userData["apt.action.controller"]) {
-        let jsonData = mesh.userData["apt.action.controller"];
-        if (typeof jsonData === "string" && jsonData.startsWith("\"") && jsonData.endsWith("\"")) {
-          jsonData = jsonData.substring(1, jsonData.length - 1);
-        }
-        if (typeof jsonData === "string") {
-          jsonData = JSON.parse(jsonData);
-        }
-        jsonData.forEach(async (entry, index) => {
-          await this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName, index);
+      if (mesh.userData) {
+        Object.keys(mesh.userData).forEach((value, masterindex) => {
+          if (value.startsWith("apt.action.controller")) {
+            let jsonData = mesh.userData[value];
+            if (typeof jsonData === "string" && jsonData.startsWith("\"") && jsonData.endsWith("\"")) {
+              jsonData = jsonData.substring(1, jsonData.length - 1);
+            }
+            if (typeof jsonData === "string") {
+              jsonData = JSON.parse(jsonData);
+            }
+            jsonData.forEach(async (entry, index) => {
+              await this.processEntry(entry, el.id, sceneuuid, meshuuid, meshName, index, masterindex);
+            });
+          }
+          if (value === "apt.limit.pdf") {
+            mediaLimiter.setLimit(mesh.userData["apt.limit.pdf"]);
+          }
         });
       }
     });
   }
 
-  async processEntry(entry, elid, sceneuuid, meshuuid, meshName, pairIndex) {
+  async processEntry(entry, elid, sceneuuid, meshuuid, meshName, pairIndex, masterindex) {
     let element = jquery("#" + elid);
     let htmlElement = element.get()[0];
     let networkId = await networkService.getElementNetworkId(htmlElement);
     console.log("registered custom animation controller", sceneuuid, meshuuid, meshName, element);
     let actionIds = [];
     entry.actions.forEach((action, index) => {
-      let actionid = networkId + "_" + pairIndex + "_" + meshName + "_" + index + "_" + (action.data || "");
+      let actionid = networkId + "_" + meshName + "_" + masterindex + "_" + pairIndex + "_" + index + "_" + (action.data || "");
       actionIds.push(actionid);
       if (action.type === "animation") {
         let mixer = htmlElement.components["animation-mixer"].mixer;
         let actionAnimation = mixer.clipAction(action.data);
-        if(actionAnimation) {
+        if (actionAnimation) {
           customActionRegister.actions[actionid] =
             {
               action: action,
@@ -72,22 +80,22 @@ export class GLTFExtensionProcessorService {
                 actionAnimation.setLoop(THREE.LoopRepeat, 1);
               }
             };
-        }else{
-          console.warn("invalid extension data on animation "+action.data+" not found on mesh");
+        } else {
+          console.warn("invalid extension data on animation " + action.data + " not found on mesh");
         }
       } else {
-        customActionRegister.actions[actionid] = {action:action};
+        customActionRegister.actions[actionid] = { action: action };
       }
     });
     entry.triggers.forEach(trigger => {
-      this.createButtonOnElement(actionIds, element, trigger.position, trigger.rotation, trigger.text);
+      this.createButtonOnElement(actionIds, element, trigger.position, trigger.rotation, trigger.text, trigger.size, trigger.textWidth, trigger.style);
     });
 
   }
 
-  createButtonOnElement(actionsIds, element, position, rotationDeg, text, addReverse = true) {
+  createButtonOnElement(actionsIds, element, position, rotationDeg, text, size, textWidth, style, addReverse = true) {
     if (addReverse) {
-      this.createButtonOnElement(actionsIds, element, position, rotationDeg, text, false);
+      this.createButtonOnElement(actionsIds, element, position, rotationDeg, text, size, textWidth, style, false);
       rotationDeg.y += 180;
     }
     //1) apply transform to button
@@ -95,16 +103,17 @@ export class GLTFExtensionProcessorService {
     //element.append('<a-box color="tomato" position="'+positionUpdated.x+' '+positionUpdated.y+' '+positionUpdated.z+'" depth="0.1" height="0.1" width="0.1"></a-box>')
     element.append(
       "   <a-entity\n" +
-      "       mixin=\"rounded-text-action-button\"\n" +
+      //"       mixin=\"rounded-text-action-button\"\n" +
+      "       mixin=\"" + (style || "rounded-button") + "\"\n" +
       "       is-remote-hover-target\n" +
       "       custom-controller-action=\"actionIds:" + actionsIds.join("+") + "\"\n" +
       "       tags=\"singleActionButton:true\"\n" +
-      "       rotation=\"" + rotationDeg.x + " " + rotationDeg.y + " " + rotationDeg.z + "\"\n" +
+      "       scale=\"" + (size || "1") + " " + (size || "1") + " " + (size || "1") + "\" \n" +
+      "       rotation=\"" + (rotationDeg ? (rotationDeg.x + " " + rotationDeg.y + " " + rotationDeg.z) : "0 0 0") + "\"\n" +
       "       position=\"" + positionUpdated.x + " " + positionUpdated.y + " " + positionUpdated.z + "\">\n" +
       "       <a-entity\n" +
-      "           class=\"pin-button-label\"\n" +
       "           visible=\"true\"\n" +
-      "           text=\" value:" + text + "; width:1.75; align:center;\"\n" +
+      "           text=\" value:" + (text || "click") + "; width:" + (textWidth || "1.75") + "; align:center;\"\n" +
       "           text-raycast-hack\n" +
       "           position=\"0 0 0\">\n" +
       "       </a-entity>\n" +

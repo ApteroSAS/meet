@@ -88,4 +88,4 @@ export class LiveStreamService {
 
 }
 
-export const liveStreamService = new LiveStreamService();
+export const liveStream = new LiveStreamService();

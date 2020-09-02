@@ -555,6 +555,7 @@ AFRAME.registerComponent("media-loader", {
             batch: false // Batching disabled until atlas is updated properly
           })
         );
+        this.el.setAttribute("media-limiter", {});
         this.el.setAttribute("media-pager", {});
         this.el.setAttribute("floaty-object", { reduceAngularFloat: true, releaseGravity: -1 });
         this.el.addEventListener(

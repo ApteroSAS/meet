@@ -26,7 +26,7 @@ import { MenuAnimationSystem } from "./menu-animation-system";
 import { AudioSettingsSystem } from "./audio-settings-system";
 import { EnterVRButtonSystem } from "./enter-vr-button-system";
 import { AudioSystem } from "./audio-system";
-import { apteroService } from "../aptero/service/ApteroServices";
+import { apteroService } from "../aptero/ApteroServices";
 
 AFRAME.registerSystem("hubs-systems", {
   init() {
