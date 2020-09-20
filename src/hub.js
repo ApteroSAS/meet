@@ -814,7 +814,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     qs.get("hub_id") ||
     (document.location.pathname === "/" && defaultRoomId
       ? defaultRoomId
-      : document.location.pathname.substring(1).split("/")[1]);//host/room/id/.*
+      : document.location.pathname.substring(1).split("/")[0]);//host/id/.*
   if(!hubId){
     window.location.href = window.location.origin;
   }

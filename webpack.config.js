@@ -503,6 +503,32 @@ module.exports = async (env, argv) => {
           removeComments: false
         }
       }),
+      new HTMLWebpackPlugin({
+        filename: "discord.html",
+        template: path.join(__dirname, "src", "discord.html"),
+        chunks: ["discord"],
+        minify: {
+          removeComments: false
+        }
+      }),
+      new HTMLWebpackPlugin({
+        filename: "whats-new.html",
+        template: path.join(__dirname, "src", "whats-new.html"),
+        chunks: ["whats-new"],
+        inject: "head",
+        minify: {
+          removeComments: false
+        }
+      }),
+      new HTMLWebpackPlugin({
+        filename: "cloud.html",
+        template: path.join(__dirname, "src", "cloud.html"),
+        chunks: ["cloud"],
+        inject: "head",
+        minify: {
+          removeComments: false
+        }
+      }),
       new CopyWebpackPlugin([
         {
           from: "src/hub.service.js",
