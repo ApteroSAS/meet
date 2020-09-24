@@ -15,6 +15,7 @@ export function showHoverEffect(el) {
 }
 
 export function canMove(entity) {
+//aptero
   return true;//we can always move items
   /*const isPinned = entity.components.pinnable && entity.components.pinnable.data.pinned;
   const networkedTemplate = entity && entity.components.networked && entity.components.networked.data.template;
@@ -87,7 +88,7 @@ function authorizeEntityManipulation(entityMetadata, sender, senderPermissions) 
   const { template, creator, isPinned } = entityMetadata;
   const isCreator = sender === creator;
 
-  if (template.endsWith("-waypoint-avatar") || template.endsWith("-media-frame")) {
+  if (template.endsWith("-waypoint-avatar")) {
     return true;
   } else if (template.endsWith("-avatar")) {
     return isCreator;

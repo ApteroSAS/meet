@@ -245,6 +245,7 @@ export default class MediaSearchStore extends EventTarget {
     this._sourceNavigate(this._stashedSource ? this._stashedSource : SOURCES[0], false, true);
   };
 
+//aptero TODO put in service
   async sourceNavigateWithResult(source) {
     return new Promise((resolve,reject) => {
       this._sourceNavigate(source, true, false, "result");

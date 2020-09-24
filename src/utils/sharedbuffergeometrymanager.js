@@ -5,8 +5,8 @@ export default class SharedBufferGeometryManager {
     this.sharedBuffers = {};
   }
 
-  addSharedBuffer(name, material, maxBufferSize) {
-    this.sharedBuffers[name] = new SharedBufferGeometry(material, maxBufferSize);
+  addSharedBuffer(name, material, primitiveMode, maxBufferSize) {
+    this.sharedBuffers[name] = new SharedBufferGeometry(material, primitiveMode, maxBufferSize);
   }
 
   getSharedBuffer(name) {

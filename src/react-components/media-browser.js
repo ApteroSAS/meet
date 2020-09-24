@@ -183,7 +183,7 @@ class MediaBrowser extends Component {
 
   handleEntryClicked = (evt, entry) => {
     evt.preventDefault();
-
+    //TODO aptero put in service
     if(entry.createLiveEntry){
       const searchParams = new URLSearchParams(this.props.history.location.search);
       const urlSource = this.getUrlSource(searchParams);

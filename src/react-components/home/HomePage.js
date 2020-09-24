@@ -25,6 +25,14 @@ export function HomePage() {
     (a, b) => b.member_count - a.member_count
   );
 
+  featuredRooms.forEach(entry => {
+    if (entry.type === "room") {
+      if (window.location.href.startsWith("https://localhost")) {
+        entry.url = "/hub.html?hub_id=" + entry.id;
+      }
+    }
+  });
+
   useEffect(() => {
     const qs = new URLSearchParams(location.search);
 

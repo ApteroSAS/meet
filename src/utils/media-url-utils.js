@@ -40,6 +40,7 @@ const farsparkEncodeUrl = url => {
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
   return url;
+  //aptero
   /*let extension = "";
   try {
     const pathParts = new URL(url).pathname.split(".");
@@ -78,6 +79,7 @@ export const isNonCorsProxyDomain = hostname => {
 };
 
 export const proxiedUrlFor = url => {
+//aptero
   if (url.startsWith("hubs:")) return url;
   if (url.startsWith("https:")) return url;
 
@@ -152,6 +154,7 @@ async function isHubsServer(url) {
   }
 
   let isHubsServer;
+  //TODO aptero to check
   /*try {
     isHubsServer = (await fetch(proxiedUrlFor(origin), { method: "HEAD" })).headers.has("hub-name");
   } catch (e) {
@@ -164,7 +167,7 @@ async function isHubsServer(url) {
 
 const hubsSceneRegex = /https?:\/\/[^/]+\/scenes\/(\w+)\/?\S*/;
 const hubsAvatarRegex = /https?:\/\/[^/]+\/avatars\/(?<id>\w+)\/?\S*/;
-const hubsRoomRegex = /(https?:\/\/)?[^/]+\/room\/([a-zA-Z0-9]{7})\/?\S*/;
+const hubsRoomRegex = /(https?:\/\/)?[^/]+\/([a-zA-Z0-9]{7})\/?\S*/;
 
 export const isLocalHubsUrl = async url =>
   (await isHubsServer(url)) && new URL(url).origin === document.location.origin;

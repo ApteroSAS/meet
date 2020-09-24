@@ -11,6 +11,7 @@ class LiveStreamInfoDialog extends Component {
   };
 
   render() {
+  //TODO migrate in aptero package
     /**
      {
       "attributions": "attributions",

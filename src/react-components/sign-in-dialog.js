@@ -75,7 +75,7 @@ export default class SignInDialog extends Component {
             onChange={e => this.setState({ email: e.target.value })}
             className={styles.emailField}
           />
-          {/*(configs.feature("show_terms") || configs.feature("show_privacy")) && (
+          {/* aptero modif (configs.feature("show_terms") || configs.feature("show_privacy")) && (
             <p className={styles.terms}>
               By proceeding, you agree to the{" "}
               <IfFeature name="show_terms">

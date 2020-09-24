@@ -184,9 +184,9 @@
                         </template>
 
                         <template data-name="Head">
+						<!--aptero modification -->
                             <a-entity
-                                networked-audio-source="rolloffFactor: 0.001;"
-                                audio-source="type: avatar"
+                                avatar-audio-source="rolloffFactor: 0.001;"
                                 personal-space-invader="radius: 0.15; useMaterial: true;"
                                 bone-visibility
                                 body-helper="type: kinematic; collisionFilterGroup: 4; collisionFilterMask: 1;"
@@ -268,6 +268,7 @@
             </template>
 
             <template id="interactable-media">
+			<!--aptero modification -->
                 <a-entity
                     class="interactable"
                     body-helper="type: dynamic; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 15;"
@@ -380,6 +381,7 @@
                                     position="0 0 0.001"
                                 ></a-entity>
                             </a-entity>
+							<!-- aptero modification -->
                             <a-entity
                                 class="deserialize-drawing"
                                 visible="false"
@@ -547,18 +549,6 @@
                     </a-entity>
                 </a-entity>
             </template>
-
-            <template id="interactable-media-frame">
-                <!--
-                    note we intentionally don't setup the shape or media-frame here since they both don't support dynamic updates
-                    and so must be configured when creating the entity on each client. Since we only support media frames in scenes
-                    for now, this is acceptable, but TODO this will need to be handled if we want to dynamically spawn them.
-                -->
-                <a-entity body-helper="type: kinematic; collisionFilterGroup: 16; collisionFilterMask: 1; disableCollision: true;" >
-                </a-entity>
-            </template>
-
-
             <template id="linked-media">
                 <a-entity
                     class="interactable"
@@ -818,6 +808,7 @@
                             position="0 0.225 0"
                             class="video-change-button"
                     ></a-entity>
+					<!--aptero modification -->
                     <a-entity
                         is-remote-hover-target
                         tags="singleActionButton: true; isHoverMenuChild: true;"
@@ -1146,6 +1137,7 @@
                         class="hud penhud"
                         material="alphaTest:0.1;"
                     ></a-entity>
+					<!-- aptero modification -->
                     <a-entity
                         is-remote-hover-target
                         tags="singleActionButton: true"
@@ -1230,7 +1222,7 @@
                 <a-entity id="stats" stats-plus="false" position="0 0 -1"></a-entity>
             </a-entity>
 
-            <!--<a-entity emoji-hud="camera: #avatar-pov-node;"></a-entity>-->
+            <a-entity emoji-hud="camera: #avatar-pov-node;"></a-entity>
 
             <a-entity
                 id="player-left-controller"

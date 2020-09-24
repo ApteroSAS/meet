@@ -28,7 +28,7 @@ import { AudioSettingsSystem } from "./audio-settings-system";
 import { EnterVRButtonSystem } from "./enter-vr-button-system";
 import { AudioSystem } from "./audio-system";
 import { ShadowSystem } from "./shadow-system";
-import { MediaFramesSystem } from "./media-frames";
+import { apteroService } from "../aptero/ApteroServices";
 
 AFRAME.registerSystem("hubs-systems", {
   init() {
@@ -66,7 +66,8 @@ AFRAME.registerSystem("hubs-systems", {
     this.boneVisibilitySystem = new BoneVisibilitySystem();
     this.uvScrollSystem = new UVScrollSystem();
     this.shadowSystem = new ShadowSystem(this.el);
-    this.mediaFramesSystem = new MediaFramesSystem(this.physicsSystem, this.el.systems.interaction);
+    this.apteroService = apteroService;
+    this.apteroService.start();
   },
 
   tick(t, dt) {
@@ -109,13 +110,14 @@ AFRAME.registerSystem("hubs-systems", {
     this.enterVRButtonSystem.tick();
     this.uvScrollSystem.tick(dt);
     this.shadowSystem.tick();
-    this.mediaFramesSystem.tick();
 
     // We run this late in the frame so that its the last thing to have an opinion about the scale of an object
     this.boneVisibilitySystem.tick();
+    this.apteroService.tick();
   },
 
   remove() {
     this.cursorTargettingSystem.remove();
+    this.apteroService.remove();
   }
 });

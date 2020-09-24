@@ -75,6 +75,7 @@ export default class SettingsMenu extends Component {
 
     const showRoomSettings = !!this.props.hubChannel.canOrWillIfCreator("update_hub");
     const showCloseRoom = !!this.props.hubChannel.canOrWillIfCreator("close_hub");
+    //aptero modif
     const showRoomInfo = false;
     const showRoomSection = showRoomSettings || showRoomInfo || showCloseRoom;
     const showStreamerMode =

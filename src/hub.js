@@ -240,6 +240,7 @@ import { getAvailableVREntryTypes, VR_DEVICE_AVAILABILITY, ONLY_SCREEN_AVAILABLE
 import detectConcurrentLoad from "./utils/concurrent-load-detector";
 
 import qsTruthy from "./utils/qs_truthy";
+//aptero service
 import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/network";
 import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
@@ -416,6 +417,7 @@ async function updateEnvironmentForHub(hub, entryManager) {
   console.log(`Scene URL: ${sceneUrl}`);
 
   let environmentEl = null;
+  //TODO aptero put this code in a service for easier merge
   if (sceneUrl.endsWith(".mp4")) {
     const mp4url = sceneUrl;
     sceneUrl = configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/data/VideoConf.glb";
@@ -588,7 +590,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   remountUI({
     onSendMessage: messageDispatch.dispatch,
     onLoaded: () => store.executeOnLoadActions(scene),
-
+//aptero modification
      onMediaSearchResultEntrySelected: (entry, selectAction) => {
       scene.emit("action_selected_media_result_entry", { entry, selectAction })
       mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry, selectAction });
@@ -608,6 +610,7 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
 
   // Handle request for user gesture
   scene.addEventListener("2d-interstitial-gesture-required", () => {
+  //aptero modification remove anoying messages in oculus quest
     /*remountUI({
       showInterstitialPrompt: true,
       onInterstitialPromptClicked: () => {
@@ -826,7 +829,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     qs.get("hub_id") ||
     (document.location.pathname === "/" && defaultRoomId
       ? defaultRoomId
-      : document.location.pathname.substring(1).split("/")[1]);//host/room/id/.*
+      : document.location.pathname.substring(1).split("/")[0]);
   console.log(`Hub ID: ${hubId}`);
 
   if (!defaultRoomId) {
@@ -1106,6 +1109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   scene.addEventListener("leave_room_requested", () => {
     entryManager.exitScene("left");
+    //aptero modification
     window.location.href = window.location.origin;
     remountUI({ roomUnavailableReason: "left" });
   });
@@ -1363,6 +1367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   hubChannel.setPhoenixChannel(hubPhxChannel);
+  //aptero modification
   networkService.setPhoenixChannel(hubPhxChannel);
 
   hubPhxChannel
@@ -1489,6 +1494,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           presence.onLeave((sessionId, current, info) => {
             // Ignore presence join/leaves if this Presence has not yet had its initial sync
             if (!hubChannel.presence.__hadInitialSync) return;
+            //aptero modificatin
             roomInteractableRemover.cleanUp();
             if (current && current.metas.length > 0) return;
             const occupantCount = Object.entries(hubChannel.presence.state).length;
@@ -1619,6 +1625,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   hubPhxChannel.on("message", ({ session_id, type, body, from }) => {
     //TODO hack waitting for server implementation
+    //aptero modifciation
     networkService.processMessage({ session_id, type, body, from });
     const getAuthor = () => {
       const userInfo = hubChannel.presence.state[session_id];

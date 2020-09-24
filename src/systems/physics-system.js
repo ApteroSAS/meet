@@ -44,6 +44,7 @@ export class PhysicsSystem {
         worldConfig: WORLD_CONFIG,
         arrayBuffer,
         maxBodies: MAX_BODIES,
+        //aptero
         wasmUrl: new URL(ammoWasmUrl, window.location).href
       },
       [arrayBuffer]

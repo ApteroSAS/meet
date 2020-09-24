@@ -22,11 +22,12 @@ import { ObjectContentOrigins } from "./object-types";
 import { getAvatarSrc, getAvatarType } from "./utils/avatar-utils";
 import { pushHistoryState } from "./utils/history";
 import { SOUND_ENTER_SCENE } from "./systems/sound-effects-system";
+//aptero
 import { mediaViewEventEmitter } from "./components/media-views";
 import { networkService } from "./aptero/service/network";
 
 const isIOS = AFRAME.utils.device.isIOS();
-
+//aptero
 export const sceneEntryManagerEventEmitter = new EventEmitter();
 
 export default class SceneEntryManager {
@@ -131,6 +132,7 @@ export default class SceneEntryManager {
     if (muteOnEntry) {
       this.scene.emit("action_mute");
     }
+    //aptero
     networkService.notifyAdapterReady();
   };
 
@@ -253,7 +255,7 @@ export default class SceneEntryManager {
       : async () => {
           await this._unpinElement(el);
         };
-
+    //TODO to check aptero
     this.performConditionalSignIn(() => true, action, pin ? "pin" : "unpin", () => {
       // UI pins/un-pins the entity optimistically, so we undo that here.
       // Note we have to disable the sign in flow here otherwise this will recurse.
@@ -280,6 +282,7 @@ export default class SceneEntryManager {
 
   _setupMedia = mediaStream => {
     const offset = { x: 0, y: 0, z: -1.5 };
+    //aptero
     const spawnMediaInfrontOfPlayer = (src, contentOrigin,data) => {
       if (!this.hubChannel.can("spawn_and_move_media")) return;
       const { entity, orientation } = addMedia(
@@ -405,6 +408,7 @@ export default class SceneEntryManager {
     let currentVideoShareEntity;
     let isHandlingVideoShare = false;
 
+//aptero
     const shareVideoMediaStream = async (constraints, isDisplayMedia,data) => {
       if (isHandlingVideoShare) return;
       isHandlingVideoShare = true;
@@ -440,6 +444,7 @@ export default class SceneEntryManager {
         }
 
         await NAF.connection.adapter.setLocalMediaStream(mediaStream);
+        //aptero
         if(data.selectAction==="result"){
           data.src = `hubs://clients/${NAF.clientId}/video`
           mediaViewEventEmitter.emit("share_video_media_stream_created",data);
@@ -538,9 +543,11 @@ export default class SceneEntryManager {
       // If user has HMD lifted up or gone through interstitial, delay spawning for now. eventually show a modal
       if (delaySpawn) {
         setTimeout(() => {
+        //aptero
           spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL,entry);
         }, 3000);
       } else {
+      //aptero
         spawnMediaInfrontOfPlayer(entry.url, ObjectContentOrigins.URL,entry);
       }
     });

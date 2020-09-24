@@ -1004,7 +1004,7 @@ class UIRoot extends Component {
               You can try <a href={tcpUrl.toString()}>connecting via TCP</a>, which may work better on some networks.
             </div>
           )}
-          {/*!["left", "disconnected", "scene_error"].includes(this.props.roomUnavailableReason) && (
+          {/* aptero modif !["left", "disconnected", "scene_error"].includes(this.props.roomUnavailableReason) && (
             <div>
               You can also <a href="/">create a new room</a>
               .
@@ -1752,6 +1752,7 @@ class UIRoot extends Component {
               history={this.props.history}
               render={() => this.renderDialog(InviteTeamDialog, { hubChannel: this.props.hubChannel })}
             />
+            <!-- aptero modif -->
             <StateRoute
               stateKey="modal"
               stateValue="create"
@@ -2130,7 +2131,7 @@ class UIRoot extends Component {
                   }}
                 />
                 {!watching && !streaming ? (
-                  <div>{/*<UnlessFeature name="show_feedback_ui">
+                  <div>{/* aptero modif <UnlessFeature name="show_feedback_ui">
                     <div className={styles.nagCornerButton}>
                       <button onClick={() => this.pushHistoryState("modal", "help")} className={styles.helpButton}>
                         <i>

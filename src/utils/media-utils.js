@@ -11,15 +11,6 @@ import tlds from "tlds";
 
 import anime from "animejs";
 
-export const MediaType = {
-  ALL: "all",
-  ALL_2D: "all-2d",
-  MODEL: "model",
-  IMAGE: "image",
-  VIDEO: "video",
-  PDF: "pdf"
-};
-
 const linkify = Linkify();
 linkify.tlds(tlds);
 
@@ -39,6 +30,7 @@ export const getDefaultResolveQuality = (is360 = false) => {
 export const resolveUrl = async (url, quality = null, version = 1, bustCache) => {
   const key = `${url}_${version}`;
   if (!bustCache && resolveUrlCache.has(key)) return resolveUrlCache.get(key);
+  //aptero TODO put in an aptero service
   if(url.startsWith("http://")){
     //auto promote anythings to https since we cannot serve on http
     url = url.replace("http://","https://");
@@ -57,26 +49,26 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
     return {"meta":{"expected_content_type":"model/gltf-binary"},"origin":url}
   }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".pdf")){
     return {"meta":{"expected_content_type":"application/pdf"},"origin":url}
-  }else{
-      const resultPromise = fetch(mediaAPIEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ media: { url, quality: quality || getDefaultResolveQuality() }, version })
-      }).then(async response => {
-        if (!response.ok) {
-          const message = `Error resolving url "${url}":`;
-          try {
-            const body = await response.text();
-            throw new Error(message + " " + body);
-          } catch (e) {
-            throw new Error(message + " " + response.statusText);
-          }
-        }
-        return response.json();
-      });
-      resolveUrlCache.set(key, resultPromise);
-      return resultPromise;
   }
+  const resultPromise = fetch(mediaAPIEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ media: { url, quality: quality || getDefaultResolveQuality() }, version })
+  }).then(async response => {
+    if (!response.ok) {
+      const message = `Error resolving url "${url}":`;
+      try {
+        const body = await response.text();
+        throw new Error(message + " " + body);
+      } catch (e) {
+        throw new Error(message + " " + response.statusText);
+      }
+    }
+    return response.json();
+  });
+
+  resolveUrlCache.set(key, resultPromise);
+  return resultPromise;
 };
 
 export const upload = (file, desiredContentType) => {
@@ -230,6 +222,7 @@ export const addMedia = (
 
     upload(src, desiredContentType)
       .then(response => {
+      //aptero
         if(!response.origin.startsWith("https://") && response.origin.startsWith("http://")){
           //upgrade url to https in anycases
           response.origin = response.origin.replace("http://","https://");
@@ -446,6 +439,7 @@ export const textureLoader = new HubsTextureLoader().setCrossOrigin("anonymous")
 
 export async function createImageTexture(url, filter) {
   let texture;
+  //aptero
     url = url.replace("http://","https://");
   if (filter) {
     const image = new Image();
