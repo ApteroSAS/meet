@@ -53,6 +53,7 @@ AFRAME.registerComponent("open-media-button", {
         this.el.sceneEl.emit("scene_media_selected", this.src);
       } else if (await isHubsRoomUrl(this.src)) {
         //?vr_entry_type=2d_now
+        //aptero
         let mode = "?vr_entry_type=2d_now";
         if(this.el.sceneEl.is("vr-mode")) {
           mode = "?vr_entry_type=vr_now";

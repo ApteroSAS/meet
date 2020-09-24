@@ -41,6 +41,7 @@ class InWorldChatBox extends Component {
     const pendingMessageTextareaHeight = textRows * 28 + "px";
     const pendingMessageFieldHeight = textRows * 28 + 20 + "px";
     const discordSnippet = this.props.discordBridges.map(ch => "#" + ch).join(", ");
+    //aptero modification
     const lightMode = true;
 
     return (

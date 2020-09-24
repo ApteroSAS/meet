@@ -315,6 +315,7 @@ AFRAME.registerComponent("media-video", {
       this.volumeUpButton.object3D.addEventListener("interact", this.volumeUp);
       this.volumeDownButton.object3D.addEventListener("interact", this.volumeDown);
       this.snapButton.object3D.addEventListener("interact", this.snap);
+      //TODO aptero set as a service
       this.changeVideo = () => {
         NAF.utils.getNetworkedEntity(this.el).then(networkedEl => {
           changeVideoService.changeVideo(NAF.utils.getNetworkId(networkedEl));

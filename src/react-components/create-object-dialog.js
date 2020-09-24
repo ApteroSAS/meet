@@ -116,6 +116,7 @@ export default class CreateObjectDialog extends Component {
 
   onCreateClicked = e => {
     e.preventDefault();
+    //aptero
     if(this.props.mode==="result") {
       window.APP.mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry:{
           contentOrigin : this.state.file ? ObjectContentOrigins.FILE : ObjectContentOrigins.URL,

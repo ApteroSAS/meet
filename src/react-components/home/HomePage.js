@@ -25,6 +25,7 @@ export function HomePage() {
     (a, b) => b.member_count - a.member_count
   );
 
+//apero modification
   featuredRooms.forEach(entry => {
     if (entry.type === "room") {
       if (window.location.href.startsWith("https://localhost")) {

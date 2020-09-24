@@ -2,9 +2,6 @@ function loadAsync(loader, url, onProgress) {
   return new Promise((resolve, reject) => loader.load(url, resolve, onProgress, reject));
 }
 
-const HAS_IMAGE_BITMAP = window.createImageBitmap !== undefined;
-export const TEXTURES_FLIP_Y = !HAS_IMAGE_BITMAP;
-
 export default class HubsTextureLoader {
   constructor(manager = THREE.DefaultLoadingManager) {
     this.manager = manager;
@@ -24,7 +21,7 @@ export default class HubsTextureLoader {
   async loadTextureAsync(texture, src, onProgress) {
     let imageLoader;
 
-    if (HAS_IMAGE_BITMAP) {
+    if (window.createImageBitmap !== undefined) {
       imageLoader = new THREE.ImageBitmapLoader(this.manager);
       texture.flipY = false;
     } else {

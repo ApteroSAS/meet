@@ -50,7 +50,6 @@ class GLTFCache {
     }
   }
 }
-
 const gltfCache = new GLTFCache();
 const inflightGltfs = new Map();
 
@@ -366,7 +365,7 @@ export async function loadGLTF(src, contentType, onProgress, jsonPreprocessor) {
     }
   }
 
-  // Note: dependency functions need to be called after parser.parse() so that the cache isn't cleared.
+  // Mark the special nodes/meshes in json for efficient parse, all json manipulation should happen before this point
   parser.markDefs();
 
   const materials = parser.json.materials;
@@ -457,7 +456,7 @@ function resolveAsset(src) {
 
 /**
  * Loads a GLTF model, optionally recursively "inflates" the child nodes of a model into a-entities and sets
- * whitelisted components on them if defined in the node's extras.
+ * allowed components on them if defined in the node's extras.
  * @namespace gltf
  * @component gltf-model-plus
  */

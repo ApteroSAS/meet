@@ -96,6 +96,7 @@ class TopHUD extends Component {
   };
 
   componentDidMount = () => {
+  //aptero
     video360Service.eventEmitter.on("change", () => {
       if(this.state.video360Disable!==!video360Service.isEnable() ) {
         this.setState({ video360Disable: !video360Service.isEnable() });
@@ -238,6 +239,7 @@ class TopHUD extends Component {
     );
   };
 
+//TODO aptero make this as a service
   buildVideoControlButtons = () => {
 
     const showExtrasOnHover = () => {

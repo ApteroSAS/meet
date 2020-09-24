@@ -1752,7 +1752,7 @@ class UIRoot extends Component {
               history={this.props.history}
               render={() => this.renderDialog(InviteTeamDialog, { hubChannel: this.props.hubChannel })}
             />
-            <!-- aptero modif -->
+            {/*<!-- aptero modif -->*/}
             <StateRoute
               stateKey="modal"
               stateValue="create"

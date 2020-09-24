@@ -1,5 +1,5 @@
 import { Color, MeshPhongMaterial } from "three";
-
+//TODO move improved material in apteo pacjkage
 export default class StandardMaterial extends THREE.ShaderMaterial {
   type = "StandardMaterial";
   isStandardMaterial = true;
