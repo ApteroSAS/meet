@@ -10,6 +10,7 @@ import "./hemisphere-light";
 import "./hide-when-quality";
 import "./layers";
 import "./loop-animation";
+import "./uv-scroll";
 import "./media-loader";
 import "./point-light";
 import "./quack";

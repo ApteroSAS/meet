@@ -87,7 +87,7 @@ function authorizeEntityManipulation(entityMetadata, sender, senderPermissions) 
   const { template, creator, isPinned } = entityMetadata;
   const isCreator = sender === creator;
 
-  if (template.endsWith("-waypoint-avatar")) {
+  if (template.endsWith("-waypoint-avatar") || template.endsWith("-media-frame")) {
     return true;
   } else if (template.endsWith("-avatar")) {
     return isCreator;
@@ -108,6 +108,12 @@ function getPendingOrExistingEntityMetadata(networkId) {
   const pendingData = NAF.connection.adapter.getPendingDataForNetworkId(networkId);
 
   if (pendingData) {
+    if (pendingData.owner) {
+      // If owner is no longer present, give up.
+      const presenceState = window.APP.hubChannel.presence.state[pendingData.owner];
+      if (!presenceState) return;
+    }
+
     const { template, creator } = pendingData;
     const schema = NAF.schemas.schemaDict[template];
     const pinnableComponent = pendingData.components[indexForComponent("pinnable", schema)];

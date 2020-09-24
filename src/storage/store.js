@@ -66,19 +66,25 @@ export const SCHEMA = {
       type: "object",
       additionalProperties: false,
       properties: {
+        shouldPromptForRefresh: { type: "bool" },
+        preferredCamera: { type: "string" },
         muteMicOnEntry: { type: "bool" },
         audioOutputMode: { type: "string" },
+        invertTouchscreenCameraMove: { type: "bool" },
         enableOnScreenJoystickLeft: { type: "bool" },
         enableOnScreenJoystickRight: { type: "bool" },
         onlyShowNametagsInFreeze: { type: "bool" },
+        animateWaypointTransitions: { type: "bool" },
         allowMultipleHubsInstances: { type: "bool" },
         disableIdleDetection: { type: "bool" },
+        preferMobileObjectInfoPanel: { type: "bool" },
         maxResolutionWidth: { type: "number" },
         maxResolutionHeight: { type: "number" },
         globalVoiceVolume: { type: "number" },
         globalMediaVolume: { type: "number" },
         snapRotationDegrees: { type: "number" },
         materialQualitySetting: { type: "string" },
+        enableDynamicShadows: { type: "bool" },
         disableSoundEffects: { type: "bool" },
         disableMovement: { type: "bool" },
         disableBackwardsMovement: { type: "bool" },
@@ -88,7 +94,8 @@ export const SCHEMA = {
         movementSpeedModifier: { type: "number" },
         disableEchoCancellation: { type: "bool" },
         disableNoiseSuppression: { type: "bool" },
-        disableAutoGainControl: { type: "bool" }
+        disableAutoGainControl: { type: "bool" },
+        locale: { type: "string" }
       }
     },
 
@@ -321,5 +328,20 @@ export default class Store extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
 
     return finalState;
+  }
+
+  get materialQualitySetting() {
+    if (this.state.preferences.materialQualitySetting) {
+      return this.state.preferences.materialQualitySetting;
+    }
+
+    const isMobile = AFRAME.utils.device.isMobile();
+    const isMobileVR = AFRAME.utils.device.isMobileVR();
+
+    if (isMobile || isMobileVR) {
+      return "low";
+    }
+
+    return "high";
   }
 }

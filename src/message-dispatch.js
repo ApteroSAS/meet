@@ -1,7 +1,7 @@
 import "./utils/configs";
 import { getAbsoluteHref } from "./utils/media-url-utils";
 import { isValidSceneUrl } from "./utils/scene-url-utils";
-import { messages } from "./utils/i18n";
+import { getMessages } from "./utils/i18n";
 import { spawnChatMessage } from "./react-components/chat-message";
 
 let uiRoot;
@@ -72,6 +72,7 @@ export default class MessageDispatch {
         for (let i = scales.length - 1; i >= 0; i--) {
           if (curScale.x > scales[i]) {
             avatarRig.object3D.scale.set(scales[i], scales[i], scales[i]);
+            avatarRig.object3D.matrixNeedsUpdate = true;
             break;
           }
         }
@@ -96,7 +97,7 @@ export default class MessageDispatch {
               this.addToPresenceLog({ type: "log", body: "You do not have permission to change the scene." });
             }
           } else {
-            this.addToPresenceLog({ type: "log", body: messages["invalid-scene-url"] });
+            this.addToPresenceLog({ type: "log", body: getMessages()["invalid-scene-url"] });
           }
         } else if (this.hubChannel.canOrWillIfCreator("update_hub")) {
           this.mediaSearchStore.sourceNavigateWithNoNav("scenes", "use");

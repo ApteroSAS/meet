@@ -70,6 +70,10 @@ AFRAME.registerComponent("in-world-hud", {
       this.el.emit("action_invite");
     };
 
+    this.onHubUpdated = e => {
+      this.inviteBtn.object3D.visible = e.detail.hub.entry_mode !== "invite";
+    };
+
     this.onQuitClick = () => {
       this.el.sceneEl.emit("leave_room_requested");
     };
@@ -85,13 +89,13 @@ AFRAME.registerComponent("in-world-hud", {
     this.onRestartClick = () => {
       video360Service.setTime(0);
     };
-
   },
 
   play() {
     this.el.sceneEl.addEventListener("stateadded", this.onStateChange);
     this.el.sceneEl.addEventListener("stateremoved", this.onStateChange);
     this.el.sceneEl.systems.permissions.onPermissionsUpdated(this.updateButtonStates);
+    this.el.sceneEl.addEventListener("hub_updated", this.onHubUpdated);
     this.updateButtonStates();
 
     this.playbtn.object3D.addEventListener("interact", this.onPlayClick);
@@ -110,6 +114,7 @@ AFRAME.registerComponent("in-world-hud", {
     this.el.sceneEl.removeEventListener("stateadded", this.onStateChange);
     this.el.sceneEl.removeEventListener("stateremoved", this.onStateChange);
     window.APP.hubChannel.removeEventListener("permissions_updated", this.updateButtonStates);
+    this.el.sceneEl.removeEventListener("hub_updated", this.onHubUpdated);
 
 
     this.playbtn.object3D.addEventListener("interact", this.onPlayClick);

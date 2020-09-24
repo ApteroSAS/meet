@@ -105,10 +105,6 @@ function registerNetworkSchemas() {
       },
       {
         component: "media-video",
-        property: "src"
-      },
-      {
-        component: "media-video",
         property: "videoPaused"
       },
       {

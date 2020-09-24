@@ -1,7 +1,6 @@
 import appLogo from "../assets/images/app-logo.png";
 import companyLogo from "../assets/images/company-logo.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
-import pdfjs from "pdfjs-dist";
 import { propertiesService, registerProperties } from "../propertiesService";
 registerProperties();
 
@@ -26,9 +25,6 @@ let isAdmin = false;
   if (x === "BASE_ASSETS_PATH" && configs[x]) {
     // eslint-disable-next-line no-undef
     __webpack_public_path__ = configs[x];
-
-    // Using external CDN to reduce build size
-    pdfjs.GlobalWorkerOptions.workerSrc = `${configs[x]}../assets/js/pdfjs-dist@2.1.266/build/pdf.worker.js`;
   }
 });
 
@@ -47,7 +43,7 @@ if (window.APP_CONFIG) {
     }
     const style = document.createElement("style");
     style.innerHTML = `:root{${colorVars.join("\n")}}`;
-    document.head.prepend(style);
+    document.head.insertBefore(style, document.head.firstChild);
   }
 
   if (!configs.APP_CONFIG.features) {
