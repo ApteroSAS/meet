@@ -1,6 +1,8 @@
 import { isLocalHubsSceneUrl, proxiedUrlFor } from "../utils/media-url-utils";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 export async function isValidGLB(url) {
+  url = await microsoftService.preFetchConvertMicrosoftUrl(url);
   return fetch(url).then(async r => {
     const reader = r.body.getReader();
     let header = "";

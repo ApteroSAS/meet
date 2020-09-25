@@ -38,6 +38,7 @@ const qs = new URLSearchParams(location.search);
 import "./components/event-repeater";
 
 import registerTelemetry from "./telemetry";
+import { computeAppQuality, shadowActivated } from "./aptero/service/DeviceDetector";
 
 disableiOSZoom();
 

@@ -22,7 +22,7 @@ import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
 import RemoteThumbnailRenderer from "../aptero/thumnail/thumbnail/RemoteThumbnailRenderer";
-import { MediaTilesLib } from "../aptero/service/media-tiles-lib";
+import { MediaTilesLib } from "../aptero/util/media-tiles-lib";
 import { getReticulumFetchUrl } from "../utils/phoenix-utils";
 
 dayjs.extend(relativeTime);

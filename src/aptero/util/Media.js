@@ -36,3 +36,24 @@ export function addMediaAndSetTransform(src, position, orientationRecv, scale, m
   return entity;
 }
 
+export function  spawnMediaInfrontOfPlayer(src, contentOrigin,data) {
+  const offset = { x: 0, y: 0, z: -1.5 };
+  const { entity, orientation } = addMedia(
+    src,
+    "#interactable-media",
+    contentOrigin,
+    data && data.type && data.type.includes("360")?"360-equirectangular":null,
+    !(src instanceof MediaStream),
+    true,
+    true,
+    data?data:{}
+  );
+  orientation.then(or => {
+    entity.setAttribute("offset-relative-to", {
+      target: "#avatar-pov-node",
+      offset,
+      orientation: or
+    });
+  });
+  return entity;
+}

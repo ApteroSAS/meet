@@ -24,7 +24,7 @@ import { pushHistoryState } from "./utils/history";
 import { SOUND_ENTER_SCENE } from "./systems/sound-effects-system";
 //aptero
 import { mediaViewEventEmitter } from "./components/media-views";
-import { networkService } from "./aptero/service/network";
+import { networkService } from "./aptero/service/NetworkService";
 
 const isIOS = AFRAME.utils.device.isIOS();
 //aptero

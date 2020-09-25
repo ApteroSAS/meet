@@ -3,6 +3,12 @@ const EventEmitter = require("eventemitter3");
 export class NetworkService {
   eventEmitter = new EventEmitter();
 
+  constructor(){}
+
+  start(){
+    /* empty start to ensure the import is made*/
+  }
+
   sendMessage(type,data){
     this.hubPhxChannel.push("message", { type: type, body:data });
   }
@@ -26,8 +32,22 @@ export class NetworkService {
     }
   }
 
+  getClientId(){
+    return NAF.clientId;
+  }
+
+  async getElementNetworkId(element){
+    return new Promise((resolve) => {
+      NAF.utils
+        .getNetworkedEntity(element)
+        .then(networkedEl => {
+          resolve(networkedEl.components.networked.data.networkId);
+        })
+    });
+  }
+
   processMessage({ session_id, type, body, from }) {
-    this.eventEmitter.emit("msg_recv",{ session_id, type, body, from })
+    this.eventEmitter.emit("msg_recv",{ session_id, type, body, from });
     this.eventEmitter.emit(type,body);
   }
 
@@ -41,4 +61,3 @@ export class NetworkService {
 }
 
 export const networkService = new NetworkService();
-

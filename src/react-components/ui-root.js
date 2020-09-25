@@ -8,7 +8,6 @@ import screenfull from "screenfull";
 
 import configs from "../utils/configs";
 import IfFeature from "./if-feature";
-import UnlessFeature from "./unless-feature";
 import { VR_DEVICE_AVAILABILITY } from "../utils/vr-caps-detect";
 import { canShare } from "../utils/share";
 import styles from "../assets/stylesheets/ui-root.scss";
@@ -80,6 +79,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import qsTruthy from "../utils/qs_truthy";
 import { CAMERA_MODE_INSPECT } from "../systems/camera-system";
+import { registerLang } from "../aptero/util/intl";
 const avatarEditorDebug = qsTruthy("avatarEditorDebug");
 
 
@@ -229,7 +229,7 @@ class UIRoot extends Component {
   componentDidUpdate(prevProps) {
     const { hubChannel, showSignInDialog } = this.props;
     if (hubChannel) {
-      const { signedIn } = hubChannel;
+      let { signedIn } = hubChannel;
       if (signedIn !== this.state.signedIn) {
         this.setState({ signedIn });
       }
@@ -2068,7 +2068,7 @@ class UIRoot extends Component {
                 presences={this.props.presences}
                 sessionId={this.props.sessionId}
                 signedIn={this.state.signedIn}
-                email={this.props.store.state.credentials.email}
+                email={this.props.authChannel.email}
                 onSignIn={this.showSignInDialog}
                 onSignOut={this.signOut}
                 expanded={!this.state.isObjectListExpanded && this.state.isPresenceListExpanded}

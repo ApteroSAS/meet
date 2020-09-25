@@ -1,4 +1,4 @@
-import { microsoftService } from "./aptero/service/MicrosoftTeamSupport";
+import { microsoftService } from "./aptero/service/MicrosoftService";
 
 async function main() {
   await microsoftService.start(() => {

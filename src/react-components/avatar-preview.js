@@ -11,6 +11,7 @@ import { ensureAvatarMaterial, MAT_NAME } from "../utils/avatar-utils";
 import { createImageBitmap, disposeImageBitmap } from "../utils/image-bitmap-utils";
 import { proxiedUrlFor } from "../utils/media-url-utils";
 import styles from "../assets/stylesheets/avatar-preview.scss";
+import { getPreferredTechnique } from "../aptero/service/DeviceDetector";
 
 const TEXTURE_PROPS = {
   base_map: ["map"],

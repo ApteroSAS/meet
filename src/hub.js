@@ -242,8 +242,9 @@ import detectConcurrentLoad from "./utils/concurrent-load-detector";
 import qsTruthy from "./utils/qs_truthy";
 //aptero service
 import {video360Service } from "./aptero/service/Video360Service";
-import { networkService } from "./aptero/service/network";
+import { networkService } from "./aptero/service/NetworkService";
 import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
+import { microsoftService } from "./aptero/service/MicrosoftService";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -403,6 +404,8 @@ async function updateEnvironmentForHub(hub, entryManager) {
     const hasExtension = /\.gltf/i.test(sceneUrl) || /\.glb/i.test(sceneUrl);
     isLegacyBundle = !(glbAsset || hasExtension);
   }
+
+  await microsoftService.preFetchConvertMicrosoftUrl(sceneUrl);
 
   if (isLegacyBundle) {
     // Deprecated
@@ -637,14 +640,6 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   // Wait for scene objects to load before connecting, so there is no race condition on network state.
   const connectToScene = async () => {
     let adapter = "janus";
-
-    try {
-      // Meta endpoint exists only on dialog
-      await fetch(`https://${hub.host}:${hub.port}/meta`);
-      adapter = "dialog";
-    } catch (e) {
-      // Ignore, set to janus.
-    }
 
     scene.setAttribute("networked-scene", {
       room: hub.hub_id,

@@ -1,4 +1,5 @@
 import uuid from "uuid/v4";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 export default class AuthChannel {
   constructor(store) {
@@ -9,14 +10,45 @@ export default class AuthChannel {
 
   setSocket = socket => {
     this.socket = socket;
+    let user = microsoftService.getUserAccount();
+    if (user) {
+      this.convertToHubToken(user).catch((err)=>{
+        console.error(err);
+      });
+    }
+
+    microsoftService.eventEmitter.on("auth", async () => {
+      let user = microsoftService.getUserAccount();
+      await this.convertToHubToken(user);
+      window.location.reload();
+    });
+    this.syncMicrosoftAccount(null);
   };
 
   get email() {
-    return this.store.state.credentials.email;
+    return (microsoftService.getUserAccount() && (microsoftService.getUserAccount().name+" (SSO)")) || this.store.state.credentials.email;
   }
+
 
   get signedIn() {
     return this._signedIn;
+  }
+
+  async syncMicrosoftAccount(hubChannel) {
+    if (!microsoftService.getUserAccount()) {
+      if (this.store.state.credentials.email && this.store.state.credentials.email.endsWith("_microsoft")) {
+        //if microsoft account is logged off we log of the aptero account
+        //console.log("sign out sync");
+        await this.signOut(hubChannel);
+        window.location.reload();
+      }
+    }else if(microsoftService.getUserAccount() && !this.store.state.credentials.email){
+      // microsoft account logged propagate to hubs account
+      let user = microsoftService.getUserAccount();
+      await this.convertToHubToken(user);
+      console.log("sync microsoft to hubs");
+      window.location.reload();
+    }
   }
 
   signOut = async hubChannel => {
@@ -26,6 +58,7 @@ export default class AuthChannel {
     this.store.update({ credentials: { token: null, email: null } });
     await this.store.resetToRandomDefaultAvatar();
     this._signedIn = false;
+    await microsoftService.logout();
   };
 
   verifyAuthentication(authTopic, authToken, authPayload) {
@@ -47,6 +80,33 @@ export default class AuthChannel {
           channel.push("auth_verified", { token: authToken, payload: authPayload });
         })
         .receive("error", reject);
+    });
+  }
+
+  async convertToHubToken(user) {
+    const email = user.accountIdentifier + "_" + user.userName+ "_microsoft";
+    const authtoken = user.idToken;
+    await new Promise((resolve, reject) => {
+      const channel = this.socket.channel(`auth:${uuid()}`);
+      channel.onError(() => {
+        channel.leave();
+        reject();
+      });
+      channel
+        .join()
+        .receive("ok", () => {
+          channel.on("auth_token_resp", async ({
+                                                 auth_token: auth_token,
+                                                 auth_payload: auth_payload
+                                               }) => {
+            channel.on("auth_credentials", async ({ credentials: token, payload: payload }) => {
+              await this.handleAuthCredentials(payload.email, token);
+              resolve();
+            });
+            channel.push("auth_verified", { token: auth_token, payload: auth_payload });
+          });
+          channel.push("auth_token_request", { email, authtoken, origin: "hubs" });
+        }).receive("error", reject);
     });
   }
 

@@ -1,6 +1,6 @@
-import { networkService } from "./network";
+import { networkService } from "./NetworkService";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
-import { addMediaAndSetTransform } from "./Media";
+import { addMediaAndSetTransform } from "../util/Media";
 
 
 const floatEqual = (a, b, ep) => {
@@ -23,6 +23,9 @@ export class RoomInteractableRemover {
   staticEntities = {};
 
   constructor() {
+  }
+
+  start(){
     networkService.onMessage("RoomRemover-remove-entity", (networkID) => {
     });
     networkService.onMessage("RoomRemover-remove-entity-all", (removedEntity) => {
@@ -111,7 +114,7 @@ export class RoomInteractableRemover {
         if (floatEqual(ax, bx, 0.001) && floatEqual(ay, by, 0.001) && floatEqual(az, bz, 0.001) && keyA !== keyB) {
           //1st case the dynamic object is the same (same src) as the static one => remove the dynamic one
           //2nd case it is not the same remove the static one
-          if (entA.components["media-loader"].data.src === entB.components["media-loader"].data.src) {
+          if (entA.components["media-loader"] && entB.components["media-loader"] && (entA.components["media-loader"].data.src === entB.components["media-loader"].data.src)) {
             if (!this.isStaticMedia(keyA)) {
               this.removeNode(keyA);
             } else if (!this.isStaticMedia(keyB)) {
@@ -198,5 +201,5 @@ export class RoomInteractableRemover {
   }
 }
 
-export const roomInteractableRemover = new RoomInteractableRemover();
 
+export const roomInteractableRemover = new RoomInteractableRemover();

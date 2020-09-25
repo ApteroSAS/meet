@@ -290,7 +290,7 @@ export default class HubChannel extends EventTarget {
   };
 
   signOut = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       this.channel
         .push("sign_out")
         .receive("ok", async () => {

@@ -7,6 +7,7 @@ import classNames from "classnames";
 import styles from "../assets/stylesheets/link.scss";
 import { disableiOSZoom } from "../utils/disable-ios-zoom";
 import HeadsetIcon from "../assets/images/generic_vr_headset.svg";
+import { registerLang } from "../aptero/util/intl";
 
 const MAX_DIGITS = 6;
 const MAX_LETTERS = 4;

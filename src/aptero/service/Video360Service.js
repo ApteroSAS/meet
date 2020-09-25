@@ -1,4 +1,4 @@
-import { networkService } from "./network";
+import { networkService } from "./NetworkService";
 
 const EventEmitter = require("eventemitter3");
 
@@ -8,6 +8,9 @@ export class Video360Service {
   videoSphere = null;
 
   constructor() {
+  }
+
+  start(){
     // eslint-disable-next-line no-unused-vars
     networkService.onMessageRecv(({ session_id, type, body, from }) => {
       const action_type = type;
@@ -109,4 +112,3 @@ export class Video360Service {
 }
 
 export const video360Service = new Video360Service();
-

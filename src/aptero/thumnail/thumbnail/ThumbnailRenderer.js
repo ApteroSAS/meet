@@ -7,6 +7,7 @@ import { createDefaultEnvironmentMap } from "../../../components/environment-map
 import {propertiesService} from "../../../propertiesService";
 
 import axios from "axios";
+import { getPreferredTechnique } from "../../service/DeviceDetector";
 
 const ORBIT_ANGLE = new THREE.Euler(-30 * THREE.Math.DEG2RAD, 30 * THREE.Math.DEG2RAD, 0);
 const DEFAULT_MARGIN = 1;
@@ -42,7 +43,7 @@ export default class ThumbnailRenderer {
 
   generateThumbnailFromUrl(url) {
     return new Promise((resolve, reject) => {
-      const preferredTechnique = window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
+      const preferredTechnique = getPreferredTechnique();
       this.loadPreviewGLTF(url, "model/gltf", preferredTechnique, null, null).then(gltf => {
         console.log(gltf);
         this.generateThumbnail(gltf).then((blob) => {
@@ -144,7 +145,7 @@ export default class ThumbnailRenderer {
   async loadPreviewGLTF(gltfGltfUrl) {
     let gltf;
     try {
-      const preferredTechnique = window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
+      const preferredTechnique = getPreferredTechnique();
       gltf = await loadGLTF(gltfGltfUrl, "model/gltf", preferredTechnique, null, null);
     } catch (e) {
       console.error("Failed to load gltf preview", e);

@@ -1,5 +1,6 @@
 import { hasReticulumServer } from "./phoenix-utils";
 import configs from "./configs";
+import { microsoftService } from "../aptero/service/MicrosoftService";
 
 const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
 if (configs.CORS_PROXY_SERVER) {

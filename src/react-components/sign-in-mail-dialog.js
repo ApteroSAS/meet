@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { FormattedMessage } from "react-intl";
+import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/sign-in-dialog.scss";
 import DialogContainer from "./dialog-container";
-import SignInMailDialog from "./sign-in-mail-dialog";
-import { microsoftService } from "../aptero/service/MicrosoftService";
+import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
 
-export default class SignInDialog extends Component {
+export default class SignInMailDialog extends Component {
   static propTypes = {
     authStarted: PropTypes.bool,
     authComplete: PropTypes.bool,
@@ -15,10 +16,6 @@ export default class SignInDialog extends Component {
     continueText: PropTypes.string,
     closable: PropTypes.bool
   };
-
-  state={
-    showMail:false
-  }
 
   static defaultProps = {
     closable: true
@@ -40,7 +37,7 @@ export default class SignInDialog extends Component {
       contents = (
         <div>
           <p>
-            <FormattedMessage className="preformatted" id="sign-in.auth-started" values={{ email: this.state.email }} />
+            <FormattedMessage className="preformatted" id="sign-in.auth-started" />
           </p>
           <IfFeature name="show_newsletter_signup">
             <p>
@@ -76,7 +73,7 @@ export default class SignInDialog extends Component {
             onChange={e => this.setState({ email: e.target.value })}
             className={styles.emailField}
           />
-          {/* aptero modif (configs.feature("show_terms") || configs.feature("show_privacy")) && (
+          {/*(configs.feature("show_terms") || configs.feature("show_privacy")) && (
             <p className={styles.terms}>
               By proceeding, you agree to the{" "}
               <IfFeature name="show_terms">
