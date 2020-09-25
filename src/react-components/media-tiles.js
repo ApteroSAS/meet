@@ -8,14 +8,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons/faExternalLinkAlt";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faInfo } from "@fortawesome/free-solid-svg-icons/faInfo";
+import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
+import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
 import { faUsers } from "@fortawesome/free-solid-svg-icons/faUsers";
+import { faStar } from "@fortawesome/free-solid-svg-icons/faStar";
+import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/media-browser.scss";
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
+import StateLink from "./state-link";
 import { remixAvatar } from "../utils/avatar-utils";
 import { fetchReticulumAuthenticated } from "../utils/phoenix-utils";
 import RemoteThumbnailRenderer from "../aptero/thumnail/thumbnail/RemoteThumbnailRenderer";
 import { MediaTilesLib } from "../aptero/service/media-tiles-lib";
+import { getReticulumFetchUrl } from "../utils/phoenix-utils";
 
 dayjs.extend(relativeTime);
 
@@ -25,7 +33,8 @@ const PUBLISHER_FOR_ENTRY_TYPE = {
   twitch_stream: "Twitch"
 };
 
-// TODO: Migrate to use MediaGrid and media specific components like RoomTile
+const sessionCache = {};
+
 class MediaTiles extends Component {
   state = { thumbnailCache: { ...sessionCache }, thumbnailInProgress: {}, webcamlist: {} };
   mediaTilesLib = new MediaTilesLib();
@@ -36,6 +45,7 @@ class MediaTiles extends Component {
     hasNext: PropTypes.bool,
     hasPrevious: PropTypes.bool,
     isVariableWidth: PropTypes.bool,
+    page: PropTypes.number,
     history: PropTypes.object,
     urlSource: PropTypes.string,
     handleEntryClicked: PropTypes.func,
@@ -61,7 +71,8 @@ class MediaTiles extends Component {
   };
 
   render() {
-    const { urlSource, hasNext, hasPrevious, isVariableWidth } = this.props;
+    this.mediaTilesLib.setPropsAndState(this,this.props,this.state);
+    const { urlSource, hasNext, hasPrevious, page, isVariableWidth } = this.props;
     const entries = this.props.entries || [];
     const [createTileWidth, createTileHeight] = this.getTileDimensions(false, urlSource === "avatars");
 
@@ -69,7 +80,7 @@ class MediaTiles extends Component {
       <div className={styles.body}>
         <div className={classNames({ [styles.tiles]: true, [styles.tilesVariable]: isVariableWidth })}>
           {this.mediaTilesLib.createAdditionalTiles()}
-          {/*(urlSource === "avatars" || urlSource === "scenes") && (
+          {/* aptero (urlSource === "avatars" || urlSource === "scenes") && (
             <div
               style={{ width: `${createTileWidth}px`, height: `${createTileHeight}px` }}
               className={classNames({
@@ -116,6 +127,7 @@ class MediaTiles extends Component {
               >
                 <FontAwesomeIcon icon={faAngleLeft} />
               </a>
+              <div className={styles.pageNumber}>{page}</div>
               <a
                 className={classNames({ [styles.nextPage]: true, [styles.pagerButtonDisabled]: !hasNext })}
                 onClick={() => this.props.handlePager(1)}
@@ -152,7 +164,7 @@ class MediaTiles extends Component {
   entryToTile = (entry, idx) => {
     if (!entry.images.preview) {
       entry.images.preview = {
-        url: "https://hub.aptero.co/data/app-thumbnail.png",
+        url: window.APP_PROPS.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png",
         height: 1280,
         width: 720
       };
@@ -195,6 +207,8 @@ class MediaTiles extends Component {
           style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
           muted
           autoPlay
+          playsInline
+          loop
           src={proxiedUrlFor(imageSrc)}
         />
       ) : (
@@ -236,7 +250,7 @@ class MediaTiles extends Component {
           {thumbnailElement}
         </a>
         <div className={styles.tileActions}>
-          {/*entry.type === "avatar" && (
+          {entry.type === "avatar" && (
             <StateLink
               stateKey="overlay"
               stateValue="avatar-editor"
@@ -246,8 +260,8 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faPencilAlt} />
             </StateLink>
-          )*/}
-          {/*entry.type === "avatar_listing" && (
+          )}
+          {entry.type === "avatar_listing" && (
             <a
               onClick={e => {
                 e.preventDefault();
@@ -257,20 +271,20 @@ class MediaTiles extends Component {
             >
               <FontAwesomeIcon icon={faSearch} />
             </a>
-          )*/}
-          {/*entry.type === "avatar_listing" &&
+          )}
+          {entry.type === "avatar_listing" &&
             entry.allow_remixing && (
               <a onClick={e => this.handleCopyAvatar(e, entry)} title="Copy to my avatars">
                 <FontAwesomeIcon icon={faClone} />
               </a>
-            )*/}
-          {/*entry.type === "scene_listing" &&
+            )}
+          {entry.type === "scene_listing" &&
             entry.allow_remixing && (
               <a onClick={e => this.handleCopyScene(e, entry)} title="Copy to my scenes">
                 <FontAwesomeIcon icon={faClone} />
               </a>
-            )*/}
-          {/*entry.type === "scene" &&
+            )}
+          {entry.type === "scene" &&
             entry.project_id && (
               <a
                 target="_blank"
@@ -280,7 +294,20 @@ class MediaTiles extends Component {
               >
                 <FontAwesomeIcon icon={faPencilAlt} />
               </a>
-            )*/}
+            )}
+          {entry.type === "room" &&
+            this.props.handleEntryInfoClicked &&
+            entry.description && (
+              <a
+                title="room info"
+                onClick={e => {
+                  e.preventDefault();
+                  this.props.handleEntryInfoClicked(entry);
+                }}
+              >
+                <FontAwesomeIcon icon={faInfo} />
+              </a>
+            )}
           {this.props.handleEntryInfoClicked && (
             <a
               title="info"
@@ -293,6 +320,12 @@ class MediaTiles extends Component {
             </a>
           )}
         </div>
+        
+        {entry.favorited && (
+          <div className={styles.favorite}>
+            <FontAwesomeIcon icon={faStar} />
+          </div>
+        )}
         {(!isImage && !isModel) && (
           <div className={styles.info}>
             <a
@@ -350,5 +383,4 @@ class MediaTiles extends Component {
     );
   };
 }
-
 export default injectIntl(MediaTiles);

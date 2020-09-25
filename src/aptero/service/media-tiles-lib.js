@@ -141,8 +141,11 @@ export class MediaTilesLib {
 
   createAdditionalTiles() {
     return <React.Fragment>
+      {this.props && this.props.history && <React.Fragment>
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
+      </React.Fragment>
+      }
     </React.Fragment>;
   }
 
