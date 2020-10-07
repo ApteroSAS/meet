@@ -63,6 +63,7 @@ AFRAME.registerComponent("avatar-audio-source", {
     if (!stream || isRemoved) return;
 
     const audioListener = this.el.sceneEl.audioListener;
+    this.data.rolloffFactor = 0.000001;//Aptero patch for deactived spatial sound
     const audio = this.data.positional ? new THREE.PositionalAudio(audioListener) : new THREE.Audio(audioListener);
     if (this.data.positional) {
       setPositionalAudioProperties(audio, this.data);
