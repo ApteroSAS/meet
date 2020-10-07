@@ -7,6 +7,7 @@ import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { disposeNode, cloneObject3D } from "../utils/three-utils";
 import HubsTextureLoader from "../loaders/HubsTextureLoader";
 import HubsBasisTextureLoader from "../loaders/HubsBasisTextureLoader";
+import { gltfExtensionProcessorService } from "../aptero/service/GLTFExtensionProcessorService";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -595,6 +596,7 @@ AFRAME.registerComponent("gltf-model-plus", {
       rewires.forEach(f => f());
 
       object3DToSet.visible = true;
+      gltfExtensionProcessorService.processGltfFile(gltf,this.el);//Aptero entry point for personalized animation library
       this.el.emit("model-loaded", { format: "gltf", model: object3DToSet });
     } catch (e) {
       gltfCache.release(src);

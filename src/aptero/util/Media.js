@@ -17,7 +17,7 @@ export function addMediaAndSetTransform(src, position, orientationRecv, scale, m
   }
   let { entity } = addMedia(
     src,
-    "#interactable-media",
+    "#interactable-media",//#static-controlled-media
     contentOrigin,
     mediaOptions.type && mediaOptions.type.includes("360")?"360-equirectangular":null,
     !(src instanceof MediaStream),
@@ -30,7 +30,7 @@ export function addMediaAndSetTransform(src, position, orientationRecv, scale, m
   entity.object3D.scale.set(scale.x, scale.y, scale.z);
   entity.object3D.matrixNeedsUpdate = true;
   //important for case where I thrash the screen TODO workaround user can just deactivate screen share mode (no othe solution sice it cause a bug elsewhere
-  //entity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
+  entity.setAttribute("emit-scene-event-on-remove", "event:action_end_video_sharing");
   if (shouldPin) {
     pinEntity(entity);
   }

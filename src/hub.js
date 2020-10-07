@@ -243,8 +243,8 @@ import qsTruthy from "./utils/qs_truthy";
 //aptero service
 import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/NetworkService";
-import { roomInteractableRemover } from "./aptero/service/RoomInteractableRemover";
 import { microsoftService } from "./aptero/service/MicrosoftService";
+import { staticObjectManipulator } from "./aptero/service/StaticObjectManipulator";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -1490,7 +1490,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Ignore presence join/leaves if this Presence has not yet had its initial sync
             if (!hubChannel.presence.__hadInitialSync) return;
             //aptero modificatin
-            roomInteractableRemover.cleanUp();
+            staticObjectManipulator.cleanUp();
             if (current && current.metas.length > 0) return;
             const occupantCount = Object.entries(hubChannel.presence.state).length;
             if (occupantCount > NOISY_OCCUPANT_COUNT) return;

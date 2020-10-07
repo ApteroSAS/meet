@@ -9,6 +9,7 @@ import { waitForDOMContentLoaded } from "../utils/async-utils";
 import "./component/custom-controller-button";
 import "./component/media-limiter";
 import { gltfExtensionProcessorService } from "./service/GLTFExtensionProcessorService";
+import { staticObjectManipulator } from "./service/StaticObjectManipulator";
 
 export class ApteroServices{
   constructor(){
@@ -20,7 +21,8 @@ export class ApteroServices{
       await changeVideoService.start();
       await liveStream.start();
       await microsoftService.start();
-      await roomInteractableRemover.start();
+      //await roomInteractableRemover.start();
+      await staticObjectManipulator.start();
       await video360Service.start();
       await gltfExtensionProcessorService.start();
     });

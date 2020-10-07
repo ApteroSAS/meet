@@ -1,7 +1,9 @@
-import { roomInteractableRemover } from "./RoomInteractableRemover";
+//import { roomInteractableRemover } from "./RoomInteractableRemover";
 import { mediaViewEventEmitter } from "../../components/media-views";
 import { ObjectContentOrigins } from "../../object-types";
 import { addMediaAndSetTransform } from "../util/Media";
+import { staticObjectManipulator } from "./StaticObjectManipulator";
+import { Vector3 } from "three";
 
 export class ChangeVideoService {
 
@@ -37,14 +39,14 @@ export class ChangeVideoService {
       window.APP.mediaSearchStore.sourceNavigateWithResult(mediaOptions.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
         scene.emit("action_end_video_sharing");
         this.videoChoosing = true;
-        const rotation = entity.object3D.rotation;
-        const position = entity.object3D.position;
+        const rotation = entity.object3D.rotation.clone();
+        const position = entity.object3D.position.clone();
         const scale = new THREE.Vector3();
         scale.set(entity.object3D.scale.x, entity.object3D.scale.y, entity.object3D.scale.z);
         console.log(entity);
         if (entry.camera || entry.shareScreen) {
           mediaViewEventEmitter.once("share_video_media_stream_created", (data) => {
-            roomInteractableRemover.removeNode(networkID);
+            staticObjectManipulator.deactivateNode(networkID);
             const currentVideoShareEntity = addMediaAndSetTransform(data.src, position, rotation, scale, mediaOptions, ObjectContentOrigins.URL, true);
             setTimeout(() => {
               scene.addEventListener("action_end_video_sharing", () => {
@@ -62,7 +64,7 @@ export class ChangeVideoService {
                     return;
                   }
                   console.log("respawnStaticAt");
-                  roomInteractableRemover.respawnStaticAt(position);
+                  staticObjectManipulator.reactivateNodeAt(position);
                 }, 2000);
               }, {
                 once: true
@@ -71,7 +73,7 @@ export class ChangeVideoService {
             }, 0);
           });
         } else {
-          roomInteractableRemover.removeNode(networkID);
+          staticObjectManipulator.deactivateNode(networkID);
           addMediaAndSetTransform(entry.url, position, rotation, scale, mediaOptions, entry.contentOrigin, true);
           this.videoChoosing = false;
         }
