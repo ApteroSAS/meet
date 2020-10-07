@@ -14,6 +14,7 @@ const store = new Store();
 window.APP = { store };
 
 function Root() {
+  document.getElementById("version").innerHTML = process.env.BUILD_VERSION;
   return (
     <WrappedIntlProvider>
       <AuthContextProvider store={store}>

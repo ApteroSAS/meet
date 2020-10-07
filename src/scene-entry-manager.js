@@ -419,6 +419,7 @@ export default class SceneEntryManager {
         if (isDisplayMedia) {
           newStream = await navigator.mediaDevices.getDisplayMedia(constraints);
         } else {
+        //aptero patch
           try {
             constraints.audio = constraints.audio ? constraints.audio : {};
             constraints.audio.echoCancellation = true;
@@ -445,7 +446,7 @@ export default class SceneEntryManager {
 
         await NAF.connection.adapter.setLocalMediaStream(mediaStream);
         //aptero
-        if(data.selectAction==="result"){
+        if(data && data.selectAction==="result"){
           data.src = `hubs://clients/${NAF.clientId}/video`
           mediaViewEventEmitter.emit("share_video_media_stream_created",data);
         }else{

@@ -4,7 +4,7 @@ import makeRenderer from "./makeRenderer";
 import { loadGLTF } from "../../../components/gltf-model-plus";
 import { findNode } from "../../../utils/three-utils";
 import { createDefaultEnvironmentMap } from "../../../components/environment-map";
-import {propertiesService} from "../../../propertiesService";
+import {propertiesService} from "../../properties/propertiesService";
 
 import axios from "axios";
 import { getPreferredTechnique } from "../../service/DeviceDetector";

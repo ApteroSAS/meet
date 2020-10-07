@@ -188,7 +188,11 @@ export class MicrosoftService{
   }
 
   getUserAccount(){
-    return this.msalInstance.getAccount();
+    if(this.msalInstance) {
+      return this.msalInstance.getAccount();
+    }else{
+      return null;
+    }
   }
 
   async logout(){

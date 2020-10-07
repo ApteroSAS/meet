@@ -1,6 +1,6 @@
-import MobileStandardMaterial from "../../materials/MobileStandardMaterial";
-import ImprovedMobileStandardMaterial from "../../materials/ImprovedMobileStandardMaterial";
-import ImprovedStandardMaterial from "../../materials/ImprovedStandardMaterial";
+import MobileStandardMaterial from "../materials/MobileStandardMaterial";
+import ImprovedMobileStandardMaterial from "../materials/ImprovedMobileStandardMaterial";
+import ImprovedStandardMaterial from "../materials/ImprovedStandardMaterial";
 
 export function getPreferredTechnique(){
   return window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { propertiesService } from "../../propertiesService";
+import { propertiesService } from "../properties/propertiesService";
 import Store from "../../storage/store";
 
 

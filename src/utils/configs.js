@@ -1,7 +1,8 @@
 import appLogo from "../assets/images/app-logo.png";
 import companyLogo from "../assets/images/company-logo.png";
+import homeHeroBackground from "../assets/images/home-hero-background-unbranded.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
-import { propertiesService } from "../propertiesService";
+import { propertiesService } from "../aptero/properties/propertiesService";
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
 const configs = propertiesService;
@@ -62,7 +63,8 @@ configs.feature = featureName => {
 const localImages = {
   logo: appLogo,
   company_logo: companyLogo,
-  editor_logo: sceneEditorLogo
+    editor_logo: sceneEditorLogo,
+    home_background: homeHeroBackground
 };
 
 configs.image = (imageName, cssUrl) => {

@@ -1,5 +1,5 @@
 import { Color, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
-import { createDefaultEnvironmentMap } from "../components/environment-map";
+import { createDefaultEnvironmentMap } from "../../components/environment-map";
 
 //https://threejs.org/docs/#api/en/materials/MeshPhysicalMaterial
 //https://hub.aptero.co/data/data/envmap.png

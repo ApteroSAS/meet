@@ -4,6 +4,8 @@
 
 export const AVAILABLE_LOCALES = {
   en: "English",
+  fr: "French",
+  sp: "Spanish",
   zh: "简体中文"
 };
 

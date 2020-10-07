@@ -223,6 +223,7 @@ class TextureCache {
 const textureCache = new TextureCache();
 const inflightTextures = new Map();
 
+//aptero microsoft feature
 const microsoftErrorImage = new Image();
 microsoftErrorImage.src = microsoftErrorImageSrc;
 const microsoftErrorTexture = new THREE.Texture(microsoftErrorImage);
@@ -239,6 +240,7 @@ errorImage.onload = () => {
   errorTexture.needsUpdate = true;
 };
 
+//aptero microsoft feature
 function getErrorTexture(src) {
   if(typeof src === 'string' && src.endsWith("microsoft_not_authorized")){
     return microsoftErrorTexture;
@@ -247,10 +249,12 @@ function getErrorTexture(src) {
   }
 }
 
+//aptero microsoft feature
 function getErrorCacheItem(src){
   return { texture: getErrorTexture(src), ratio: 1 }
 }
 
+//aptero microsoft feature
 function isErrorTexture(texture) {
   return texture === errorTexture || texture === microsoftErrorTexture;
 }
@@ -312,7 +316,7 @@ AFRAME.registerComponent("media-video", {
     this.videoMutedAt = 0;
     this.localSnapCount = 0;
     this.isSnapping = false;
-    this.isChangingVideo = false;
+    this.isChangingVideo = false; //aptero
     this.videoIsLive = null; // value null until we've determined if the video is live or not.
     this.onSnapImageLoaded = () => (this.isSnapping = false);
 
@@ -330,7 +334,7 @@ AFRAME.registerComponent("media-video", {
       this.seekForwardButton = this.el.querySelector(".video-seek-forward-button");
       this.seekBackButton = this.el.querySelector(".video-seek-back-button");
       this.snapButton = this.el.querySelector(".video-snap-button");
-      this.changeButton = this.el.querySelector(".video-change-button");
+      this.changeButton = this.el.querySelector(".video-change-button"); //aptero
       this.timeLabel = this.el.querySelector(".video-time-label");
       this.volumeLabel = this.el.querySelector(".video-volume-label");
 
@@ -554,6 +558,7 @@ AFRAME.registerComponent("media-video", {
 
     const shouldUpdateSrc = this.data.src && this.data.src !== oldData.src;
     if (shouldUpdateSrc) {
+    //aptero
       this.lastUpdate = 0;
       this.videoIsLive = null; // value null until we've determined if the video is live or not.
       this.updateSrc(oldData);
@@ -633,7 +638,7 @@ AFRAME.registerComponent("media-video", {
 
       this.mediaElementAudioSource = null;
       if (!src.startsWith("hubs://")) {
-        // iOS video audio is broken, see: https://github.com/mozilla/hubs/issues/1797
+        // iOS video audio is broken on ios safari < 13.1.2, see: https://github.com/mozilla/hubs/issues/1797
         if (!isIOS || semver.satisfies(detect().version, ">=13.1.2")) {
           // TODO FF error here if binding mediastream: The captured HTMLMediaElement is playing a MediaStream. Applying volume or mute status is not currently supported -- not an issue since we have no audio atm in shared video.
           this.mediaElementAudioSource =
@@ -645,11 +650,11 @@ AFRAME.registerComponent("media-video", {
       }
 
       this.video = texture.image;
-      console.log(this.video.videoHeight,this.video.videoWidth);
       this.video.loop = this.data.loop;
       this.video.addEventListener("pause", this.onPauseStateChange);
       this.video.addEventListener("play", this.onPauseStateChange);
 
+      //aptero livescream bugfix //TODO still necessary?
       if (src.startsWith("hubs://")) {
         setTimeout(() => {
           this.video.play();
@@ -683,7 +688,7 @@ AFRAME.registerComponent("media-video", {
         });
       }
 
-
+      //aptero change content feature
       if (this.videoTexture) {
         disposeTexture(this.videoTexture);
       }
@@ -691,6 +696,7 @@ AFRAME.registerComponent("media-video", {
       this.audioSource = audioSourceEl;
     } catch (e) {
       console.error("Error loading video", this.data.src, e);
+      //aptero microsoft feature
       texture = getErrorTexture(this.data.src);
       this.videoTexture = this.audioSource = null;
     }
@@ -919,7 +925,7 @@ AFRAME.registerComponent("media-video", {
     this.playbackControls.object3D.visible = !this.data.hidePlaybackControls && !!this.video;
     this.timeLabel.object3D.visible = !this.data.hidePlaybackControls;
 
-    this.changeButton.object3D.visible = window.APP.hubChannel.can("spawn_and_move_media");
+    this.changeButton.object3D.visible = window.APP.hubChannel.can("spawn_and_move_media");//aptero change object feature
     this.snapButton.object3D.visible =
       !!this.video && !this.data.contentType.startsWith("audio/") && window.APP.hubChannel.can("spawn_and_move_media");
     this.seekForwardButton.object3D.visible = !!this.video && !this.videoIsLive;
@@ -1048,7 +1054,7 @@ AFRAME.registerComponent("media-video", {
       this.volumeDownButton.object3D.removeEventListener("interact", this.volumeDown);
       this.seekForwardButton.object3D.removeEventListener("interact", this.seekForward);
       this.seekBackButton.object3D.removeEventListener("interact", this.seekBack);
-      this.changeButton.object3D.removeEventListener("interact", this.changeVideo);
+      this.changeButton.object3D.removeEventListener("interact", this.changeVideo);//aptero change object feature
     }
 
     window.APP.store.removeEventListener("statechanged", this.onPreferenceChanged);
@@ -1091,6 +1097,7 @@ AFRAME.registerComponent("media-image", {
       if (this.mesh && this.mesh.material.map && (src !== oldData.src || version !== oldData.version)) {
         this.mesh.material.map = null;
         this.mesh.material.needsUpdate = true;
+        //aptero microsoft feature
         if (!isErrorTexture(this.mesh.material.map)) {
           textureCache.release(oldData.src, oldData.version);
           this.currentSrcIsRetained = false;
@@ -1107,6 +1114,7 @@ AFRAME.registerComponent("media-image", {
       } else {
         const inflightKey = textureCache.key(src, version);
 
+        //aptero microsoft feature
         if (src.startsWith("error")) {
           cacheItem = getErrorCacheItem(src);
         } else if (inflightTextures.has(inflightKey)) {
@@ -1142,6 +1150,7 @@ AFRAME.registerComponent("media-image", {
       this.currentSrcIsRetained = true;
     } catch (e) {
       console.error("Error loading image", this.data.src, e);
+      //aptero microsoft feature
       texture = getErrorTexture(this.data.src);
       this.currentSrcIsRetained = false;
     }
@@ -1212,7 +1221,7 @@ AFRAME.registerComponent("media-image", {
     if (projection === "flat") {
       scaleToAspectRatio(this.el, ratio);
     }
-
+    //aptero microsoft feature
     if (!isErrorTexture(texture) && this.data.batch && !texture.isCompressedTexture) {
       batchManagerSystem.addObject(this.mesh);
     }
@@ -1310,6 +1319,7 @@ AFRAME.registerComponent("media-pdf", {
       if (src !== this.data.src || index !== this.data.index) return;
     } catch (e) {
       console.error("Error loading PDF", this.data.src, e);
+      //aptero microsoft feature
       texture = getErrorTexture(this.data.src);
     }
 
@@ -1321,14 +1331,14 @@ AFRAME.registerComponent("media-pdf", {
       this.mesh = new THREE.Mesh(geometry, material);
       this.el.setObject3D("mesh", this.mesh);
     }
-
+    //aptero microsoft feature
     this.mesh.material.transparent = isErrorTexture(texture);
     this.mesh.material.map = texture;
     this.mesh.material.map.needsUpdate = true;
     this.mesh.material.needsUpdate = true;
 
     scaleToAspectRatio(this.el, ratio);
-
+    //aptero microsoft feature
     if (!isErrorTexture(texture) && this.data.batch) {
       this.el.sceneEl.systems["hubs-systems"].batchManagerSystem.addObject(this.mesh);
     }

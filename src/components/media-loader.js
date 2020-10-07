@@ -170,6 +170,7 @@ AFRAME.registerComponent("media-loader", {
     }
   },
 
+  //aptero
   onError(error = "error") {
     this.el.removeAttribute("gltf-model-plus");
     this.el.removeAttribute("media-pager");
@@ -329,6 +330,7 @@ AFRAME.registerComponent("media-loader", {
     this.el.setAttribute("media-loader", { version: Math.floor(Date.now() / 1000) });
   },
 
+//aptero
   reloadSrc(newSrc) {
     console.log("reloadSrc media view "+newSrc);
     const oldData = { ...this.data };
@@ -343,6 +345,7 @@ AFRAME.registerComponent("media-loader", {
     let src = this.data.src;
     if (!src) return;
 
+    //aptero change content code
     const isOriginalContent = this.el.components["media-loader"].contentChanged===src;
     if(isOriginalContent){
       this.el.setAttribute("media-loader","src", oldData.src);
@@ -388,6 +391,7 @@ AFRAME.registerComponent("media-loader", {
       let contentType = this.data.contentType;
       let thumbnail;
 
+      //aptero feature video 360
       if((this.data.contentSubtype && this.data.contentSubtype.includes("360")) || (contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
         this.networkedEl.setAttribute("media-loader","contentSubtype", "360-equirectangular");
         this.el.setAttribute("media-loader","contentSubtype", "360-equirectangular");
@@ -423,6 +427,7 @@ AFRAME.registerComponent("media-loader", {
 
         contentType = (result.meta && result.meta.expected_content_type) || contentType;
         thumbnail = result.meta && result.meta.thumbnail && proxiedUrlFor(result.meta.thumbnail);
+        //TOD still necessary?
         if(!thumbnail){
           thumbnail = window.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png";
         }
@@ -430,6 +435,7 @@ AFRAME.registerComponent("media-loader", {
 
       // todo: we don't need to proxy for many things if the canonical URL has permissive CORS headers
       accessibleUrl = proxiedUrlFor(canonicalUrl);
+      //Aptero microsoft integration feature
       if(accessibleUrl.endsWith(MICROSOFT_AUTH_ERROR)){
         if (this.el.components["position-at-border__freeze"]) {
           this.el.setAttribute("position-at-border__freeze", { isFlat: true });
@@ -500,7 +506,7 @@ AFRAME.registerComponent("media-loader", {
             contentType,
             linkedVideoTexture,
             linkedAudioSource,
-            linkedMediaElementAudioSource,
+            linkedMediaElementAudioSource
           })
         );
         if (this.el.components["position-at-border__freeze"]) {
@@ -561,6 +567,7 @@ AFRAME.registerComponent("media-loader", {
             batch: false // Batching disabled until atlas is updated properly
           })
         );
+        //aptero media limiter feature
         this.el.setAttribute("media-limiter", {});
         this.el.setAttribute("media-pager", {});
         this.el.setAttribute("floaty-object", { reduceAngularFloat: true, releaseGravity: -1 });
@@ -619,6 +626,7 @@ AFRAME.registerComponent("media-loader", {
         this.el.addEventListener(
           "image-loaded",
           async () => {
+            //aptero change scene permission //TODO still necessary?
             //const mayChangeScene = this.el.sceneEl.systems.permissions.can("update_hub");
             const mayChangeScene = true;
 

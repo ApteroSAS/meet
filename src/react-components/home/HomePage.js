@@ -14,6 +14,7 @@ import { AuthContext } from "../auth/AuthContext";
 import { createAndRedirectToNewHub } from "../../utils/phoenix-utils";
 import { MediaGrid } from "./MediaGrid";
 import { RoomTile } from "./RoomTile";
+import { HaveARoomCodeButton } from "../../aptero/react-components/HaveRoomCodeButton";
 
 export function HomePage() {
   const auth = useContext(AuthContext);
@@ -25,7 +26,7 @@ export function HomePage() {
     (a, b) => b.member_count - a.member_count
   );
 
-//apero modification
+  //aptero modification
   featuredRooms.forEach(entry => {
     if (entry.type === "room") {
       if (window.location.href.startsWith("https://localhost")) {
@@ -80,6 +81,7 @@ export function HomePage() {
         </div>
         <div className={styles.ctaButtons}>
           {canCreateRooms && <CreateRoomButton />}
+          <HaveARoomCodeButton/>
           <PWAButton />
         </div>
       </section>
@@ -90,9 +92,9 @@ export function HomePage() {
       )}
       <section>
         <div className={styles.secondaryLinks}>
-          <a href="/link">
+          {/*<a href="/link">
             <FormattedMessage id="home.have_code" />
-          </a>
+          </a>*/}
           <div>
             <IfFeature name="show_discord_bot_link">
               <FormattedMessage id="home.add_to_discord_1" />

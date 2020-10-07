@@ -251,7 +251,7 @@ module.exports = async (env, argv) => {
       scene: path.join(__dirname, "src", "scene.js"),
       avatar: path.join(__dirname, "src", "avatar.js"),
       link: path.join(__dirname, "src", "link.js"),
-      microsoft: path.join(__dirname, "src", "microsoft.js"),
+      microsoft: path.join(__dirname, "src", "./aptero/pages/microsoft.js"),
       discord: path.join(__dirname, "src", "discord.js"),
       cloud: path.join(__dirname, "src", "cloud.js"),
       signin: path.join(__dirname, "src", "signin.js"),
@@ -575,7 +575,7 @@ module.exports = async (env, argv) => {
       ]),
     new CopyWebpackPlugin([
       {
-        from: "src/properties.js",
+        from: "src/aptero/properties/properties.js",
         to: "properties.js"
       }
     ]),
@@ -595,24 +595,24 @@ module.exports = async (env, argv) => {
     new MiniCssExtractPlugin({
       filename: "assets/stylesheets/[name]-[contenthash].css",
       disable: argv.mode !== "production"
-    })
-    // Define process.env variables in the browser context.
-    /*new webpack.DefinePlugin({
-      "process.env": JSON.stringify({
-        NODE_ENV: argv.mode,
-        SHORTLINK_DOMAIN: process.env.SHORTLINK_DOMAIN,
-        RETICULUM_SERVER: process.env.RETICULUM_SERVER,
-        RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
-        THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
-        CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
-        NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,
-        BUILD_VERSION: process.env.BUILD_VERSION,
-        SENTRY_DSN: process.env.SENTRY_DSN,
-        GA_TRACKING_ID: process.env.GA_TRACKING_ID,
-        POSTGREST_SERVER: process.env.POSTGREST_SERVER,
-        USE_FEATURE_CONFIG: process.env.USE_FEATURE_CONFIG
+      }),
+      // Define process.env variables in the browser context.
+      new webpack.DefinePlugin({
+        "process.env": JSON.stringify({
+          /*NODE_ENV: argv.mode,
+          SHORTLINK_DOMAIN: process.env.SHORTLINK_DOMAIN,
+          RETICULUM_SERVER: process.env.RETICULUM_SERVER,
+          RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
+          THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
+          CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
+          NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,*/
+          BUILD_VERSION: process.env.BUILD_VERSION,
+          /*SENTRY_DSN: process.env.SENTRY_DSN,
+          GA_TRACKING_ID: process.env.GA_TRACKING_ID,
+          POSTGREST_SERVER: process.env.POSTGREST_SERVER,
+          APP_CONFIG: appConfig*/
+        })
       })
-    })*/
     ]
   };
 };
