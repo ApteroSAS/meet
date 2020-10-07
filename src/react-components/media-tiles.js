@@ -33,11 +33,11 @@ const PUBLISHER_FOR_ENTRY_TYPE = {
   twitch_stream: "Twitch"
 };
 
-const sessionCache = {};
 
+const mediaTilesLib = new MediaTilesLib();
 class MediaTiles extends Component {
-  state = { thumbnailCache: { ...sessionCache }, thumbnailInProgress: {}, webcamlist: {} };
-  mediaTilesLib = new MediaTilesLib();
+  mediaTilesLib = mediaTilesLib;
+  state = mediaTilesLib.getState();
 
   static propTypes = {
     intl: PropTypes.object,
@@ -193,7 +193,7 @@ class MediaTiles extends Component {
           this.setState((prevState) => {
             const newstate = { ...prevState };
             newstate.thumbnailCache[entry.url] = dataurl;
-            sessionCache[entry.url] = dataurl;
+            mediaTilesLib.sessionCache[entry.url] = dataurl;
             newstate.thumbnailInProgress[entry.url] = false;
             return newstate;
           });

@@ -1,13 +1,21 @@
 import styles from "../../assets/stylesheets/media-browser.scss";
 import classNames from "classnames";
 import React from "react";
+import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
+
 
 export class MediaTilesLib {
+  sessionCache = {};
 
   setPropsAndState(parent, props, state) {
     this.parent = parent;
     this.props = props;
     this.state = state;
+  }
+
+
+  getState(){
+    return { thumbnailCache: { ...this.sessionCache }, thumbnailInProgress: {}, webcamlist: {}};
   }
 
   getTileDimensions(isImage, isAvatar, imageAspect) {

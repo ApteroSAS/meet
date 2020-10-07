@@ -447,7 +447,7 @@ export default class SceneEntryManager {
         await NAF.connection.adapter.setLocalMediaStream(mediaStream);
         //aptero
         if(data && data.selectAction==="result"){
-          data.src = `hubs://clients/${NAF.clientId}/video`
+          data.src = `hubs://clients/${NAF.clientId}/video`;
           mediaViewEventEmitter.emit("share_video_media_stream_created",data);
         }else{
           currentVideoShareEntity = spawnMediaInfrontOfPlayer(mediaStream, undefined,data);
@@ -461,7 +461,7 @@ export default class SceneEntryManager {
       isHandlingVideoShare = false;
     };
 
-    this.scene.addEventListener("action_share_camera", () => {
+    const processCamera = (data) => {
       const constraints = {
         video: {
           width: isIOS ? { max: 1280 } : { max: 1280, ideal: 720 },
@@ -485,10 +485,13 @@ export default class SceneEntryManager {
           constraints.video.deviceId = preferredCamera;
           break;
       }
-      shareVideoMediaStream(constraints);
-    });
+      shareVideoMediaStream(constraints,false,data);
+    };
+    sceneEntryManagerEventEmitter.on("action_share_camera",processCamera);
+    this.scene.addEventListener("action_share_camera", processCamera);
 
-    this.scene.addEventListener("action_share_screen", () => {
+    //Aptero contextual action button 
+    const processShareVideo = (data) => {
       shareVideoMediaStream(
         {
           video: {
@@ -504,11 +507,14 @@ export default class SceneEntryManager {
             autoGainControl: window.APP.store.state.preferences.disableAutoGainControl === true ? false : true
           }
         },
-        true
+        true,data||{}
       );
-    });
+    };
+    sceneEntryManagerEventEmitter.on("action_share_screen",processShareVideo);
+    this.scene.addEventListener("action_share_screen", processShareVideo);
 
-    this.scene.addEventListener("action_end_video_sharing", async () => {
+    //Aptero contextual action button
+    const endVideoSharing = async () => {
       if (isHandlingVideoShare) return;
       isHandlingVideoShare = true;
 
@@ -531,7 +537,9 @@ export default class SceneEntryManager {
       this.scene.emit("share_video_disabled");
       this.scene.removeState("sharing_video");
       isHandlingVideoShare = false;
-    });
+    };
+    sceneEntryManagerEventEmitter.on("action_end_video_sharing", endVideoSharing);
+    this.scene.addEventListener("action_end_video_sharing", endVideoSharing);
 
     this.scene.addEventListener("action_selected_media_result_entry", async e => {
       // TODO spawn in space when no rights
