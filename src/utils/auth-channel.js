@@ -10,6 +10,7 @@ export default class AuthChannel {
 
   setSocket = socket => {
     this.socket = socket;
+    //TODO aptero put in service
     let user = microsoftService.getUserAccount();
     if (user) {
       this.convertToHubToken(user).catch((err)=>{
@@ -26,6 +27,7 @@ export default class AuthChannel {
   };
 
   get email() {
+    //TODO aptero put in service
     return (microsoftService.getUserAccount() && (microsoftService.getUserAccount().name+" (SSO)")) || this.store.state.credentials.email;
   }
 
@@ -33,7 +35,8 @@ export default class AuthChannel {
   get signedIn() {
     return this._signedIn;
   }
-
+  
+  //TODO aptero put in service
   async syncMicrosoftAccount(hubChannel) {
     if (!microsoftService.getUserAccount()) {
       if (this.store.state.credentials.email && this.store.state.credentials.email.endsWith("_microsoft")) {
@@ -83,6 +86,7 @@ export default class AuthChannel {
     });
   }
 
+  //TODO aptero put in service
   async convertToHubToken(user) {
     const email = user.accountIdentifier + "_" + user.userName+ "_microsoft";
     const authtoken = user.idToken;
