@@ -39,20 +39,21 @@ export class StaticObjectManipulator {
     ///////////////////////////
     //when a new client connects we send him the state of the room what is deactivated etc...
     //////////////////////////
-    networkService.onMessage("StaticObjectManipulator-update", (deactivatedEntities) => {
-      if(deactivatedEntities) {
-        this.deactivatedEntity = {};
-        this.makeAllVisible();
-        deactivatedEntities.forEach(key => {
-          this.deactivateNode(key,true);
-        });
+    networkService.onMessage("StaticObjectManipulator-update", (data) => {
+      if(data && data.deactivatedEntities && NAF.clientId!==data.clientID) {
+        console.log("recv update");
+        this.deactivatedEntity = data.deactivatedEntities;
+        this.updateVisibilityLocal();
       }
     });
 
     waitForDOMContentLoaded().then(() => {
-      document.body.addEventListener("clientConnected", (evt) => {
-        this.privateSendUpdateViaNetwork();
-      });
+        document.body.addEventListener("clientConnected", (evt) => {
+          console.log("clientConnected",evt);
+          if(Object.keys(this.deactivatedEntity).length!==0) {
+            this.privateSendUpdateViaNetwork();
+          }
+        });
     });
     ///////////////////////////
     //end
@@ -60,11 +61,24 @@ export class StaticObjectManipulator {
   }
 
   privateSendUpdateViaNetwork(){
+    networkService.sendMessage("StaticObjectManipulator-update",{deactivatedEntities:this.deactivatedEntity,clientID:NAF.clientId});
+    console.log("send update");
+    this.updateVisibilityLocal();
+  }
+
+  updateVisibilityLocal(){
     const deactivatedEntities = Object.keys(this.deactivatedEntity);
-    networkService.sendMessage("StaticObjectManipulator-update",deactivatedEntities);
+    this.makeAllVisible();
     deactivatedEntities.forEach(key => {
-      this.deactivateNode(key);
+      this.markInvisible(key);
     });
+  }
+
+  markInvisible(netID){
+    const ent = NAF.entities.entities[netID];
+    if (!ent) return;
+    ent.object3D.visible = false;
+    console.info("deactivate : "+netID);
   }
 
   deactivateNode(netID,fromNetwork) {
@@ -73,11 +87,7 @@ export class StaticObjectManipulator {
         return;
       }
       this.deactivatedEntity[netID] = netID;
-      const ent = NAF.entities.entities[netID];
-      if (!ent) return;
-
-      ent.object3D.visible = false;
-      console.info("deactivate : "+netID);
+      this.markInvisible(netID);
       if(!fromNetwork) {
         this.privateSendUpdateViaNetwork();
       }
@@ -112,8 +122,7 @@ export class StaticObjectManipulator {
     if (!this.cleanUpState) {
       this.cleanUpState = true;
       setTimeout(() => {
-        this.removeDuplicate();
-        this.recomputeStaticMedia();
+        this.reactivateAllAndRemoveDuplicate();
         this.cleanUpState = false;
       }, 1000);
     }
@@ -124,8 +133,10 @@ export class StaticObjectManipulator {
     return id.length >= 15;
   }
 
-  removeDuplicate() {
+  reactivateAllAndRemoveDuplicate() {
     const entKeys = Object.keys(NAF.entities.entities);
+    this.deactivatedEntity={};//mark all as activated
+    this.makeAllVisible();
     entKeys.forEach(keyA => {
       const entA = NAF.entities.entities[keyA];
       const ax = entA.object3D.position.x;
@@ -137,20 +148,10 @@ export class StaticObjectManipulator {
         const by = entB.object3D.position.y;
         const bz = entB.object3D.position.z;
         if (floatEqual(ax, bx, 0.001) && floatEqual(ay, by, 0.001) && floatEqual(az, bz, 0.001) && keyA !== keyB) {
-          //1st case the dynamic object is the same (same src) as the static one => remove the dynamic one
-          //2nd case it is not the same remove the static one
-          if (entA.components["media-loader"] && entB.components["media-loader"] && (entA.components["media-loader"].data.src === entB.components["media-loader"].data.src)) {
-            if (!this.isStaticMedia(keyA)) {
-              this.deactivateNode(keyA);
-            } else if (!this.isStaticMedia(keyB)) {
-              this.deactivateNode(keyB);
-            }
-          } else {
-            if (this.isStaticMedia(keyA)) {
-              this.deactivateNode(keyA);
-            } else if (this.isStaticMedia(keyB)) {
-              this.deactivateNode(keyB);
-            }
+          if (this.isStaticMedia(keyA)) {
+            this.deactivateNode(keyA);
+          } else if (this.isStaticMedia(keyB)) {
+            this.deactivateNode(keyB);
           }
         }
       });
@@ -161,29 +162,6 @@ export class StaticObjectManipulator {
     Object.keys(this.staticEntities).forEach(staticKey => {
       const ent = NAF.entities.entities[staticKey];
       ent.object3D.visible = true;
-    });
-  }
-
-  recomputeStaticMedia() {
-    console.log("recomputeStaticMedia placeholder");
-    this.makeAllVisible();
-    const entKeys = Object.keys(NAF.entities.entities);
-    Object.keys(this.staticEntities).forEach(staticKey => {
-        const ax = this.staticEntities[staticKey].position.x;
-        const ay = this.staticEntities[staticKey].position.y;
-        const az = this.staticEntities[staticKey].position.z;
-        let foundSameSpaceEntity = false;
-        entKeys.forEach(keyB => {
-          const bx = NAF.entities.entities[keyB].object3D.position.x;
-          const by = NAF.entities.entities[keyB].object3D.position.y;
-          const bz = NAF.entities.entities[keyB].object3D.position.z;
-          if (floatEqual(ax, bx, 0.001) && floatEqual(ay, by, 0.001) && floatEqual(az, bz, 0.001)) {
-            foundSameSpaceEntity = true;
-          }
-        });
-        if (!foundSameSpaceEntity) {
-          this.reactivateNode(staticKey);
-        }
     });
   }
 

@@ -65,7 +65,7 @@ export class ChangeVideoService {
                   }
                   console.log("respawnStaticAt");
                   staticObjectManipulator.reactivateNodeAt(position);
-                }, 2000);
+                }, 1000);
               }, {
                 once: true
               });

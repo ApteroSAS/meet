@@ -1489,12 +1489,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           presence.onLeave((sessionId, current, info) => {
             // Ignore presence join/leaves if this Presence has not yet had its initial sync
             if (!hubChannel.presence.__hadInitialSync) return;
-            //aptero modificatin
-            staticObjectManipulator.cleanUp();
             if (current && current.metas.length > 0) return;
             const occupantCount = Object.entries(hubChannel.presence.state).length;
             if (occupantCount > NOISY_OCCUPANT_COUNT) return;
-
+            //aptero modification
+            staticObjectManipulator.cleanUp();
             const meta = info.metas[0];
 
             if (meta.profile.displayName) {
