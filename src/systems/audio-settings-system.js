@@ -43,15 +43,15 @@ export class AudioSettingsSystem {
 
     this.sceneEl.addEventListener("reset_scene", this.onSceneReset);
 
-    if (window.APP.store.state.preferences.audioOutputMode === "audio") {
+    if (window.getPreferences("audioOutputMode") === "audio") {
       //hack to always reset to "panner"
       window.APP.store.update({
         preferences: { audioOutputMode: "panner" }
       });
     }
-    this.audioOutputMode = window.APP.store.state.preferences.audioOutputMode;
+    this.audioOutputMode = window.getPreferences("audioOutputMode");
     this.onPreferenceChanged = () => {
-      const newPref = window.APP.store.state.preferences.audioOutputMode;
+      const newPref = window.getPreferences("audioOutputMode");
       const shouldUpdateAudioSettings = this.audioOutputMode !== newPref;
       this.audioOutputMode = newPref;
       if (shouldUpdateAudioSettings) {
@@ -78,7 +78,7 @@ export class AudioSettingsSystem {
     if (index === -1) {
       this.avatarAudioSources.push(avatarAudioSource);
     }
-    const positional = window.APP.store.state.preferences.audioOutputMode !== "audio";
+    const positional = window.getPreferences("audioOutputMode") !== "audio";
     updateAvatarAudioSettings(avatarAudioSource, this.audioSettings, positional);
   }
 
@@ -96,7 +96,7 @@ export class AudioSettingsSystem {
       updateMediaAudioSettings(mediaVideo, settings);
     }
 
-    const positional = window.APP.store.state.preferences.audioOutputMode !== "audio";
+    const positional = window.getPreferences("audioOutputMode") !== "audio";
     for (const avatarAudioSource of this.avatarAudioSources) {
       updateAvatarAudioSettings(avatarAudioSource, settings, positional);
     }

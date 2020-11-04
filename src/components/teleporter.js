@@ -196,7 +196,7 @@ AFRAME.registerComponent("teleporter", {
       !this.isTeleporting &&
       userinput.get(start) &&
       !this.characterController.isTeleportingDisabled &&
-      !window.APP.store.state.preferences.disableTeleporter
+      !window.getPreferences("disableTeleporter")
     ) {
       this.isTeleporting = true;
       this.timeTeleporting = 0;

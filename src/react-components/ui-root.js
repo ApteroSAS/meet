@@ -778,7 +778,7 @@ class UIRoot extends Component {
     // Push the new history state before going into VR, otherwise menu button will take us back
     clearHistoryState(this.props.history);
 
-    const muteOnEntry = this.props.store.state.preferences["muteMicOnEntry"] || false;
+    const muteOnEntry = window.getPreferences("muteMicOnEntry") || false;
     await this.props.enterScene(this.state.mediaStream, this.state.enterInVR, muteOnEntry);
 
     this.setState({ entered: true, entering: false, showShareDialog: false });
@@ -1292,7 +1292,7 @@ class UIRoot extends Component {
 
   renderAudioSetupPanel = () => {
     const subtitleId = isMobilePhoneOrVR ? "audio.subtitle-mobile" : "audio.subtitle-desktop";
-    const muteOnEntry = this.props.store.state.preferences["muteMicOnEntry"] || false;
+    const muteOnEntry = window.getPreferences("muteMicOnEntry") || false;
     return (
       <div className="audio-setup-panel">
         <div
@@ -1369,10 +1369,10 @@ class UIRoot extends Component {
             type="checkbox"
             onChange={() =>
               this.props.store.update({
-                preferences: { muteMicOnEntry: !this.props.store.state.preferences["muteMicOnEntry"] }
+                preferences: { muteMicOnEntry: !window.getPreferences("muteMicOnEntry") }
               })
             }
-            checked={this.props.store.state.preferences["muteMicOnEntry"] || false}
+            checked={window.getPreferences("muteMicOnEntry") || false}
           />
           <label htmlFor="mute-on-entry">
             <FormattedMessage id="entry.mute-on-entry" />

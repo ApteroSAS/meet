@@ -399,9 +399,9 @@ AFRAME.registerComponent("media-video", {
       evt.detail.cameraEl.getObject3D("camera").add(sceneEl.audioListener);
     });
 
-    this.audioOutputModePref = window.APP.store.state.preferences.audioOutputMode;
+    this.audioOutputModePref = window.getPreferences("audioOutputMode");
     this.onPreferenceChanged = () => {
-      const newPref = window.APP.store.state.preferences.audioOutputMode;
+      const newPref = window.getPreferences("audioOutputMode");
       const shouldRecreateAudio = this.audioOutputModePref !== newPref && this.audio && this.mediaElementAudioSource;
       this.audioOutputModePref = newPref;
       if (shouldRecreateAudio) {
@@ -517,7 +517,7 @@ AFRAME.registerComponent("media-video", {
     }
 
     // Volume is local, always update it
-    if (this.audio && window.APP.store.state.preferences.audioOutputMode !== "audio") {
+    if (this.audio && window.getPreferences("audioOutputMode") !== "audio") {
       const globalMediaVolume =
         window.APP.store.state.preferences.globalMediaVolume !== undefined
           ? window.APP.store.state.preferences.globalMediaVolume
@@ -571,7 +571,7 @@ AFRAME.registerComponent("media-video", {
       return;
     }
 
-    const disablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+    const disablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
     const shouldSetPositionalAudioProperties =
       this.audio && this.data.audioType === "pannernode" && !disablePositionalAudio;
     if (shouldSetPositionalAudioProperties) {
@@ -586,7 +586,7 @@ AFRAME.registerComponent("media-video", {
       this.el.removeObject3D("sound");
     }
 
-    const disablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+    const disablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
     if (!disablePositionalAudio && this.data.audioType === "pannernode") {
       this.audio = new THREE.PositionalAudio(this.el.sceneEl.audioListener);
       this.setPositionalAudioProperties();
@@ -996,7 +996,7 @@ AFRAME.registerComponent("media-video", {
       }
 
       if (this.audio) {
-        if (window.APP.store.state.preferences.audioOutputMode === "audio") {
+        if (window.getPreferences("audioOutputMode") === "audio") {
           this.el.object3D.getWorldPosition(positionA);
           this.el.sceneEl.camera.getWorldPosition(positionB);
           const distance = positionA.distanceTo(positionB);

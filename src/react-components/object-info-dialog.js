@@ -377,7 +377,7 @@ export default class ObjectInfoDialog extends Component {
       this.props.hubChannel.can("spawn_and_move_media");
 
     const isSmallScreen =
-      window.APP.store.state.preferences.preferMobileObjectInfoPanel ||
+      window.getPreferences("preferMobileObjectInfoPanel") ||
       AFRAME.utils.device.isMobile() ||
       window.innerHeight < 800;
     if (isSmallScreen) {

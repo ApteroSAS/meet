@@ -245,6 +245,7 @@ import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/NetworkService";
 import { microsoftService } from "./aptero/service/MicrosoftService";
 import { staticObjectManipulator } from "./aptero/service/StaticObjectManipulator";
+import { apteroService } from "./aptero/ApteroServices";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -825,6 +826,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     (document.location.pathname === "/" && defaultRoomId
       ? defaultRoomId
       : document.location.pathname.substring(1).split("/")[0]);
+  await apteroService.onEnterRoom(hubId);
   console.log(`Hub ID: ${hubId}`);
 
   if (!defaultRoomId) {

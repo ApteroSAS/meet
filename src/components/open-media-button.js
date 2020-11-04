@@ -54,9 +54,9 @@ AFRAME.registerComponent("open-media-button", {
       } else if (await isHubsRoomUrl(this.src)) {
         //?vr_entry_type=2d_now
         //aptero
-        let mode = "?vr_entry_type=2d_now";
+        let mode = (location.href.indexOf("?")===-1?"?":"&")+"vr_entry_type=2d_now";
         if(this.el.sceneEl.is("vr-mode")) {
-          mode = "?vr_entry_type=vr_now";
+          mode = (location.href.indexOf("?")===-1?"?":"&")+"?vr_entry_type=vr_now";
         }
         //await exitImmersive();
         location.href = this.src+mode;

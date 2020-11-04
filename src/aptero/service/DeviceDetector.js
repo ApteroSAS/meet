@@ -32,7 +32,7 @@ export function computeDefaultAppQuality(){
 }
 
 export function computeAppQuality(){
-  return window.APP.store.state.preferences.materialQualitySetting? window.APP.store.state.preferences.materialQualitySetting: computeDefaultAppQuality();
+  return window.APP.store.state.preferences.materialQualitySetting? window.getPreferences("materialQualitySetting"): computeDefaultAppQuality();
 }
 
 export function shadowActivated(){
