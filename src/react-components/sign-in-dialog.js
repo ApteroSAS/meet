@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { FormattedMessage } from "react-intl";
+
+import configs from "../utils/configs";
+import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/sign-in-dialog.scss";
 import DialogContainer from "./dialog-container";
+import { handleTextFieldFocus, handleTextFieldBlur } from "../utils/focus-utils";
+
 import SignInMailDialog from "./sign-in-mail-dialog";
 import { microsoftService } from "../aptero/service/MicrosoftService";
 
@@ -15,10 +21,6 @@ export default class SignInDialog extends Component {
     continueText: PropTypes.string,
     closable: PropTypes.bool
   };
-
-  state={
-    showMail:false
-  }
 
   static defaultProps = {
     closable: true

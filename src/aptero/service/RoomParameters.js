@@ -12,23 +12,25 @@ export class RoomParameters {
       });
     })
   }
-  async applyConfig(roomSID){
+  async applyConfig(roomSID) {
+    window.APP.override = { preferences: {} };
     let roomConfig = await this.getParameters(roomSID);
-    window.APP.override = {preferences:{}};
-    if(roomConfig.preferences){
-      Object.keys(roomConfig.preferences).forEach(key => {
-        window.APP.store.state.preferences[key] = roomConfig.preferences[key];
-      })
-    }
-    if(roomConfig.preferencesOverride){
-      Object.keys(roomConfig.preferencesOverride).forEach(key => {
-        window.APP.override.preferences[key] = roomConfig.preferencesOverride[key];
-      })
-    }
-    if(roomConfig.entryMode){
-      if(location.href.indexOf("vr_entry_type")===-1) {
-        let mode = (location.href.indexOf("?")===-1?"?":"&")+"vr_entry_type=" + roomConfig.entryMode;
-        location.href = location.href + mode;
+    if (roomConfig) {
+      if (roomConfig.preferences) {
+        Object.keys(roomConfig.preferences).forEach(key => {
+          window.APP.store.state.preferences[key] = roomConfig.preferences[key];
+        })
+      }
+      if (roomConfig.preferencesOverride) {
+        Object.keys(roomConfig.preferencesOverride).forEach(key => {
+          window.APP.override.preferences[key] = roomConfig.preferencesOverride[key];
+        })
+      }
+      if (roomConfig.entryMode) {
+        if (location.href.indexOf("vr_entry_type") === -1) {
+          let mode = (location.href.indexOf("?") === -1 ? "?" : "&") + "vr_entry_type=" + roomConfig.entryMode;
+          location.href = location.href + mode;
+        }
       }
     }
   }
