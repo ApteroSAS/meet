@@ -2067,7 +2067,7 @@ class UIRoot extends Component {
                 presences={this.props.presences}
                 sessionId={this.props.sessionId}
                 signedIn={this.state.signedIn}
-                email={this.props.authChannel.email}
+				email={this.props.store.state.credentials.email}
                 onSignIn={this.showSignInDialog}
                 onSignOut={this.signOut}
                 expanded={!this.state.isObjectListExpanded && this.state.isPresenceListExpanded}
