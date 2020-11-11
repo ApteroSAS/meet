@@ -71,7 +71,8 @@ export default class SettingsMenu extends Component {
     //
     // The reason I didn't do this with CSS is because this changes available functionality, so being more
     // explicit in code seems like a wise idea.
-    const hideExtranousItems = this.props.showAsOverlay;
+    //const hideExtranousItems = this.props.showAsOverlay;
+    const hideExtranousItems = true;//APTERO
 
     const showRoomSettings = !!this.props.hubChannel.canOrWillIfCreator("update_hub");
     const showCloseRoom = !!this.props.hubChannel.canOrWillIfCreator("close_hub");
