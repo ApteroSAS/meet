@@ -8,6 +8,8 @@ import { validMaterials } from "../components/hoverable-visuals";
 import { proxiedUrlFor, guessContentType } from "../utils/media-url-utils";
 import Linkify from "linkify-it";
 import tlds from "tlds";
+import { processWebBrowserEntity } from "../aptero/util/media-utils-lib";
+import { WEB_BROWSER_URL_MODE } from "../aptero/util/media-tiles-lib";
 
 import anime from "animejs";
 
@@ -240,6 +242,8 @@ export const addMedia = (
       });
   } else if (src instanceof MediaStream) {
     entity.setAttribute("media-loader", { src: `hubs://clients/${NAF.clientId}/video` });
+  } else if (src === WEB_BROWSER_URL_MODE){
+    processWebBrowserEntity(entity,mediaOptions);
   }
 
   if (contentOrigin) {
