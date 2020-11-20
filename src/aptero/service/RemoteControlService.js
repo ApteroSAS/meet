@@ -1,3 +1,5 @@
+import { propertiesService } from "../properties/propertiesService";
+
 const io = require("socket.io-client");
 
 export class RemoteControlService {
@@ -214,8 +216,8 @@ export class RemoteControlService {
         return new Promise((resolve, reject) => {
             if (this.socketState === "disconnected") {
                 this.socketState = "connecting";
-                //this.socket = io.connect("https://alphahub.aptero.co", { path: "/service/web-renderer/socket.io" });
-                this.socket = io.connect("http://localhost:3443", { path: "/service/web-renderer/socket.io" });
+                this.socket = io.connect(propertiesService.RETICULUM_SERVER, { path: "/service/remote/orchestrator/socket.io" });
+                //this.socket = io.connect("http://localhost:3443", { path: "/service/web-renderer/socket.io" });
                 this.socket.once("init_ok", () => {
                     resolve(true);
                     this.socketState = "connected";
@@ -263,7 +265,7 @@ export class RemoteControlService {
     }
 
     getNewRemoteSessionID() {
-        return window.APP.store.credentialsAccountId;
+        return window.APP.store.credentialsAccountId?window.APP.store.credentialsAccountId:"anonymous";
     }
 
     async connectVRScreenToRemoteScreen(NAFscreenID, remoteScreenSessionId,width,height) {
