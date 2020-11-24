@@ -186,7 +186,7 @@ export class StaticObjectManipulator {
   }
 
   storeStaticMedia(key, entity) {
-    if (this.isStaticMedia(key)) {
+    if (this.isStaticMedia(key) && entity.components["media-loader"]) {
       this.staticEntities[key] = {
         entity: entity,
         position: {

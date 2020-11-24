@@ -10,6 +10,7 @@ export const WEB_BROWSER_URL_MODE = "web-browser";
 
 export class MediaTilesLib {
   sessionCache = {};
+  displayWebBrowserTile = false;
 
   setPropsAndState(parent, props, state) {
     this.parent = parent;
@@ -185,7 +186,7 @@ export class MediaTilesLib {
 
   createAdditionalTiles() {
     return <React.Fragment>
-      {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebBrowserTile()}
+      {(this.props.history && (this.props.history.location.search.search("live") !== -1) && this.displayWebBrowserTile) && this.createWebBrowserTile()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
     </React.Fragment>;
