@@ -1,6 +1,7 @@
 import { isLocalHubsSceneUrl, isHubsRoomUrl, isLocalHubsAvatarUrl } from "../utils/media-url-utils";
 import { guessContentType } from "../utils/media-url-utils";
 import { handleExitTo2DInterstitial } from "../utils/vr-interstitial";
+import { duplicateEntryModeOnSrc } from "../aptero/util/EntryMode";
 
 AFRAME.registerComponent("open-media-button", {
   schema: {
@@ -52,14 +53,10 @@ AFRAME.registerComponent("open-media-button", {
       } else if ((await isLocalHubsSceneUrl(this.src)) && mayChangeScene) {
         this.el.sceneEl.emit("scene_media_selected", this.src);
       } else if (await isHubsRoomUrl(this.src)) {
-        //?vr_entry_type=2d_now
         //aptero
-        let mode = (location.href.indexOf("?")===-1?"?":"&")+"vr_entry_type=2d_now";
-        if(this.el.sceneEl.is("vr-mode")) {
-          mode = (location.href.indexOf("?")===-1?"?":"&")+"?vr_entry_type=vr_now";
-        }
+        this.src = duplicateEntryModeOnSrc(this.src,this.el.sceneEl);
         //await exitImmersive();
-        location.href = this.src+mode;
+        location.href = this.src;
       } else {
         await exitImmersive();
         window.open(this.src);

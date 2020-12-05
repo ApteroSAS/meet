@@ -191,21 +191,21 @@ class TopHUD extends Component {
         return type === "screen" ? ShareScreenIcon : ShareCameraIcon;
       }
     };
-
+    const enabled = (!this.state.mediaDisabled) || (this.props.videoShareMediaSource != null);
     return (
       <div
         className={cx(styles.iconButton, {
-          [styles.disabled]: this.state.mediaDisabled,
+          [styles.disabled]: !enabled,
           [styles.videoShare]: true
         })}
         title={
           this.props.videoShareMediaSource !== null
             ? "Stop sharing"
-            : `Share ${capitalize(primaryVideoShareType)}${this.state.mediaDisabled ? " Disabled" : ""}`
+            : `Share ${capitalize(primaryVideoShareType)}${!enabled ? " Disabled" : ""}`
         }
         role="button"
-        onClick={this.state.mediaDisabled ? noop : maybeHandlePrimaryShare}
-        onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+        onClick={!enabled ? noop : maybeHandlePrimaryShare}
+        onMouseOver={!enabled ? noop : showExtrasOnHover}
       >
         <InlineSVG
           className={cx(styles.iconButtonIcon)}
@@ -217,15 +217,15 @@ class TopHUD extends Component {
               <div
                 key={type}
                 className={cx(styles.iconButton, {
-                  [styles.disabled]: this.state.mediaDisabled
+                  [styles.disabled]: !enabled
                 })}
                 title={
                   this.props.videoShareMediaSource === type
                     ? "Stop sharing"
-                    : `Share ${capitalize(type)}${this.state.mediaDisabled ? " Disabled" : ""}`
+                    : `Share ${capitalize(type)}${!enabled ? " Disabled" : ""}`
                 }
-                onClick={this.state.mediaDisabled ? noop : () => this.handleVideoShareClicked(type)}
-                onMouseOver={this.state.mediaDisabled ? noop : showExtrasOnHover}
+                onClick={!enabled ? noop : () => this.handleVideoShareClicked(type)}
+                onMouseOver={!enabled ? noop : showExtrasOnHover}
               >
                 <InlineSVG
                   className={cx(styles.iconButtonIcon)}

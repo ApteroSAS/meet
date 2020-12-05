@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import { propertiesService } from "../properties/propertiesService";
+import { addEntryModeIfNotExist } from "../util/EntryMode";
 
 export class RoomParameters {
   async getParameters(roomSID){
@@ -12,6 +13,16 @@ export class RoomParameters {
       });
     })
   }
+  async applyPermission(permission){
+    let roomConfig = await this.getParameters(permission.hub_id);
+    if (roomConfig) {
+      if (roomConfig.permission) {
+        permission = {...permission,...roomConfig.permission};
+      }
+    }
+    return permission;
+  }
+
   async applyConfig(roomSID) {
     window.APP.override = { preferences: {} };
     let roomConfig = await this.getParameters(roomSID);
@@ -27,10 +38,7 @@ export class RoomParameters {
         })
       }
       if (roomConfig.entryMode) {
-        if (location.href.indexOf("vr_entry_type") === -1) {
-          let mode = (location.href.indexOf("?") === -1 ? "?" : "&") + "vr_entry_type=" + roomConfig.entryMode;
-          location.href = location.href + mode;
-        }
+        addEntryModeIfNotExist(roomConfig.entryMode);
       }
     }
   }

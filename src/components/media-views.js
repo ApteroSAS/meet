@@ -931,7 +931,7 @@ AFRAME.registerComponent("media-video", {
     this.playbackControls.object3D.visible = !this.data.hidePlaybackControls && !!this.video;
     this.timeLabel.object3D.visible = !this.data.hidePlaybackControls;
 
-    this.changeButton.object3D.visible = window.APP.hubChannel.can("spawn_and_move_media") && !this.videoIsLive;//aptero change object feature
+    this.changeButton.object3D.visible = (window.APP.hubChannel.can("spawn_camera")||window.APP.hubChannel.can("change_screen")) && !this.videoIsLive;//aptero change object feature
     this.snapButton.object3D.visible =
       !!this.video && !this.data.contentType.startsWith("audio/") && window.APP.hubChannel.can("spawn_and_move_media");
     this.seekForwardButton.object3D.visible = !!this.video && !this.videoIsLive;

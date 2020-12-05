@@ -3,6 +3,7 @@ import { EventTarget } from "event-target-shim";
 import { Presence } from "phoenix";
 import { migrateChannelToSocket, discordBridgesForPresences } from "./phoenix-utils";
 import configs from "./configs";
+import { roomParameters } from "../aptero/service/RoomParameters";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const MS_PER_MONTH = 1000 * 60 * 60 * 24 * 30;
@@ -26,6 +27,7 @@ const HUB_CREATOR_PERMISSIONS = [
 ];
 const VALID_PERMISSIONS =
   HUB_CREATOR_PERMISSIONS +
+  ["change_screen"]+//aptero
   ["tweet", "spawn_camera", "spawn_drawing", "spawn_and_move_media", "pin_objects", "spawn_emoji", "fly"];
 
 export default class HubChannel extends EventTarget {
@@ -105,8 +107,13 @@ export default class HubChannel extends EventTarget {
   setPermissionsFromToken = token => {
     // Note: token is not verified.
     this._permissions = jwtDecode(token);
+
     configs.setIsAdmin(this._permissions.postgrest_role === "ret_admin");
-    this.dispatchEvent(new CustomEvent("permissions_updated"));
+    (async () => {
+      //aptero deleyed permission set
+      this._permissions = await roomParameters.applyPermission(this._permissions);
+      this.dispatchEvent(new CustomEvent("permissions_updated"));
+    })();
 
     // Refresh the token 1 minute before it expires.
     const nextRefresh = new Date(this._permissions.exp * 1000 - 60 * 1000) - new Date();
