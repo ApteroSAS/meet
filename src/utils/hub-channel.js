@@ -27,7 +27,7 @@ const HUB_CREATOR_PERMISSIONS = [
 ];
 const VALID_PERMISSIONS =
   HUB_CREATOR_PERMISSIONS +
-  ["change_screen"]+//aptero
+  roomParameters.customPermission()+//aptero
   ["tweet", "spawn_camera", "spawn_drawing", "spawn_and_move_media", "pin_objects", "spawn_emoji", "fly"];
 
 export default class HubChannel extends EventTarget {
@@ -109,9 +109,9 @@ export default class HubChannel extends EventTarget {
     this._permissions = jwtDecode(token);
 
     configs.setIsAdmin(this._permissions.postgrest_role === "ret_admin");
-    (async () => {
-      //aptero deleyed permission set
-      this._permissions = await roomParameters.applyPermission(this._permissions);
+    //aptero delayed permission set
+    ( async () => {
+      this._permissions = await roomParameters.applyPermissionAsync(this._permissions);
       this.dispatchEvent(new CustomEvent("permissions_updated"));
     })();
 

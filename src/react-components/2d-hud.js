@@ -84,14 +84,14 @@ class TopHUD extends Component {
     super(props);
     this.state.cameraDisabled = !window.APP.hubChannel.can("spawn_camera");
     this.state.penDisabled = !window.APP.hubChannel.can("spawn_drawing");
-    this.state.mediaDisabled = !window.APP.hubChannel.can("spawn_and_move_media");
+    this.state.mediaDisabled = !window.APP.hubChannel.can("show_spawn_and_move_media");
   }
 
   onPermissionsUpdated = () => {
     this.setState({
       cameraDisabled: !window.APP.hubChannel.can("spawn_camera"),
       penDisabled: !window.APP.hubChannel.can("spawn_drawing"),
-      mediaDisabled: !window.APP.hubChannel.can("spawn_and_move_media")
+      mediaDisabled: !window.APP.hubChannel.can("show_spawn_and_move_media")
     });
   };
 
@@ -191,7 +191,7 @@ class TopHUD extends Component {
         return type === "screen" ? ShareScreenIcon : ShareCameraIcon;
       }
     };
-    const enabled = (!this.state.mediaDisabled) || (this.props.videoShareMediaSource != null);
+    const enabled = (!this.state.mediaDisabled) || (this.props.videoShareMediaSource != null) || window.APP.hubChannel.can("share_screen");//aptero
     return (
       <div
         className={cx(styles.iconButton, {
