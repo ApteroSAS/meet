@@ -111,7 +111,7 @@ export default class HubChannel extends EventTarget {
     configs.setIsAdmin(this._permissions.postgrest_role === "ret_admin");
     //aptero delayed permission set
     ( async () => {
-      this._permissions = await roomParameters.applyPermissionAsync(this._permissions);
+      this._permissions = await roomParameters.applyPermissionAsync(this._permissions,configs.isAdmin());
       this.dispatchEvent(new CustomEvent("permissions_updated"));
     })();
 
