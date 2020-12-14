@@ -4,6 +4,7 @@ import React from "react";
 import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
 import { liveStream } from "../service/LiveStream";
 import { remoteControlService } from "../service/RemoteControlService";
+import CreateAvatar from "../react-components/CreateAvatar";
 
 
 export const WEB_BROWSER_URL_MODE = "web-browser";
@@ -184,8 +185,29 @@ export class MediaTilesLib {
     });
   }
 
+  createAvatarCustomTile() {
+    return <CreateAvatar onAvatar={(evt,url) => {
+      let entry = {
+        "attributions": null,
+        "description": null,
+        "gltfs": {
+        "avatar": url,
+          "base": url
+      },
+        "id": url,
+        "name": "Cedric",
+        "type": "avatar",
+        "url": url
+      };
+
+      this.props.handleEntryClicked && this.props.handleEntryClicked(evt, entry);
+      console.log(url);
+    }} />;
+  }
+
   createAdditionalTiles() {
     return <React.Fragment>
+      {(this.props.history && (this.props.history.location.search.search("avatars") !== -1)) && this.createAvatarCustomTile()}
       {(this.props.history && (this.props.history.location.search.search("live") !== -1) && this.displayWebBrowserTile) && this.createWebBrowserTile()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
