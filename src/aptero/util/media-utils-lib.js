@@ -1,9 +1,18 @@
 import { remoteControlService } from "../service/RemoteControlService";
 
 export const IN_APP_WEB_BROWSER_PROTOCOL = "web-browser:";
+export const IN_APP_WEB_BROWSER_TRAIL = "/web-browser.mp4";
 
 export const processWebBrowserEntity = (entity, mediaOptions) => {
-  entity.setAttribute("media-loader", { src: IN_APP_WEB_BROWSER_PROTOCOL + mediaOptions.webBrowser.sessionID + "/web-browser.mp4" });
+  let objJsonStr = JSON.stringify({
+    sessionID:mediaOptions.webBrowser.sessionID,
+    startUrl:"https://google.com",
+    width:1024,
+    height:512,
+  });
+  //let metaData = Buffer.from(objJsonStr).toString("base64");
+  let encoded = btoa(objJsonStr);
+  entity.setAttribute("media-loader", { src: IN_APP_WEB_BROWSER_PROTOCOL + encoded + IN_APP_WEB_BROWSER_TRAIL });
 };
 
 export const proxyURL = (url) => {
@@ -14,11 +23,16 @@ export const proxyURL = (url) => {
 };
 
 export const remoteWebBrowser = (screenElement,texture,mediaData) => {
+  let screenSRC = mediaData.src;
+  screenSRC = screenSRC.replace(IN_APP_WEB_BROWSER_PROTOCOL,"");
+  screenSRC = screenSRC.replace(IN_APP_WEB_BROWSER_TRAIL,"");
+  let metaData = JSON.parse(atob(screenSRC));
+  let remoteScreenSessionId = metaData.sessionID;
 
   // Setup a POT canvas
   let canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
+  canvas.width = metaData.width || 1024;
+  canvas.height = metaData.height || 512;
   texture = new THREE.Texture(canvas);
 
 
@@ -26,14 +40,11 @@ export const remoteWebBrowser = (screenElement,texture,mediaData) => {
     //hovered
     //unhovered
     delete screenElement.components["hover-menu__video"];
-    let screenSRC = mediaData.src;
-    screenSRC = screenSRC.replace(IN_APP_WEB_BROWSER_PROTOCOL,"");
-    screenSRC = screenSRC.replace("/web-browser.mp4","");
     let screenId = networkedEl.components.networked.data.networkId;
     //singleActionButton:true;
     remoteControlService.registerEventOnElement(screenElement);
     screenElement.setAttribute("tags","singleActionButton: true;");
-    remoteControlService.registerOnFrame(screenId,screenSRC,canvas.width,canvas.height,buffer => {
+    remoteControlService.registerOnFrame(screenId,remoteScreenSessionId,canvas.width,canvas.height,metaData.startUrl,buffer => {
       // Receive a jpeg buffer frame from the websocket server in the companion app.
       let blob = new Blob([buffer], { type: "image/jpeg" });
       // Creat url from the image blob

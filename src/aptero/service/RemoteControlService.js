@@ -265,10 +265,10 @@ export class RemoteControlService {
     }
 
     getNewRemoteSessionID() {
-        return window.APP.store.credentialsAccountId?window.APP.store.credentialsAccountId:"anonymous";
+        return window.APP.store.credentialsAccountId?window.APP.store.credentialsAccountId:("anonymous"+Math.floor(Math.random()*10000000));
     }
 
-    async connectVRScreenToRemoteScreen(NAFscreenID, remoteScreenSessionId,width,height) {
+    async connectVRScreenToRemoteScreen(NAFscreenID, remoteScreenSessionId,width,height,startUrl) {
         await this.tryConnect();
         this.remoteScreenSessionIdMap[NAFscreenID] = remoteScreenSessionId;
         this.screenSize[remoteScreenSessionId]={
@@ -280,15 +280,16 @@ export class RemoteControlService {
             remoteScreenSessionId: remoteScreenSessionId,
             screenSizeX:width,
             screenSizeY:height,
+            startUrl:startUrl
         });
     }
 
-    async registerOnFrame(localSessionID, remoteScreenSessionId,width,height, callback) {
+    async registerOnFrame(localSessionID, remoteScreenSessionId,width,height,startUrl, callback) {
         await this.tryConnect();
         this.socket.on("frame-" + remoteScreenSessionId, buffer => {
             callback(buffer);
         });
-        await this.connectVRScreenToRemoteScreen(localSessionID, remoteScreenSessionId,width,height);
+        await this.connectVRScreenToRemoteScreen(localSessionID, remoteScreenSessionId,width,height,startUrl);
     }
 
     tryCaptureCursor(intersection) {
