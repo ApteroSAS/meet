@@ -33,6 +33,10 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
   const key = `${url}_${version}`;
   if (!bustCache && resolveUrlCache.has(key)) return resolveUrlCache.get(key);
   //aptero TODO put in an aptero service
+
+  if(url.startsWith("https://localhost")){
+    return {"origin":url};
+  }
   if(url.startsWith("http://")){
     //auto promote anythings to https since we cannot serve on http
     url = url.replace("http://","https://");
