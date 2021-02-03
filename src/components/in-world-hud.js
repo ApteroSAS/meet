@@ -30,7 +30,7 @@ AFRAME.registerComponent("in-world-hud", {
       this.pen.setAttribute("icon-button", "active", this.el.sceneEl.is("pen"));
       //this.cameraBtn.setAttribute("icon-button", "active", this.el.sceneEl.is("camera"));
       if (window.APP.hubChannel) {
-        this.spawn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_and_move_media"));
+        this.spawn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("show_spawn_and_move_media"));
         this.pen.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_drawing"));
         //this.cameraBtn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_camera"));
       }
@@ -52,7 +52,7 @@ AFRAME.registerComponent("in-world-hud", {
     };
 
     this.onSpawnClick = () => {
-      if (!window.APP.hubChannel.can("spawn_and_move_media")) return;
+      if (!window.APP.hubChannel.can("show_spawn_and_move_media")) return;
       this.el.emit("action_spawn");
     };
 

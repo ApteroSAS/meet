@@ -89,7 +89,7 @@ function resizeShadowCameraFrustum(light, boundingBox) {
 export class ShadowSystem {
   constructor(sceneEl) {
     this.needsUpdate = false;
-    this.dynamicShadowsEnabled = window.APP.store.state.preferences.enableDynamicShadows;
+    this.dynamicShadowsEnabled = window.getPreferences("enableDynamicShadows");
     this.sceneEl = sceneEl;
     this.onEnvironmentSceneLoaded = this.onEnvironmentSceneLoaded.bind(this);
     this.sceneEl.addEventListener("environment-scene-loaded", this.onEnvironmentSceneLoaded);

@@ -137,7 +137,7 @@ export class SoundEffectsSystem {
     const audioBuffer = this.sounds.get(sound);
     if (!audioBuffer) return null;
 
-    const disablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+    const disablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
     const positionalAudio = disablePositionalAudio
       ? new THREE.Audio(this.scene.audioListener)
       : new THREE.PositionalAudio(this.scene.audioListener);

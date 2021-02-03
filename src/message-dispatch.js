@@ -133,7 +133,7 @@ export default class MessageDispatch {
         break;
       case "audiomode":
         {
-          const shouldEnablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+          const shouldEnablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
           window.APP.store.update({
             preferences: { audioOutputMode: shouldEnablePositionalAudio ? "panner" : "audio" }
           });

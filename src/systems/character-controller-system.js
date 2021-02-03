@@ -258,10 +258,10 @@ export class CharacterControllerSystem {
         const zCharacterAcceleration = -1 * characterAcceleration[1];
         this.relativeMotion.set(
           this.relativeMotion.x +
-            (preferences.disableMovement || preferences.disableStrafing ? 0 : characterAcceleration[0]),
+            (window.getPreferences("disableMovement") || preferences.disableStrafing ? 0 : characterAcceleration[0]),
           this.relativeMotion.y,
           this.relativeMotion.z +
-            (preferences.disableMovement
+            (window.getPreferences("disableMovement")
               ? 0
               : preferences.disableBackwardsMovement
                 ? Math.min(0, zCharacterAcceleration)

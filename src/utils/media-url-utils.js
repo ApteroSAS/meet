@@ -1,6 +1,7 @@
 import { hasReticulumServer } from "./phoenix-utils";
 import configs from "./configs";
 import { microsoftService } from "../aptero/service/MicrosoftService";
+import { proxyURL } from "../aptero/util/media-utils-lib";
 
 const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
 if (configs.CORS_PROXY_SERVER) {
@@ -80,10 +81,7 @@ export const isNonCorsProxyDomain = hostname => {
 };
 
 export const proxiedUrlFor = url => {
-//aptero
-  if (url.startsWith("hubs:")) return url;
-  if (url.startsWith("https:")) return url;
-
+  if(proxyURL(url)) return proxyURL(url);
   // Skip known domains that do not require CORS proxying.
   try {
     const parsedUrl = new URL(url);

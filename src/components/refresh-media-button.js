@@ -75,7 +75,7 @@ AFRAME.registerComponent("refresh-media-button", {
 
     const isPinned = this.targetEl.components.pinnable && this.targetEl.components.pinnable.data.pinned;
     this.el.object3D.visible =
-      (!isPinned && window.APP.hubChannel.can("spawn_and_move_media")) || window.APP.hubChannel.can("pin_objects");
+      (!isPinned && window.APP.hubChannel.can("show_spawn_and_move_media")) || window.APP.hubChannel.can("pin_objects");
   },
 
   play() {

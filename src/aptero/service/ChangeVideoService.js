@@ -3,7 +3,6 @@ import { mediaViewEventEmitter } from "../../components/media-views";
 import { ObjectContentOrigins } from "../../object-types";
 import { addMediaAndSetTransform } from "../util/Media";
 import { staticObjectManipulator } from "./StaticObjectManipulator";
-import { Vector3 } from "three";
 
 export class ChangeVideoService {
 

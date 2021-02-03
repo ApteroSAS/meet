@@ -63,7 +63,10 @@ AFRAME.registerComponent("avatar-audio-source", {
     if (!stream || isRemoved) return;
 
     const audioListener = this.el.sceneEl.audioListener;
-    this.data.rolloffFactor = 0.000001;//Aptero patch for deactived spatial sound
+    this.data.distanceModel= window.getPreferences("distanceModel") || "inverse";//Aptero patch for deactived spatial sound
+    this.data.refDistance= window.getPreferences("refDistance") || 1;//Aptero patch for deactived spatial sound
+    this.data.maxDistance = window.getPreferences("maxDistance") || 10000;//Aptero patch for deactived spatial sound
+    this.data.rolloffFactor = window.getPreferences("rolloffFactor") || 0.000001;//Aptero patch for deactived spatial sound
     const audio = this.data.positional ? new THREE.PositionalAudio(audioListener) : new THREE.Audio(audioListener);
     if (this.data.positional) {
       setPositionalAudioProperties(audio, this.data);

@@ -21,6 +21,7 @@ import { detect } from "detect-browser";
 import semver from "semver";
 
 import qsTruthy from "../utils/qs_truthy";
+import { IN_APP_WEB_BROWSER_PROTOCOL, remoteWebBrowser } from "../aptero/util/media-utils-lib";
 
 /**
  * Warning! This require statement is fragile!
@@ -364,6 +365,7 @@ AFRAME.registerComponent("media-video", {
       .getNetworkedEntity(this.el)
       .then(networkedEl => {
         this.networkedEl = networkedEl;
+
         applyPersistentSync(this.networkedEl.components.networked.data.networkId);
         this.updatePlaybackState();
 
@@ -399,9 +401,9 @@ AFRAME.registerComponent("media-video", {
       evt.detail.cameraEl.getObject3D("camera").add(sceneEl.audioListener);
     });
 
-    this.audioOutputModePref = window.APP.store.state.preferences.audioOutputMode;
+    this.audioOutputModePref = window.getPreferences("audioOutputMode");
     this.onPreferenceChanged = () => {
-      const newPref = window.APP.store.state.preferences.audioOutputMode;
+      const newPref = window.getPreferences("audioOutputMode");
       const shouldRecreateAudio = this.audioOutputModePref !== newPref && this.audio && this.mediaElementAudioSource;
       this.audioOutputModePref = newPref;
       if (shouldRecreateAudio) {
@@ -517,7 +519,7 @@ AFRAME.registerComponent("media-video", {
     }
 
     // Volume is local, always update it
-    if (this.audio && window.APP.store.state.preferences.audioOutputMode !== "audio") {
+    if (this.audio && window.getPreferences("audioOutputMode") !== "audio") {
       const globalMediaVolume =
         window.APP.store.state.preferences.globalMediaVolume !== undefined
           ? window.APP.store.state.preferences.globalMediaVolume
@@ -571,7 +573,7 @@ AFRAME.registerComponent("media-video", {
       return;
     }
 
-    const disablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+    const disablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
     const shouldSetPositionalAudioProperties =
       this.audio && this.data.audioType === "pannernode" && !disablePositionalAudio;
     if (shouldSetPositionalAudioProperties) {
@@ -586,7 +588,7 @@ AFRAME.registerComponent("media-video", {
       this.el.removeObject3D("sound");
     }
 
-    const disablePositionalAudio = window.APP.store.state.preferences.audioOutputMode === "audio";
+    const disablePositionalAudio = window.getPreferences("audioOutputMode") === "audio";
     if (!disablePositionalAudio && this.data.audioType === "pannernode") {
       this.audio = new THREE.PositionalAudio(this.el.sceneEl.audioListener);
       this.setPositionalAudioProperties();
@@ -637,7 +639,7 @@ AFRAME.registerComponent("media-video", {
       }
 
       this.mediaElementAudioSource = null;
-      if (!src.startsWith("hubs://")) {
+      if (!src.startsWith("hubs://") && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL)/** APTERO **/) {
         // iOS video audio is broken on ios safari < 13.1.2, see: https://github.com/mozilla/hubs/issues/1797
         if (!isIOS || semver.satisfies(detect().version, ">=13.1.2")) {
           // TODO FF error here if binding mediastream: The captured HTMLMediaElement is playing a MediaStream. Applying volume or mute status is not currently supported -- not an issue since we have no audio atm in shared video.
@@ -655,7 +657,7 @@ AFRAME.registerComponent("media-video", {
       this.video.addEventListener("play", this.onPauseStateChange);
 
       //aptero livescream bugfix //TODO still necessary?
-      if (src.startsWith("hubs://")) {
+      if (src.startsWith("hubs://")  && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL) ) {
         setTimeout(() => {
           this.video.play();
         }, 2000);
@@ -792,7 +794,11 @@ AFRAME.registerComponent("media-video", {
       }
 
       // Set src on video to begin loading.
-      if (url.startsWith("hubs://")) {
+
+      if (url.startsWith(IN_APP_WEB_BROWSER_PROTOCOL)) {
+        //APTERO
+        texture = remoteWebBrowser(this.el,texture,this.data);
+      }else if (url.startsWith("hubs://")) {
         const streamClientId = url.substring(7).split("/")[1]; // /clients/<client id>/video is only URL for now
         const stream = await NAF.connection.adapter.getMediaStream(streamClientId, "video");
         videoEl.srcObject = new MediaStream(stream.getVideoTracks());
@@ -925,9 +931,9 @@ AFRAME.registerComponent("media-video", {
     this.playbackControls.object3D.visible = !this.data.hidePlaybackControls && !!this.video;
     this.timeLabel.object3D.visible = !this.data.hidePlaybackControls;
 
-    this.changeButton.object3D.visible = window.APP.hubChannel.can("spawn_and_move_media") && !this.videoIsLive;//aptero change object feature
+    this.changeButton.object3D.visible = (window.APP.hubChannel.can("spawn_camera")||window.APP.hubChannel.can("change_screen")) && !this.videoIsLive;//aptero change object feature
     this.snapButton.object3D.visible =
-      !!this.video && !this.data.contentType.startsWith("audio/") && window.APP.hubChannel.can("spawn_and_move_media");
+      !!this.video && !this.data.contentType.startsWith("audio/") && window.APP.hubChannel.can("show_spawn_and_move_media");
     this.seekForwardButton.object3D.visible = !!this.video && !this.videoIsLive;
 
     const mayModifyPlayHead =
@@ -996,7 +1002,7 @@ AFRAME.registerComponent("media-video", {
       }
 
       if (this.audio) {
-        if (window.APP.store.state.preferences.audioOutputMode === "audio") {
+        if (window.getPreferences("audioOutputMode") === "audio") {
           this.el.object3D.getWorldPosition(positionA);
           this.el.sceneEl.camera.getWorldPosition(positionB);
           const distance = positionA.distanceTo(positionB);

@@ -1,6 +1,8 @@
 import { paths } from "../systems/userinput/paths";
 import { sets } from "../systems/userinput/sets";
 import { getLastWorldPosition } from "../utils/three-utils";
+import {remoteControlService} from "../aptero/service/RemoteControlService";
+
 
 const HIGHLIGHT = new THREE.Color(23 / 255, 64 / 255, 118 / 255);
 const NO_HIGHLIGHT = new THREE.Color(190 / 255, 190 / 255, 190 / 255);
@@ -96,7 +98,9 @@ AFRAME.registerComponent("cursor-controller", {
         this.intersection = rawIntersections[0];
         this.intersectionIsValid = !!interaction.updateCursorIntersection(this.intersection, left);
         this.distance = this.intersectionIsValid ? this.intersection.distance : this.data.defaultDistance * playerScale;
+
       }
+      remoteControlService.tryCaptureCursor(this.intersection);
 
       const { cursor, minDistance, far, camera } = this.data;
 

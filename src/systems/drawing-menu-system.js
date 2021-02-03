@@ -148,7 +148,7 @@ export class DrawingMenuSystem {
         const isMine = hovered.components.networked.isMine();
         menu.querySelector(".undo-drawing").object3D.visible = isMine;
         menu.querySelector(".serialize-drawing").object3D.visible =
-          isMine && window.APP.hubChannel.can("spawn_and_move_media");
+          isMine && window.APP.hubChannel.can("show_spawn_and_move_media");
 
         const dist = cameraWorldPos.distanceTo(menu.object3D.position);
         const finalScale = this.getMenuScale(dist);

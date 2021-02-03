@@ -2,10 +2,16 @@ import styles from "../../assets/stylesheets/media-browser.scss";
 import classNames from "classnames";
 import React from "react";
 import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
+import { liveStream } from "../service/LiveStream";
+import { remoteControlService } from "../service/RemoteControlService";
+import CreateAvatar from "../react-components/CreateAvatar";
 
+
+export const WEB_BROWSER_URL_MODE = "web-browser";
 
 export class MediaTilesLib {
   sessionCache = {};
+  displayWebBrowserTile = false;
 
   setPropsAndState(parent, props, state) {
     this.parent = parent;
@@ -14,8 +20,8 @@ export class MediaTilesLib {
   }
 
 
-  getState(){
-    return { thumbnailCache: { ...this.sessionCache }, thumbnailInProgress: {}, webcamlist: {}};
+  getState() {
+    return { thumbnailCache: { ...this.sessionCache }, thumbnailInProgress: {}, webcamlist: {} };
   }
 
   getTileDimensions(isImage, isAvatar, imageAspect) {
@@ -124,6 +130,38 @@ export class MediaTilesLib {
     </div>);
   }
 
+  createWebBrowserTile() {
+    const clickAction = (e) => {
+      this.props.handleEntryClicked && this.props.handleEntryClicked(e, {
+        url: WEB_BROWSER_URL_MODE,
+        webBrowser: { sessionID: remoteControlService.getNewRemoteSessionID() }
+      });
+    };
+    const [imageWidth, imageHeight] = this.getTileDimensions(false, false, 16 / 9);
+    return (<div style={{ width: `${imageWidth}px` }} className={styles.tile} key={`web-browser`}>
+      <a rel="noreferrer noopener"
+         onClick={clickAction}
+         className={styles.tileLink}
+         style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+      ><img
+        className={classNames(styles.tileContent, styles.avatarTile)}
+        style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+        src={"../../assets/static/camera-thumbnail.png"}
+      />
+      </a>
+      <div className={styles.info}>
+        <a
+          rel="noreferrer noopener"
+          className={styles.name}
+          style={{ textAlign: "center" }}
+          onClick={clickAction}
+        >
+          Web Browser
+        </a>
+      </div>
+    </div>);
+  }
+
 
   createWebcamTiles() {
     //1 try to update the camera list
@@ -147,11 +185,83 @@ export class MediaTilesLib {
     });
   }
 
+  createAvatarCustomTile() {
+    return <CreateAvatar onAvatar={(evt,url) => {
+      let entry = {
+        "attributions": null,
+        "description": null,
+        "gltfs": {
+        "avatar": url,
+          "base": url
+      },
+        "id": url,
+        "name": "Cedric",
+        "type": "avatar",
+        "url": url
+      };
+
+      this.props.handleEntryClicked && this.props.handleEntryClicked(evt, entry);
+      console.log(url);
+    }} />;
+  }
+
   createAdditionalTiles() {
     return <React.Fragment>
+      {(this.props.history && this.props.urlSource === "avatars") && this.createAvatarCustomTile()}
+      {(this.props.history && (this.props.history.location.search.search("live") !== -1) && this.displayWebBrowserTile) && this.createWebBrowserTile()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
     </React.Fragment>;
   }
 
 }
+
+
+export const mlHandleEntryClicked = (evt, entry, parent) => {
+  evt.preventDefault();
+  if (entry.createLiveEntry) {
+    const searchParams = new URLSearchParams(parent.props.history.location.search);
+    const urlSource = parent.getUrlSource(searchParams);
+    const is360 = urlSource === "videos360";
+    liveStream.createStream(is360).then(entry => {
+      parent.setState((state) => {
+        const newState = { ...state };
+        newState.result.entries.push(entry);
+        return newState;
+      });
+    });
+  } else if (entry.shareScreen) {
+    const searchParams = new URLSearchParams(parent.props.history.location.search);
+    const urlSource = parent.getUrlSource(searchParams);
+    const is360 = urlSource === "videos360";
+    entry.shareScreen.type = is360 ? "360-equirectangular" : "2d";
+    entry.shareScreen.selectAction = parent.state.selectAction;
+    parent.selectEntry(entry);
+    sceneEntryManagerEventEmitter.emit(`action_share_screen`, entry.shareScreen);
+  } else if (entry.webBrowser) {
+    const searchParams = new URLSearchParams(parent.props.history.location.search);
+    const urlSource = parent.getUrlSource(searchParams);
+    const is360 = urlSource === "videos360";
+    entry.webBrowser.type = is360 ? "360-equirectangular" : "2d";
+    entry.webBrowser.selectAction = parent.state.selectAction;
+    parent.selectEntry(entry);
+  } else if (entry.camera) {
+    const searchParams = new URLSearchParams(parent.props.history.location.search);
+    const urlSource = parent.getUrlSource(searchParams);
+    const is360 = urlSource === "videos360";
+    entry.camera.type = is360 ? "360-equirectangular" : "2d";
+    entry.camera.selectAction = parent.state.selectAction;
+    parent.selectEntry(entry);
+    sceneEntryManagerEventEmitter.emit(`action_share_camera`, entry.camera);
+  } else if (!entry.lucky_query) {
+    parent.selectEntry(entry);
+  } else {
+    // Entry has a pointer to another "i'm feeling lucky" query -- used for trending videos
+    //
+    // Also, mark the browser to clear the stashed query on close, since this is a temporary
+    // query we are running to get the result we want.
+    parent.setState({ clearStashedQueryOnClose: true });
+    parent.handleQueryUpdated(entry.lucky_query, true);
+  }
+};
+

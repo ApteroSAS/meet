@@ -245,6 +245,7 @@ import {video360Service } from "./aptero/service/Video360Service";
 import { networkService } from "./aptero/service/NetworkService";
 import { microsoftService } from "./aptero/service/MicrosoftService";
 import { staticObjectManipulator } from "./aptero/service/StaticObjectManipulator";
+import { apteroService } from "./aptero/ApteroServices";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -375,6 +376,7 @@ function setupPeerConnectionConfig(adapter, host, turn) {
     ];
   }
 
+  peerConnectionConfig.iceServers = window.iceServers || peerConnectionConfig.iceServers; //APTERO
   adapter.setPeerConnectionConfig(peerConnectionConfig);
 }
 
@@ -793,7 +795,27 @@ function checkForAccountRequired() {
   )}`;
 }
 
+async function fetchICEservers() {
+  const myHeaders = new Headers();
+  myHeaders.append(
+    "Authorization",
+    "Basic U0tjYzMxZDM0N2YxOGVlYmM3MjNiMDgzNTc0ZTE2MWJjMDp6bFM1TjNmbGhWMEdOc0ZLcG1vbFBucW1TcWdMbEliNQ=="
+  );
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    redirect: "follow"
+  };
+  const twilioApi = "https://api.twilio.com/2010-04-01/Accounts/AC2b4884e41acc8b8ed9f7ee795969d76b/Tokens.json";
+  const resp = await fetch(twilioApi, requestOptions);
+  const servers = await resp.json();
+  window.iceServers = [...servers.ice_servers];
+  return servers;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+  await fetchICEservers();
   await store.initProfile();
 
   const canvas = document.querySelector(".a-canvas");
@@ -825,6 +847,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     (document.location.pathname === "/" && defaultRoomId
       ? defaultRoomId
       : document.location.pathname.substring(1).split("/")[0]);
+  await apteroService.onEnterRoom(hubId);
   console.log(`Hub ID: ${hubId}`);
 
   if (!defaultRoomId) {

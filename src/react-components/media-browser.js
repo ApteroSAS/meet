@@ -20,8 +20,7 @@ import { showFullScreenIfWasFullScreen } from "../utils/fullscreen";
 import MediaTiles from "./media-tiles";
 import RoomInfoDialog from "./room-info-dialog";
 import LiveStreamInfoDialog from "./live-stream-info-dialog";
-import { liveStream } from "../aptero/service/LiveStream";
-import {sceneEntryManagerEventEmitter} from "../scene-entry-manager";
+import { mlHandleEntryClicked } from "../aptero/util/media-tiles-lib";
 
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
@@ -179,48 +178,6 @@ class MediaBrowser extends Component {
     }
 
     this.setState({ query });
-  };
-
-  handleEntryClicked = (evt, entry) => {
-    evt.preventDefault();
-    //TODO aptero put in service
-    if(entry.createLiveEntry){
-      const searchParams = new URLSearchParams(this.props.history.location.search);
-      const urlSource = this.getUrlSource(searchParams);
-      const is360 = urlSource === "videos360";
-      liveStream.createStream(is360).then(entry => {
-        this.setState((state) => {
-          const newState = { ...state };
-          newState.result.entries.push(entry);
-          return newState;
-        });
-      })
-    }else if(entry.shareScreen){
-      const searchParams = new URLSearchParams(this.props.history.location.search);
-      const urlSource = this.getUrlSource(searchParams);
-      const is360 = urlSource === "videos360";
-      entry.shareScreen.type = is360?"360-equirectangular":"2d";
-      entry.shareScreen.selectAction = this.state.selectAction;
-      this.selectEntry(entry);
-      sceneEntryManagerEventEmitter.emit(`action_share_screen`,entry.shareScreen);
-    }if(entry.camera){
-      const searchParams = new URLSearchParams(this.props.history.location.search);
-      const urlSource = this.getUrlSource(searchParams);
-      const is360 = urlSource === "videos360";
-      entry.camera.type = is360?"360-equirectangular":"2d";
-      entry.camera.selectAction = this.state.selectAction;
-      this.selectEntry(entry);
-      sceneEntryManagerEventEmitter.emit(`action_share_camera`,entry.camera);
-    } else if (!entry.lucky_query) {
-      this.selectEntry(entry);
-    } else {
-      // Entry has a pointer to another "i'm feeling lucky" query -- used for trending videos
-      //
-      // Also, mark the browser to clear the stashed query on close, since this is a temporary
-      // query we are running to get the result we want.
-      this.setState({ clearStashedQueryOnClose: true });
-      this.handleQueryUpdated(entry.lucky_query, true);
-    }
   };
 
   onCopyAvatar = () => {
@@ -397,7 +354,7 @@ class MediaBrowser extends Component {
                     onKeyDown={e => {
                       if (e.key === "Enter" && e.ctrlKey) {
                         if (entries.length > 0 && !this._sendQueryTimeout) {
-                          this.handleEntryClicked(e, entries[0]);
+                          mlHandleEntryClicked(e, entries[0],this);
                         } else if (this.state.query.trim() !== "") {
                           this.handleQueryUpdated(this.state.query, true);
                           this.setState({ selectNextResult: true });
@@ -524,7 +481,7 @@ class MediaBrowser extends Component {
               isVariableWidth={isVariableWidth}
               history={this.props.history}
               urlSource={urlSource}
-              handleEntryClicked={this.handleEntryClicked}
+              handleEntryClicked={(evt, entry) => mlHandleEntryClicked(evt, entry,this)}
               handleEntryInfoClicked={showinfo?this.showRoomInfo:undefined}
               onCopyAvatar={this.onCopyAvatar}
               onCopyScene={this.onCopyScene}

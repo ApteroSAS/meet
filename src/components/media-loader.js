@@ -25,6 +25,7 @@ import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 import { SHAPE } from "three-ammo/constants";
 import { MICROSOFT_AUTH_ERROR, microsoftService } from "../aptero/service/MicrosoftService";
+import { IN_APP_WEB_BROWSER_PROTOCOL } from "../aptero/util/media-utils-lib";
 
 let loadingObjectEnvMap;
 let loadingObject;
@@ -409,7 +410,7 @@ AFRAME.registerComponent("media-loader", {
       const isLocalModelAsset =
         isNonCorsProxyDomain(parsedUrl.hostname) && (guessContentType(src) || "").startsWith("model/gltf");
 
-      if (this.data.resolve && !src.startsWith("data:") && !src.startsWith("hubs:") && !isLocalModelAsset) {
+      if (this.data.resolve && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL) && !src.startsWith("data:") && !src.startsWith("hubs:") && !isLocalModelAsset) {
         const is360 = !!(this.data.mediaOptions.projection && this.data.mediaOptions.projection.startsWith("360"));
         const quality = getDefaultResolveQuality(is360);
         const result = await resolveUrl(src, quality, version, forceLocalRefresh);

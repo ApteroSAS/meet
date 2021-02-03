@@ -24,21 +24,25 @@ window.APP_PROPS = {
   // The root URL under which Hubs expects static assets to be served.
   BASE_ASSETS_PATH: "/",
 
-  DEFAULT_SCENE_SID:"h8xwUAc",
+  DEFAULT_SCENE_SID: "h8xwUAc",
 
 
   APP_CONFIG: {
-    MICROSOFT_APP_ID:"caafb04c-8c13-4044-92a4-3648f79dc7e3",
-    MICROSOFT_APP_AUTHORITY:"https://login.microsoftonline.com/apteroco.onmicrosoft.com",
-    GLOBAL_ASSETS_PATH:"https://hub.aptero.co/data/global/",
+    MICROSOFT_APP_ID: "caafb04c-8c13-4044-92a4-3648f79dc7e3",
+    MICROSOFT_APP_AUTHORITY: "https://login.microsoftonline.com/apteroco.onmicrosoft.com",
+    GLOBAL_ASSETS_PATH: "https://hub.aptero.co/data/global/",
     features: {
       hide_powered_by: true,
-      show_feedback_ui : false,
-      disable_room_creation : true
+      show_feedback_ui: false,
+      disable_room_creation: true
     },
-    theme:{
-      "dark-theme":false,
+    theme: {
+      "dark-theme": false
     }
   }
 
+};
+
+window.getPreferences = function(key) {
+  return (window.APP.override && window.APP.override.preferences[key]) || window.APP.store.state.preferences[key];
 };
