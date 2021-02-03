@@ -14,7 +14,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>Aptero</title>
     <script type="text/javascript" src="/properties.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"> 
     <!-- Google Analytics -->
     <!-- NOTE GA tracking is disabled by default. You'll need to set the GA_TRACKING_ID build variable to enable it. -->
     <script>
@@ -23,12 +23,39 @@
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
         })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
     </script>
+    <style>
+        /* Ease the transition to the load screen by displaying a default overlay */
+        #preload-overlay {
+            pointer-events: none;
+            transition: opacity 0.5s linear;
+            opacity: 1;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            background: radial-gradient(50% 50% at 50% 50%, #FFFFFF 0%, #EEEEEE 100%);
+        }
+
+        #preload-overlay.loaded {
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion) {
+            #preload-overlay {
+                transition: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div id="support-root"></div>
 
     <a-scene
+        disable-resize
+        embedded
+        vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
         hubs-systems
         capture-system
@@ -51,7 +78,6 @@
         personal-space-bubble="debug: false;"
         rotate-selected-object
         environment-map
-        set-max-resolution
         light="defaultLightsEnabled: false"
     >
         <a-assets>
@@ -90,8 +116,10 @@
                 </a-entity>
             </template>
             <template id="remote-avatar">
-                <a-entity networked-avatar ik-root player-info matrix-auto-update visible="false">
-                    <a-entity class="camera" matrix-auto-update></a-entity>
+                <a-entity tags="inspectable: true; preventAudioBoost: true" inspect-pivot-child-selector="selector:.inspect-pivot" networked-avatar ik-root player-info matrix-auto-update visible="false">
+                    <a-entity class="camera" matrix-auto-update>
+                        <a-entity class="inspect-pivot" inspect-pivot-offset-from-camera></a-entity>
+                    </a-entity>
 
                     <a-entity class="left-controller" matrix-auto-update></a-entity>
 
@@ -145,6 +173,7 @@
 
                         <template data-name="Spine">
                             <a-entity is-remote-hover-target personal-space-invader="radius: 0.2; useMaterial: true;" bone-visibility>
+                                <a-entity class="avatar-inspect-collider" avatar-inspect-collider tags="togglesHoveredActionSet: true;" is-remote-hover-target inspect-button></a-entity>
                                 <a-entity class="chest-image" scale="0.18 0.18 0.18" position="0 -0.025 0.13"></a-entity>
                                 <a-entity class="interactable ui interactable-ui">
                                     <a-entity billboard class="freeze-menu" visibility-while-frozen="withinDistance: 100; requireHoverOnNonMobile: false;" avatar-volume-controls>
@@ -509,7 +538,7 @@
                     emoji
                     body-helper="type: dynamic; mass: 1; collisionFilterGroup: 1; collisionFilterMask: 15;"
                     owned-object-limiter="counter: #emoji-counter"
-                    owned-object-cleanup-timeout="counter: #emoji-counter; ttl: 3;"
+                    owned-object-cleanup-timeout="ttl: 3;"
                     set-unowned-body-kinematic
                     is-remote-hover-target
                     tags="isHandCollisionTarget: true; isHoldable: true; offersHandConstraint: true; offersRemoteConstraint: true; inspectable: true;"
@@ -1065,6 +1094,8 @@
             set-yxz-order
             periodic-full-syncs
             visible="false"
+            tags="inspectable: true; preventAudioBoost: true"
+            inspect-pivot-child-selector="selector:.inspect-pivot"
         >
             <a-entity
                 id="player-hud"
@@ -1212,6 +1243,7 @@
                 set-yxz-order
                 position="0 1.6 0"
             >
+                <a-entity class="inspect-pivot" inspect-pivot-offset-from-camera></a-entity>
                 <a-entity
                     id="gaze-teleport"
                     position = "0.15 0 0"
@@ -1219,8 +1251,6 @@
                 ></a-entity>
                 <a-entity id="stats" stats-plus="false" position="0 0 -1"></a-entity>
             </a-entity>
-
-            <a-entity emoji-hud="camera: #avatar-pov-node;"></a-entity>
 
             <a-entity
                 id="player-left-controller"
@@ -1358,6 +1388,7 @@
     </a-scene>
 
     <div id="ui-root"></div>
+    <div id="preload-overlay"></div>
 </body>
 
 </html>

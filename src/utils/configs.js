@@ -3,6 +3,7 @@ import companyLogo from "../assets/images/company-logo.png";
 import homeHeroBackground from "../assets/images/home-hero-background-unbranded.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
 import { propertiesService } from "../aptero/properties/propertiesService";
+import { getLocale, getMessage } from "./i18n";
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
 const configs = propertiesService;
@@ -82,5 +83,23 @@ configs.setIsAdmin = _isAdmin => {
   isAdmin = _isAdmin;
 };
 configs.isAdmin = () => isAdmin;
+
+configs.integration = integration => {
+  const availableIntegrations = configs.AVAILABLE_INTEGRATIONS;
+  // AVAILABLE_INTEGRATIONS has no properties defined on the dev server, but does support all integrations.
+  return !availableIntegrations.hasOwnProperty(integration) || availableIntegrations[integration];
+};
+
+configs.translation = key => {
+  const locale = getLocale();
+  const translationsConfig = (configs.APP_CONFIG && configs.APP_CONFIG.translations) || {};
+
+  return (
+    (translationsConfig[locale] && translationsConfig[locale][key]) ||
+    (translationsConfig.en && translationsConfig.en[key]) ||
+    getMessage(key) ||
+    ""
+  );
+};
 
 export default configs;

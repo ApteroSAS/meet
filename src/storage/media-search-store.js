@@ -22,10 +22,9 @@ const URL_SOURCE_TO_TO_API_SOURCE = {
 };
 
 const desiredSources = ["objects", "videos360", "poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
-const availableIntegrations = configs.AVAILABLE_INTEGRATIONS;
 const availableSources = desiredSources.filter(source => {
   const apiSource = URL_SOURCE_TO_TO_API_SOURCE[source];
-  return !availableIntegrations.hasOwnProperty(apiSource) || availableIntegrations[apiSource];
+  return configs.integration(apiSource);
 });
 
 //export const SOURCES = ["objects", "videos360", "videos", "scenes", "avatars"];
