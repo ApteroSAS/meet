@@ -1,1 +1,0 @@
-This patch has been reverted compared to the original hubs because it causes small freez on our version

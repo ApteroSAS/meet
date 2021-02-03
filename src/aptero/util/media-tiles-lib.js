@@ -1,4 +1,4 @@
-import styles from "../../assets/stylesheets/media-browser.scss";
+import styles from "./media-browser.scss";
 import classNames from "classnames";
 import React from "react";
 import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";

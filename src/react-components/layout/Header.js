@@ -28,9 +28,11 @@ export function Header({
       <Container as="div" className={styles.container}>
         <nav>
           <ul>
-              <a href="/">Home</a>
+            <li>
+              <a href="/" className={styles.homeLink}>
                 <img alt={appName} src={appLogo} />
               </a>
+            </li>
             {showCloud && (
               <li>
                 <a href="/cloud">

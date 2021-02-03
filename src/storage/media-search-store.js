@@ -80,6 +80,7 @@ export default class MediaSearchStore extends EventTarget {
     const currentRequestIndex = this.requestIndex;
     const searchParams = new URLSearchParams();
     const locationSearchParams = new URLSearchParams(location.search);
+    //TODO aptero filter
     let filter = locationSearchParams.get("filter");
     if (urlSource === "objects") {
       filter = "my-objects";
@@ -122,6 +123,7 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
+    //aptero TODO put in service
     if (result.entries) {
       result.entries.forEach(entry => {
         if (!entry.url.startsWith("https://") && entry.url.startsWith("http://")) {

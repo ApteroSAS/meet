@@ -67,10 +67,13 @@ AFRAME.registerSystem("hubs-systems", {
     this.boneVisibilitySystem = new BoneVisibilitySystem();
     this.uvScrollSystem = new UVScrollSystem();
     this.shadowSystem = new ShadowSystem(this.el);
-    this.apteroService = apteroService;
-    this.apteroService.start();
+    this.mediaFramesSystem = new MediaFramesSystem(this.physicsSystem, this.el.systems.interaction);
     this.inspectYourselfSystem = new InspectYourselfSystem();
     this.emojiSystem = new EmojiSystem(this.el);
+    //APTERO SERVICE DEFINITION
+    this.apteroService = apteroService;
+    this.apteroService.start();
+    //END APTERO SERVICE
   },
 
   tick(t, dt) {

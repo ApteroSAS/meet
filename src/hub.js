@@ -430,6 +430,7 @@ async function updateEnvironmentForHub(hub, entryManager) {
     isLegacyBundle = !(glbAsset || hasExtension);
   }
 
+  //aptero
   await microsoftService.preFetchConvertMicrosoftUrl(sceneUrl);
 
   if (isLegacyBundle) {
@@ -627,8 +628,8 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
     messageDispatch: messageDispatch,
     onSendMessage: messageDispatch.dispatch,
     onLoaded: () => store.executeOnLoadActions(scene),
-//aptero modification
-     onMediaSearchResultEntrySelected: (entry, selectAction) => {
+    //aptero modification
+    onMediaSearchResultEntrySelected: (entry, selectAction) => {
       scene.emit("action_selected_media_result_entry", { entry, selectAction })
       mediaSearchStore.eventEmitter.emit("action_selected_media_result_entry", { entry, selectAction });
     },
@@ -674,6 +675,14 @@ function handleHubChannelJoined(entryManager, hubChannel, messageDispatch, data)
   // Wait for scene objects to load before connecting, so there is no race condition on network state.
   const connectToScene = async () => {
     let adapter = "janus";
+    //TODO aptero here add twilio
+    try {
+      // Meta endpoint exists only on dialog
+      await fetch(`https://${hub.host}:${hub.port}/meta`);
+      adapter = "dialog";
+    } catch (e) {
+      // Ignore, set to janus.
+    }
 
     scene.setAttribute("networked-scene", {
       room: hub.hub_id,

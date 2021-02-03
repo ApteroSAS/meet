@@ -12,6 +12,14 @@ import { processWebBrowserEntity } from "../aptero/util/media-utils-lib";
 import { WEB_BROWSER_URL_MODE } from "../aptero/util/media-tiles-lib";
 
 import anime from "animejs";
+export const MediaType = {
+  ALL: "all",
+  ALL_2D: "all-2d",
+  MODEL: "model",
+  IMAGE: "image",
+  VIDEO: "video",
+  PDF: "pdf"
+};
 
 const linkify = Linkify();
 linkify.tlds(tlds);
@@ -247,6 +255,7 @@ export const addMedia = (
   } else if (src instanceof MediaStream) {
     entity.setAttribute("media-loader", { src: `hubs://clients/${NAF.clientId}/video` });
   } else if (src === WEB_BROWSER_URL_MODE){
+    //aptero
     processWebBrowserEntity(entity,mediaOptions);
   }
 

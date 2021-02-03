@@ -255,8 +255,8 @@ export default class SceneEntryManager {
       : async () => {
           await this._unpinElement(el);
         };
-    //TODO to check aptero
-    this.performConditionalSignIn(() => this.hubChannel.signedIn, action, pin ? "pin" : "unpin", () => {
+
+    this.performConditionalSignIn(
       () => this.hubChannel.signedIn,
       action,
       pin ? SignInMessages.pin : SignInMessages.unpin,

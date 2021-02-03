@@ -6,7 +6,6 @@ import configs from "../utils/configs";
 import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/scene-ui.scss";
 import { createAndRedirectToNewHub, getReticulumFetchUrl } from "../utils/phoenix-utils";
-import { WithHoverSound } from "./wrap-with-audio";
 import CreateRoomDialog from "./create-room-dialog.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisH } from "@fortawesome/free-solid-svg-icons/faEllipsisH";
@@ -232,9 +231,8 @@ class SceneUI extends Component {
                   <FormattedMessage id="scene-page.create-button" defaultMessage="Create a room with this scene" />
                 </button>
                 <button className={styles.optionsButton} onClick={() => this.setState({ showCustomRoomDialog: true })}>
-                    <FontAwesomeIcon icon={faEllipsisH} />
-                  </button>
-                  </WithHoverSound>
+                  <FontAwesomeIcon icon={faEllipsisH} />
+                </button>
               </div>
             )}
             <IfFeature name="enable_spoke">
@@ -270,14 +268,12 @@ class SceneUI extends Component {
                 )
               )}
             </IfFeature>
-              <WithHoverSound>
-              <a href={tweetLink} rel="noopener noreferrer" target="_blank" className={styles.tweetButton}>
-                <img src="../assets/images/twitter.svg" />
-                <div>
+            <a href={tweetLink} rel="noopener noreferrer" target="_blank" className={styles.tweetButton}>
+              <img src="../assets/images/twitter.svg" />
+              <div>
                 <FormattedMessage id="scene-page.tweet-button" defaultMessage="Share on Twitter" />
-                </div>
-              </a>
-              </WithHoverSound>
+              </div>
+            </a>
           </div>
         </div>
         <div className={styles.info}>
