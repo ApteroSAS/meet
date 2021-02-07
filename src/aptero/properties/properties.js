@@ -26,6 +26,7 @@ window.APP_PROPS = {
 
   DEFAULT_SCENE_SID: "h8xwUAc",
 
+  AVAILABLE_INTEGRATIONS:{"objects":true, "videos360":true, "videos2d":true, "scenes":true, "avatars":true},
 
   APP_CONFIG: {
     MICROSOFT_APP_ID: "caafb04c-8c13-4044-92a4-3648f79dc7e3",

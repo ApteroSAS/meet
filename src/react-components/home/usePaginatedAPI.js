@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { processResponse } from "../../aptero/service/EntryAPI";
 
 export function usePaginatedAPI(apiCallback) {
   const curApiCallback = useRef(apiCallback);
@@ -67,6 +68,7 @@ export function usePaginatedAPI(apiCallback) {
       curApiCallback
         .current(internalState.cursor)
         .then(response => {
+          processResponse(response.entries);
           if (curApiCallback.current !== caller) {
             return;
           }

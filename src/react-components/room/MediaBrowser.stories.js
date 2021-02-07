@@ -5,6 +5,7 @@ import { IconButton } from "../input/IconButton";
 import { ReactComponent as LinkIcon } from "../icons/Link.svg";
 import { CreateTile, MediaTile } from "./MediaTiles";
 import backgroundUrl from "../../assets/images/home-hero-background-unbranded.png";
+import { createAvatarCustomTileV2 } from "../../aptero/util/media-tiles-lib";
 
 export default {
   title: "MediaBrowser",
@@ -250,7 +251,7 @@ const gif = {
   url: "https://media.tenor.com/videos/004424225acc15896c846f6ab3740ad0/mp4"
 };
 
-const mediaSources = ["poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
+const mediaSources = ["objects","poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
 
 export const Favorites = () => (
   <MediaBrowser selectedSource={"favorites"}>
@@ -304,53 +305,62 @@ export const Scenes = () => (
 );
 
 export const AvatarListings = () => (
-  <MediaBrowser
-    searchPlaceholder="Search Avatars..."
-    mediaSources={mediaSources}
-    selectedSource={"avatars"}
-    activeFilter={"featured"}
-    facets={FACETS.avatars}
-    headerRight={
-      <IconButton lg>
-        <LinkIcon />
-        <p>Custom Avatar</p>
-      </IconButton>
-    }
-    hasNext
-  >
-    <CreateTile label="Create Avatar" type="avatar" />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-  </MediaBrowser>
+  <React.Fragment>
+    {createAvatarCustomTileV2()}
+    <div> AVATEST2 </div>
+    <MediaBrowser
+      searchPlaceholder="Search Avatars..."
+      mediaSources={mediaSources}
+      selectedSource={"avatars"}
+      activeFilter={"featured"}
+      facets={FACETS.avatars}
+      headerRight={
+        <IconButton lg>
+          <LinkIcon />
+          <p>Custom Avatar</p>
+        </IconButton>
+      }
+      hasNext
+    >
+      {createAvatarCustomTileV2()}
+      {/*<CreateTile label="Create Avatar" type="avatar" />*/}
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+    </MediaBrowser>
+  </React.Fragment>
 );
 
 export const Avatars = () => (
-  <MediaBrowser
-    searchPlaceholder="Search Avatars..."
-    mediaSources={mediaSources}
-    selectedSource={"avatars"}
-    activeFilter={"my-avatars"}
-    facets={FACETS.avatars}
-    headerRight={
-      <IconButton lg>
-        <LinkIcon />
-        <p>Custom Avatar</p>
-      </IconButton>
-    }
-    hasNext
-  >
-    <CreateTile label="Create Avatar" type="avatar" />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-  </MediaBrowser>
+  <React.Fragment>
+    {createAvatarCustomTileV2()}
+    <div> AVATEST </div>
+    <MediaBrowser
+      searchPlaceholder="Search Avatars..."
+      mediaSources={mediaSources}
+      selectedSource={"avatars"}
+      activeFilter={"my-avatars"}
+      facets={FACETS.avatars}
+      headerRight={
+        <IconButton lg>
+          <LinkIcon />
+          <p>Custom Avatar</p>
+        </IconButton>
+      }
+      hasNext
+    >
+      {/*<CreateTile label="Create Avatar" type="avatar" />*/}
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+    </MediaBrowser>
+  </React.Fragment>
 );
 
 export const SketchfabModel = () => (

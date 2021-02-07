@@ -10,11 +10,15 @@ import { ReactComponent as PenIcon } from "../icons/Pen.svg";
 import { ReactComponent as DuplicateIcon } from "../icons/Duplicate.svg";
 import { ReactComponent as SearchIcon } from "../icons/Search.svg";
 import { ReactComponent as HelpIcon } from "../icons/Help.svg";
+
+//import RemoteThumbnailRenderer from "../../aptero/thumnail/thumbnail/RemoteThumbnailRenderer";
+//import { MediaTilesLib } from "../aptero/util/media-tiles-lib";
 import { ReactComponent as ExternalLinkIcon } from "../icons/ExternalLink.svg";
 
 const PUBLISHER_FOR_ENTRY_TYPE = {
   sketchfab_model: "Sketchfab",
   poly_model: "Google Poly",
+  objects : "Objects",
   twitch_stream: "Twitch"
 };
 
@@ -204,14 +208,14 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
         </div>
       )}
       <div className={styles.tileActions}>
-        {entry.type === "avatar" && (
+        {/*APTERO entry.type === "avatar" && (
           <TileAction
             title={intl.formatMessage({ id: "media-tile.action.edit-avatar", defaultMessage: "Edit avatar" })}
             onClick={onEdit}
           >
             <PenIcon />
           </TileAction>
-        )}
+        )*/}
         {entry.type === "scene" &&
           entry.project_id && (
             <TileAction
@@ -221,7 +225,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
               <PenIcon />
             </TileAction>
           )}
-        {entry.type === "avatar_listing" && (
+        {/*APTERO entry.type === "avatar_listing" && (
           <TileAction
             title={intl.formatMessage({
               id: "media-tile.action.show-similar-avatars",
@@ -231,8 +235,8 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
           >
             <SearchIcon />
           </TileAction>
-        )}
-        {entry.type === "avatar_listing" &&
+        )*/}
+        {/*APTERO entry.type === "avatar_listing" &&
           entry.allow_remixing && (
             <TileAction
               title={intl.formatMessage({
@@ -243,7 +247,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
             >
               <DuplicateIcon />
             </TileAction>
-          )}
+          )*/}
         {entry.type === "scene_listing" &&
           entry.allow_remixing && (
             <TileAction

@@ -14,6 +14,7 @@ import { FullscreenLayout } from "../layout/FullscreenLayout";
 import { Button } from "../input/Button";
 import { Column } from "../layout/Column";
 import { MediaGrid } from "./MediaGrid";
+import { createAvatarCustomTileV2 } from "../../aptero/util/media-tiles-lib";
 
 const navTitleMessages = defineMessages({
   youtube: { id: "media-browser.nav_title.youtube", defaultMessage: "YouTube" },
@@ -24,10 +25,14 @@ const navTitleMessages = defineMessages({
   avatars: { id: "media-browser.nav_title.avatars", defaultMessage: "Avatars" },
   sketchfab: { id: "media-browser.nav_title.sketchfab", defaultMessage: "Sketchfab" },
   poly: { id: "media-browser.nav_title.poly", defaultMessage: "Google Poly" },
-  twitch: { id: "media-browser.nav_title.twitch", defaultMessage: "Twitch" }
+  twitch: { id: "media-browser.nav_title.twitch", defaultMessage: "Twitch" },
+  objects: { id: "media-browser.nav_title.objects", defaultMessage: "Objects" },
+  videos360: { id: "media-browser.nav_title.videos360", defaultMessage: "Videos 360" },
+  videos2d: { id: "media-browser.nav_title.videos2d", defaultMessage: "Videos" },
 });
 
 export function MediaBrowser({
+  banner,
   onClose,
   browserRef,
   searchInputRef,
@@ -120,6 +125,7 @@ export function MediaBrowser({
         </div>
       )}
       <div className={styles.content}>
+        {banner()}
         <Column grow ref={browserRef}>
           {children ? (
             <MediaGrid
@@ -149,6 +155,7 @@ export function MediaBrowser({
 
 MediaBrowser.propTypes = {
   onClose: PropTypes.func,
+  banner: PropTypes.func,
   browserRef: PropTypes.any,
   searchInputRef: PropTypes.any,
   autoFocusSearch: PropTypes.bool,

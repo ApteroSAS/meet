@@ -156,14 +156,19 @@ export function fetchReticulumAuthenticated(url, method = "GET", payload) {
   if (payload) {
     params.body = JSON.stringify(payload);
   }
-  return fetch(retUrl, params).then(async r => {
-    const result = await r.text();
+  return fetch(retUrl, params).then(async response => {
+    if (!response.ok) {
+      throw new Error('API error');
+    }
+    const result = await response.text();
     try {
       return JSON.parse(result);
     } catch (e) {
       // Some reticulum responses, particularly DELETE requests, don't return json.
       return result;
     }
+  }).catch(() => {
+    return {entries:[]};
   });
 }
 

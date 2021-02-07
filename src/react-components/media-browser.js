@@ -17,6 +17,7 @@ import { fetchReticulumAuthenticated, getReticulumFetchUrl } from "../utils/phoe
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { CreateTile, MediaTile } from "./room/MediaTiles";
 import { SignInMessages } from "./auth/SignInModal";
+import { createAvatarCustomTileV2, mlHandleEntryClicked } from "../aptero/util/media-tiles-lib";
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 
@@ -447,6 +448,10 @@ class MediaBrowserContainer extends Component {
 
     return (
       <MediaBrowser
+        banner = {()=>{return createAvatarCustomTileV2((evt,entry)=>{
+          //this.handleEntryClicked(e, entries[0]);
+          mlHandleEntryClicked(evt, entry,this);//aptero
+        })}}
         browserRef={r => (this.browserDiv = r)}
         onClose={this.close}
         searchInputRef={r => (this.inputRef = r)}
@@ -456,7 +461,8 @@ class MediaBrowserContainer extends Component {
         onSearchKeyDown={e => {
           if (e.key === "Enter" && e.ctrlKey) {
             if (entries.length > 0 && !this._sendQueryTimeout) {
-              this.handleEntryClicked(e, entries[0]);
+              //this.handleEntryClicked(e, entries[0]);
+              mlHandleEntryClicked(e, entries[0],this);//aptero
             } else if (this.state.query.trim() !== "") {
               this.handleQueryUpdated(this.state.query, true);
               this.setState({ selectNextResult: true });
@@ -503,7 +509,7 @@ class MediaBrowserContainer extends Component {
         entries.length > 0 ||
         !showEmptyStringOnNoResult ? (
           <>
-            {urlSource === "avatars" && (
+            {configs.feature("create_avatar") &&  urlSource === "avatars" && (
               <CreateTile
                 type="avatar"
                 onClick={this.onCreateAvatar}
@@ -566,7 +572,10 @@ class MediaBrowserContainer extends Component {
                   key={`${entry.id}_${idx}`}
                   entry={entry}
                   processThumbnailUrl={this.processThumbnailUrl}
-                  onClick={e => this.handleEntryClicked(e, entry)}
+                  onClick={(evt, entry) => {
+                    //this.handleEntryClicked(e, entry)
+                    mlHandleEntryClicked(evt, entry,this)
+                  }}
                   onEdit={onEdit}
                   onShowSimilar={onShowSimilar}
                   onCopy={onCopy}

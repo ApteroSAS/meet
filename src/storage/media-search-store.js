@@ -2,6 +2,7 @@ import { EventTarget } from "event-target-shim";
 import configs from "../utils/configs";
 import { getReticulumFetchUrl, fetchReticulumAuthenticated, hasReticulumServer } from "../utils/phoenix-utils";
 import { pushHistoryPath, sluglessPath, withSlug } from "../utils/history";
+import { processResponse } from "../aptero/service/EntryAPI";
 
 const EventEmitter = require("eventemitter3");
 
@@ -10,9 +11,10 @@ const EMPTY_RESULT = { entries: [], meta: {} };
 const URL_SOURCE_TO_TO_API_SOURCE = {
   objects: "objects",
   videos360: "videos360",
+  videos2d: "video2d",
   scenes: "scene_listings",
   images: "bing_images",
-  videos: "videos",
+  videos: "bing_videos",
   youtube: "youtube_videos",
   gifs: "tenor",
   sketchfab: "sketchfab",
@@ -21,14 +23,14 @@ const URL_SOURCE_TO_TO_API_SOURCE = {
   favorites: "favorites"
 };
 
-const desiredSources = ["objects", "videos360", "poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
+const desiredSources = ["objects", "videos360", "videos2d", "poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
 const availableSources = desiredSources.filter(source => {
   const apiSource = URL_SOURCE_TO_TO_API_SOURCE[source];
   return configs.integration(apiSource);
 });
+//export const SOURCES = availableSources;
+export const SOURCES = ["objects", "videos360", "videos2d", "scenes", "avatars"];
 
-//export const SOURCES = ["objects", "videos360", "videos", "scenes", "avatars"];
-export const SOURCES = ["objects", "videos", "videos360"];
 
 export const MEDIA_SOURCE_DEFAULT_FILTERS = {
   gifs: "trending",
@@ -123,19 +125,7 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
-    //aptero TODO put in service
-    if (result.entries) {
-      result.entries.forEach(entry => {
-        if (!entry.url.startsWith("https://") && entry.url.startsWith("http://")) {
-          entry.url = entry.url.replace("http://", "https://");//promote insecure content
-        }
-        if (entry.type === "room") {
-          if (window.location.href.startsWith("https://localhost")) {
-            entry.url = "/hub.html?hub_id=" + entry.id;
-          }
-        }
-      });
-    }
+    processResponse(result.entries);
 
     if (this.requestIndex != currentRequestIndex) return;
 

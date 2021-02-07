@@ -255,6 +255,7 @@ import { WrappedIntlProvider } from "./react-components/wrapped-intl-provider";
 import { ExitReason } from "./react-components/room/ExitedRoomScreen";
 import { OAuthScreenContainer } from "./react-components/auth/OAuthScreenContainer";
 import { SignInMessages } from "./react-components/auth/SignInModal";
+import { configureTurn, fetchICEservers } from "./aptero/service/twilio";
 
 const PHOENIX_RELIABLE_NAF = "phx-reliable";
 NAF.options.firstSyncSource = PHOENIX_RELIABLE_NAF;
@@ -365,42 +366,10 @@ function remountUI(props) {
 function setupPeerConnectionConfig(adapter) {
   const forceTurn = qs.get("force_turn");
   const forceTcp = qs.get("force_tcp");
-  const peerConnectionConfig = {};
-
-  if (turn && turn.enabled) {
-    //TODO APTERO move in service
-    const iceServers = [];
-
-    turn.transports.forEach(ts => {
-      // Try both TURN DTLS and TCP/TLS
-      if (!forceTcp) {
-        iceServers.push({ urls: `turns:${host}:${ts.port}`, username: turn.username, credential: turn.credential });
-      }
-
-      iceServers.push({
-        urls: `turns:${host}:${ts.port}?transport=tcp`,
-        username: turn.username,
-        credential: turn.credential
-      });
-    });
-
-    iceServers.push({ urls: "stun:stun1.l.google.com:19302" });
-
-    peerConnectionConfig.iceServers = iceServers;
-    peerConnectionConfig.iceTransportPolicy = "all";
-
-    if (forceTurn || forceTcp) {
-      peerConnectionConfig.iceTransportPolicy = "relay";
-    }
-  } else {
-    peerConnectionConfig.iceServers = [
-      { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "stun:stun2.l.google.com:19302" }
-    ];
+  if(adapter.setTurnConfig){
+    adapter.setTurnConfig(forceTcp, forceTurn);
   }
-
-  peerConnectionConfig.iceServers = window.iceServers || peerConnectionConfig.iceServers; //APTERO
-  adapter.setPeerConnectionConfig(peerConnectionConfig);
+  configureTurn(forceTcp, forceTurn,adapter);
 }
 
 async function updateEnvironmentForHub(hub, entryManager) {
@@ -446,68 +415,7 @@ async function updateEnvironmentForHub(hub, entryManager) {
   console.log(`Scene URL: ${sceneUrl}`);
 
   let environmentEl = null;
-  //TODO aptero put this code in a service for easier merge
-  if (sceneUrl.endsWith(".mp4")) {
-    const mp4url = sceneUrl;
-    sceneUrl = configs.PROTOCOL+configs.RETICULUM_SERVER+"/data/data/VideoConf.glb";
 
-    {
-      //remove old element
-      const videoEl = document.querySelector("#video");
-      const videoSphereEl = document.querySelector("#environment-scene-video");
-      if (videoEl && videoSphereEl) {
-        videoEl.parentNode.removeChild(videoEl);
-        videoSphereEl.parentNode.removeChild(videoSphereEl);
-      }
-    }
-    const addVideo360 = () => {
-      /*const aAssetsEl = document.createElement("a-assets");
-      aAssetsEl.setAttribute("id", "aassets");
-      aAssetsEl.setAttribute("timeout", "4500");*/
-
-      const videoEl = document.createElement("video");
-      videoEl.setAttribute("id", "video");
-      videoEl.setAttribute("style", "display:none");
-      videoEl.setAttribute("autoplay", "");
-      videoEl.setAttribute("loop", "");
-      videoEl.setAttribute("crossorigin", "anonymous");
-      videoEl.setAttribute("playsinline", "");
-      videoEl.setAttribute("webkit-playsinline", "");
-      //videoEl.setAttribute("src", mp4url);
-
-      const sourceEl = document.createElement("source");
-      sourceEl.setAttribute("src", mp4url);
-      sourceEl.setAttribute("type", "video/mp4");
-      sourceEl.setAttribute("id", "source");
-      videoEl.appendChild(sourceEl);
-
-      sceneEl.appendChild(videoEl);
-      //sceneEl.appendChild(aAssetsEl);
-      const makeVideoSphere = ()=>{
-        videoEl.removeEventListener("loadeddata", makeVideoSphere);
-        const videosphere = document.createElement("a-videosphere");
-        videosphere.setAttribute("id", "environment-scene-video");
-        videosphere.setAttribute("rotation", "0 180 0");
-        videosphere.setAttribute("src", "#video");
-        videosphere.setAttribute("play-on-window-click", "");
-        videosphere.setAttribute("play-on-vrdisplayactivate-or-enter-vr", "");
-        sceneEl.appendChild(videosphere);
-        video360Service.enableAndSetVideo(videoEl,videosphere);
-      };
-      videoEl.addEventListener("loadeddata", makeVideoSphere);
-
-      window.removeEventListener("focus", addVideo360);
-    };
-    if(document.hasFocus()){
-      setTimeout(()=>{
-        addVideo360();
-      },5000);
-    }else{
-      window.addEventListener("focus", addVideo360);
-    }
-  }else{
-    video360Service.disable();
-  }
   if (environmentScene.childNodes.length === 0) {
     const environmentEl = document.createElement("a-entity");
 
@@ -832,27 +740,8 @@ function checkForAccountRequired() {
   )}`;
 }
 
-async function fetchICEservers() {
-  const myHeaders = new Headers();
-  myHeaders.append(
-    "Authorization",
-    "Basic U0tjYzMxZDM0N2YxOGVlYmM3MjNiMDgzNTc0ZTE2MWJjMDp6bFM1TjNmbGhWMEdOc0ZLcG1vbFBucW1TcWdMbEliNQ=="
-  );
-
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    redirect: "follow"
-  };
-  const twilioApi = "https://api.twilio.com/2010-04-01/Accounts/AC2b4884e41acc8b8ed9f7ee795969d76b/Tokens.json";
-  const resp = await fetch(twilioApi, requestOptions);
-  const servers = await resp.json();
-  window.iceServers = [...servers.ice_servers];
-  return servers;
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
-  await fetchICEservers();
+  await fetchICEservers();//APTERO
   if (isOAuthModal) {
     return;
   }

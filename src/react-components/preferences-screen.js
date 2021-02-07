@@ -983,7 +983,7 @@ class PreferencesScreen extends Component {
                 value: "high",
                 text: intl.formatMessage({
                   id: "preferences-screen.material-quality-setting.high",
-        defaultString: isMobile ? "low" : "high",
+                  defaultMessage: "High"
                 })
               }
             ],

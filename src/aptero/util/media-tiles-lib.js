@@ -162,7 +162,6 @@ export class MediaTilesLib {
     </div>);
   }
 
-
   createWebcamTiles() {
     //1 try to update the camera list
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -185,29 +184,9 @@ export class MediaTilesLib {
     });
   }
 
-  createAvatarCustomTile() {
-    return <CreateAvatar onAvatar={(evt,url) => {
-      let entry = {
-        "attributions": null,
-        "description": null,
-        "gltfs": {
-        "avatar": url,
-          "base": url
-      },
-        "id": url,
-        "name": "Cedric",
-        "type": "avatar",
-        "url": url
-      };
-
-      this.props.handleEntryClicked && this.props.handleEntryClicked(evt, entry);
-      console.log(url);
-    }} />;
-  }
-
   createAdditionalTiles() {
     return <React.Fragment>
-      {(this.props.history && this.props.urlSource === "avatars") && this.createAvatarCustomTile()}
+      {/*(this.props.history && this.props.urlSource === "avatars") && this.createAvatarCustomTile()*/}
       {(this.props.history && (this.props.history.location.search.search("live") !== -1) && this.displayWebBrowserTile) && this.createWebBrowserTile()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
@@ -215,7 +194,6 @@ export class MediaTilesLib {
   }
 
 }
-
 
 export const mlHandleEntryClicked = (evt, entry, parent) => {
   evt.preventDefault();
@@ -264,4 +242,24 @@ export const mlHandleEntryClicked = (evt, entry, parent) => {
     parent.handleQueryUpdated(entry.lucky_query, true);
   }
 };
+
+export function createAvatarCustomTileV2(onclick) {
+  return <CreateAvatar onAvatar={(evt,url) => {
+    let entry = {
+      "attributions": null,
+      "description": null,
+      "gltfs": {
+        "avatar": url,
+        "base": url
+      },
+      "id": url,
+      "name": "Cedric",
+      "type": "avatar",
+      "url": url
+    };
+
+    onclick(evt, entry);
+    console.log(url);
+  }} />;
+}
 
