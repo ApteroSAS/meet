@@ -245,7 +245,8 @@ class MediaBrowserContainer extends Component {
   handleEntryClicked = (evt, entry) => {
     evt.preventDefault();
 
-    if (!entry.lucky_query) {
+    mlHandleEntryClicked(evt, entry,this)
+    /*if (!entry.lucky_query) {
       this.selectEntry(entry);
     } else {
       // Entry has a pointer to another "i'm feeling lucky" query -- used for trending videos
@@ -254,7 +255,7 @@ class MediaBrowserContainer extends Component {
       // query we are running to get the result we want.
       this.setState({ clearStashedQueryOnClose: true });
       this.handleQueryUpdated(entry.lucky_query, true);
-    }
+    }*/
   };
 
   onShowSimilar = (id, name) => {
@@ -448,10 +449,15 @@ class MediaBrowserContainer extends Component {
 
     return (
       <MediaBrowser
-        banner = {()=>{return createAvatarCustomTileV2((evt,entry)=>{
-          //this.handleEntryClicked(e, entries[0]);
-          mlHandleEntryClicked(evt, entry,this);//aptero
-        })}}
+        banner = {()=>{
+          if(urlSource === "avatars"){
+            return createAvatarCustomTileV2((evt,entry)=> {
+              this.handleEntryClicked(evt, entry);
+            })
+          }else{
+            return <div></div>
+          }
+        }}
         browserRef={r => (this.browserDiv = r)}
         onClose={this.close}
         searchInputRef={r => (this.inputRef = r)}
@@ -461,8 +467,7 @@ class MediaBrowserContainer extends Component {
         onSearchKeyDown={e => {
           if (e.key === "Enter" && e.ctrlKey) {
             if (entries.length > 0 && !this._sendQueryTimeout) {
-              //this.handleEntryClicked(e, entries[0]);
-              mlHandleEntryClicked(e, entries[0],this);//aptero
+              this.handleEntryClicked(e, entries[0]);
             } else if (this.state.query.trim() !== "") {
               this.handleQueryUpdated(this.state.query, true);
               this.setState({ selectNextResult: true });
@@ -572,10 +577,7 @@ class MediaBrowserContainer extends Component {
                   key={`${entry.id}_${idx}`}
                   entry={entry}
                   processThumbnailUrl={this.processThumbnailUrl}
-                  onClick={(evt, entry) => {
-                    //this.handleEntryClicked(e, entry)
-                    mlHandleEntryClicked(evt, entry,this)
-                  }}
+                  onClick={e => this.handleEntryClicked(e, entry)}
                   onEdit={onEdit}
                   onShowSimilar={onShowSimilar}
                   onCopy={onCopy}

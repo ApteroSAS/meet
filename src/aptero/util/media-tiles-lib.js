@@ -197,6 +197,9 @@ export class MediaTilesLib {
 
 export const mlHandleEntryClicked = (evt, entry, parent) => {
   evt.preventDefault();
+  if(!entry){
+    return;
+  }
   if (entry.createLiveEntry) {
     const searchParams = new URLSearchParams(parent.props.history.location.search);
     const urlSource = parent.getUrlSource(searchParams);

@@ -10,6 +10,13 @@ export function processResponse(entries) {
           entry.url = "/hub.html?hub_id=" + entry.id;
         }
       }
+      if (entry.type === "avatar") {
+        if (entry.id.startsWith("http")){
+          entry.url = entry.id;
+          entry.gltfs.avatar = entry.url;
+          entry.gltfs.base = entry.url;
+        }
+      }
     });
   }
 }
