@@ -25,7 +25,7 @@ import { waitForDOMContentLoaded } from "../utils/async-utils";
 
 import { SHAPE } from "three-ammo/constants";
 import { MICROSOFT_AUTH_ERROR, microsoftService } from "../aptero/service/MicrosoftService";
-import { IN_APP_WEB_BROWSER_PROTOCOL } from "../aptero/util/media-utils-lib";
+import { IN_APP_WEB_BROWSER_PROTOCOL } from "../aptero/react-components/media-utils-lib";
 
 let loadingObjectEnvMap;
 let loadingObject;

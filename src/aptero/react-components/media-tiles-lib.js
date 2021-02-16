@@ -1,10 +1,11 @@
-import styles from "./media-browser.scss";
 import classNames from "classnames";
 import React from "react";
 import { sceneEntryManagerEventEmitter } from "../../scene-entry-manager";
 import { liveStream } from "../service/LiveStream";
 import { remoteControlService } from "../service/RemoteControlService";
-import CreateAvatar from "../react-components/CreateAvatar";
+import CreateAvatar from "./CreateAvatar";
+import styles from "./scss/component/MediaTiles.scss";
+import PropTypes from "prop-types";
 
 
 export const WEB_BROWSER_URL_MODE = "web-browser";
@@ -17,11 +18,6 @@ export class MediaTilesLib {
     this.parent = parent;
     this.props = props;
     this.state = state;
-  }
-
-
-  getState() {
-    return { thumbnailCache: { ...this.sessionCache }, thumbnailInProgress: {}, webcamlist: {} };
   }
 
   getTileDimensions(isImage, isAvatar, imageAspect) {
@@ -73,6 +69,37 @@ export class MediaTilesLib {
   }
 
   createShareScreenTile() {
+    const clickAction = (e) => {
+      this.props.handleEntryClicked && this.props.handleEntryClicked(e, { shareScreen: {} });
+    };
+    const [imageWidth, imageHeight] = this.getTileDimensions(false, false, 16 / 9);
+    return <BaseTile className={styles.createTile} wide={true} tall={false}>
+      <div style={{ width: `${imageWidth}px` }} className={styles.tile} key={`share-screen`}>
+        <a rel="noreferrer noopener"
+           onClick={clickAction}
+           className={styles.tileLink}
+           style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+        ><img
+          className={classNames(styles.tileContent, styles.avatarTile)}
+          style={{ width: `${imageWidth}px`, height: `${imageHeight}px` }}
+          src={"../../assets/static/share-screen.png"}
+        />
+        </a>
+        <div className={styles.info}>
+          <a
+            rel="noreferrer noopener"
+            className={styles.name}
+            style={{ textAlign: "center" }}
+            onClick={clickAction}
+          >
+            {"Share your screen" || "\u00A0"}
+          </a>
+        </div>
+      </div>
+      </BaseTile>;
+  }
+
+  createShareScreenTileV1() {
     const clickAction = (e) => {
       this.props.handleEntryClicked && this.props.handleEntryClicked(e, { shareScreen: {} });
     };
@@ -164,29 +191,38 @@ export class MediaTilesLib {
 
   createWebcamTiles() {
     //1 try to update the camera list
+    let camlist = this.state.webcamlist || {};
     navigator.mediaDevices.enumerateDevices().then((devices) => {
-      let camlist = {};
       devices.forEach((device) => {
         //console.log(device.kind + ": " + device.label +" id = " + device.deviceId);
         if (device.kind === "videoinput") {
           camlist[device.deviceId] = device;
         }
       });
-      if (Object.keys(this.state.webcamlist).length !== Object.keys(camlist).length) {
+      if (!this.state.webcamlist || (Object.keys(this.state.webcamlist).length !== Object.keys(camlist).length)) {
         this.parent.setState({ webcamlist: camlist });
       }
     }).catch((err) => {
       console.log(err.name + ": " + err.message);
     });
 
-    return Object.keys(this.state.webcamlist).map(key => {
-      return this.createWebcamTile(this.state.webcamlist[key]);
+    return Object.keys(camlist).map(key => {
+      return this.createWebcamTile(camlist[key]);
     });
+  }
+
+  showEmptyStringOnNoResult(){
+    if(this.props.history){
+      return !((this.props.history.location.search.search("live") !== -1) ||
+        (this.props.history.location.search.search("live") !== -1) ||
+       (this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1))
+    }else{
+      return true;
+    }
   }
 
   createAdditionalTiles() {
     return <React.Fragment>
-      {/*(this.props.history && this.props.urlSource === "avatars") && this.createAvatarCustomTile()*/}
       {(this.props.history && (this.props.history.location.search.search("live") !== -1) && this.displayWebBrowserTile) && this.createWebBrowserTile()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1) && this.createWebcamTiles()}
       {(this.props.history && this.props.history.location.search.search("live") !== -1 && this.props.history.location.search.search("360") === -1) && this.createShareScreenTile()}
@@ -266,3 +302,39 @@ export function createAvatarCustomTileV2(onclick) {
   }} />;
 }
 
+function BaseTile({ as: TileComponent, className, name, description, tall, wide, children, ...rest }) {
+  let additionalProps;
+
+  if (TileComponent === "div") {
+    additionalProps = {
+      tabIndex: "0",
+      role: "button"
+    };
+  }
+
+  return (
+    <TileComponent
+      className={classNames(styles.mediaTile, { [styles.tall]: tall, [styles.wide]: wide }, className)}
+      {...additionalProps}
+      {...rest}
+    >
+      <div className={styles.thumbnailContainer}>{children}</div>
+      {(name || description) && (
+        <div className={styles.info}>
+          <b>{name}</b>
+          {description && <small className={styles.description}>{description}</small>}
+        </div>
+      )}
+    </TileComponent>
+  );
+}
+
+BaseTile.propTypes = {
+  as: PropTypes.elementType,
+  className: PropTypes.string,
+  name: PropTypes.string,
+  description: PropTypes.node,
+  children: PropTypes.node,
+  tall: PropTypes.bool,
+  wide: PropTypes.bool
+};

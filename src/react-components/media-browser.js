@@ -17,7 +17,7 @@ import { fetchReticulumAuthenticated, getReticulumFetchUrl } from "../utils/phoe
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { CreateTile, MediaTile } from "./room/MediaTiles";
 import { SignInMessages } from "./auth/SignInModal";
-import { createAvatarCustomTileV2, mlHandleEntryClicked } from "../aptero/util/media-tiles-lib";
+import { createAvatarCustomTileV2, MediaTilesLib, mlHandleEntryClicked } from "../aptero/react-components/media-tiles-lib";
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 
@@ -71,7 +71,18 @@ const DEFAULT_FACETS = {
     { text: "Newest", params: { filter: "" } }
   ],
   favorites: [],
-  scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }]
+  scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }],
+  objects: [
+    { text: "My Objects", params: { filter: "model/gltf-binary" }},
+  ],
+  videos2d: [
+    { text: "My Video", params: { filter: "my-videos" }},
+    { text: "Live", params: { filter: "my-videos-live" } }
+  ],
+  videos360: [
+    { text: "My Video", params: { filter: "my-videos-360" }},
+    { text: "Live", params: { filter: "my-videos-360-live" } }
+  ],
 };
 
 const poweredByMessages = defineMessages({
@@ -147,6 +158,8 @@ const emptyMessages = defineMessages({
     defaultMessage: "No results. Try entering a new search above."
   }
 });
+
+const mediaTilesLib = new MediaTilesLib();
 
 // TODO: Migrate to use MediaGrid and media specific components like RoomTile
 class MediaBrowserContainer extends Component {
@@ -367,6 +380,7 @@ class MediaBrowserContainer extends Component {
   };
 
   render() {
+    mediaTilesLib.setPropsAndState(this,this.props,this.state);
     const intl = this.props.intl;
     const searchParams = new URLSearchParams(this.props.history.location.search);
     const urlSource = this.getUrlSource(searchParams);
@@ -376,7 +390,7 @@ class MediaBrowserContainer extends Component {
       !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
-    const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes";
+    const showEmptyStringOnNoResult = urlSource == "avatars" || urlSource == "scenes" || mediaTilesLib.showEmptyStringOnNoResult();
 
     const facets = this.state.facets && this.state.facets.length > 0 ? this.state.facets : undefined;
 
@@ -538,6 +552,7 @@ class MediaBrowserContainer extends Component {
                   }
                 />
               )}
+            {mediaTilesLib.createAdditionalTiles()}
             {entries.map((entry, idx) => {
               const isAvatar = entry.type === "avatar" || entry.type === "avatar_listing";
               const isScene = entry.type === "scene" || entry.type === "scene_listing";

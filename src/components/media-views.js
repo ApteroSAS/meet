@@ -21,7 +21,7 @@ import { detect } from "detect-browser";
 import semver from "semver";
 
 import qsTruthy from "../utils/qs_truthy";
-import { IN_APP_WEB_BROWSER_PROTOCOL, remoteWebBrowser } from "../aptero/util/media-utils-lib";
+import { IN_APP_WEB_BROWSER_PROTOCOL, remoteWebBrowser } from "../aptero/react-components/media-utils-lib";
 
 /**
  * Warning! This require statement is fragile!

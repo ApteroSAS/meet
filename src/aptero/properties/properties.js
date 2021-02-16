@@ -5,6 +5,8 @@ window.APP_PROPS = {
   // change this in default.conf also
   PROTOCOL: "https://",
 
+  SHORTLINK_DOMAIN:"alphahub.aptero.co",
+
   RETICULUM_SERVER: "alphahub.aptero.co",
 
   // CORS proxy.
@@ -26,7 +28,7 @@ window.APP_PROPS = {
 
   DEFAULT_SCENE_SID: "h8xwUAc",
 
-  AVAILABLE_INTEGRATIONS:{"objects":true, "videos360":true, "videos2d":true, "scenes":true, "avatars":true},
+  AVAILABLE_INTEGRATIONS:{"objects":true, "videos360":true, "videos2d":true, "scenes":true, "avatars":true,"tenor":false,"poly":false, "sketchfab":false,"bing_videos":false},
 
   APP_CONFIG: {
     MICROSOFT_APP_ID: "caafb04c-8c13-4044-92a4-3648f79dc7e3",
@@ -36,6 +38,10 @@ window.APP_PROPS = {
       hide_powered_by: true,
       show_feedback_ui: false,
       disable_room_creation: true
+    },
+    links:{
+      privacy_notice:"https://aptero.co/privacy.html",
+      terms_of_use:"https://aptero.co/terms.html",
     },
     theme: {
       "dark-theme": false

@@ -3,6 +3,11 @@ import { propertiesService } from "../../properties/propertiesService";
 import axios from "axios";
 
 export default class RemoteThumbnailRenderer {
+  cache = {};
+
+  getLocalCacheFor = (glbFileUrl)=>{
+    return this.cache[glbFileUrl];
+  };
 
   generateThumbnailFromUrlRemote = async (glbFileUrl) => {
     return new Promise((resolve, reject) => {
@@ -13,11 +18,13 @@ export default class RemoteThumbnailRenderer {
           const res = data.data;
           const imageUrl = res.url;
           if (imageUrl && imageUrl !== "NO_CACHE") {
+            this.cache[glbFileUrl]=imageUrl;//local cache
             resolve(imageUrl);
           } else {
             axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/thumbnail/generate", { url: glbFileUrl }).then(data => {
               const res = data.data;
               const imageUrl = res.url;
+              this.cache[glbFileUrl]=imageUrl;//local cache
               resolve(imageUrl);
             }).catch(reason => {
               reject(reason);

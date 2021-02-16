@@ -35,7 +35,7 @@ export class ChangeVideoService {
     const mediaOptions = entity.components["media-loader"].data.mediaOptions;
     const scene = entity.sceneEl;
     try {
-      window.APP.mediaSearchStore.sourceNavigateWithResult(mediaOptions.projection === "360-equirectangular" ? "videos360" : "videos").then(entry => {
+      window.APP.mediaSearchStore.sourceNavigateWithResult(mediaOptions.projection === "360-equirectangular" ? "videos360" : "videos2d").then(entry => {
         scene.emit("action_end_video_sharing");
         this.videoChoosing = true;
         const rotation = entity.object3D.rotation.clone();

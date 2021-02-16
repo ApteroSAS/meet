@@ -14,7 +14,7 @@ import { FullscreenLayout } from "../layout/FullscreenLayout";
 import { Button } from "../input/Button";
 import { Column } from "../layout/Column";
 import { MediaGrid } from "./MediaGrid";
-import { createAvatarCustomTileV2 } from "../../aptero/util/media-tiles-lib";
+import { createAvatarCustomTileV2 } from "../../aptero/react-components/media-tiles-lib";
 
 const navTitleMessages = defineMessages({
   youtube: { id: "media-browser.nav_title.youtube", defaultMessage: "YouTube" },

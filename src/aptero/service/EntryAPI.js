@@ -1,6 +1,10 @@
-export function processResponse(entries) {
-  //aptero TODO put in service
+
+import RemoteThumbnailRenderer from "../thumnail/thumbnail/RemoteThumbnailRenderer";
+let thumbnailRenderer = null;
+
+export async function processResponse(entries) {
   if (entries) {
+    let previewLoadPromises = [];
     entries.forEach(entry => {
       if (!entry.url.startsWith("https://") && entry.url.startsWith("http://")) {
         entry.url = entry.url.replace("http://", "https://");//promote insecure content
@@ -10,6 +14,27 @@ export function processResponse(entries) {
           entry.url = "/hub.html?hub_id=" + entry.id;
         }
       }
+      if (entry.type === "model/gltf-binary") {
+          if (!thumbnailRenderer) {
+            thumbnailRenderer = new RemoteThumbnailRenderer();
+          }
+
+          entry.images.preview = {
+            url: thumbnailRenderer.getLocalCacheFor(entry.url) || window.APP_PROPS.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png",
+            height: 1280,
+            width: 720
+          };
+          if(!thumbnailRenderer.getLocalCacheFor(entry.url)) {
+            entry.onPreviewLoaded = new Promise((resolve, reject) => {
+              thumbnailRenderer.generateThumbnailFromUrlRemote(entry.url).then(dataurl => {
+                entry.images.preview.url = dataurl;
+                resolve({ url: entry.url, preview: dataurl })
+              });
+            });
+            previewLoadPromises.push(entry.onPreviewLoaded);
+          }
+          entry.name = "";
+      }
       if (entry.type === "avatar") {
         if (entry.id.startsWith("http")){
           entry.url = entry.id;
@@ -18,5 +43,7 @@ export function processResponse(entries) {
         }
       }
     });
+    await Promise.all(previewLoadPromises);
   }
+
 }

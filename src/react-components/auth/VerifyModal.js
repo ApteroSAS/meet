@@ -24,6 +24,11 @@ export function VerifyingEmail() {
 }
 
 export function EmailVerified({ origin }) {
+  if(origin=="hubs"){
+    setTimeout(()=>{
+      window.location.href = window.location.origin;
+    },3000);
+  }
   return (
     <Column center padding grow>
       <b>

@@ -20,10 +20,10 @@ const items = [
   { id: "camera", icon: CameraIcon, color: "purple", label: "Camera" },
   { id: "text", icon: TextIcon, color: "blue", label: "Text" },
   { id: "link", icon: LinkIcon, color: "blue", label: "Link" },
-  { id: "gif", icon: GIFIcon, color: "orange", label: "GIF" },
+  //{ id: "gif", icon: GIFIcon, color: "orange", label: "GIF" },
   { id: "model", icon: ObjectIcon, color: "orange", label: "3D Model" },
-  { id: "avatar", icon: AvatarIcon, color: "red", label: "Avatar" },
-  { id: "scene", icon: SceneIcon, color: "red", label: "Scene" },
+  //{ id: "avatar", icon: AvatarIcon, color: "red", label: "Avatar" },
+  //{ id: "scene", icon: SceneIcon, color: "red", label: "Scene" },
   { id: "upload", icon: UploadIcon, color: "green", label: "Upload" }
 ];
 

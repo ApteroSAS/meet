@@ -16,6 +16,7 @@ import { scaledThumbnailUrlFor } from "../../utils/media-url-utils";
 import { Column } from "../layout/Column";
 import { Button } from "../input/Button";
 import { Container } from "../layout/Container";
+import { HaveRoomCodeButton } from "../../aptero/react-components/HaveRoomCodeButton";
 
 export function HomePage() {
   const auth = useContext(AuthContext);
@@ -57,11 +58,13 @@ export function HomePage() {
           </div>
           <div className={styles.appInfo}>
             <div className={styles.appDescription}>{configs.translation("app-description")}</div>
+            <HaveRoomCodeButton/>
             {canCreateRooms && <CreateRoomButton />}
             <PWAButton />
           </div>
           <div className={styles.heroImageContainer}>
             <img
+              style={{margin:"20px"}}
               alt={intl.formatMessage(
                 {
                   id: "home-page.hero-image-alt",

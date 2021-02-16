@@ -5,11 +5,11 @@ import { AVAILABLE_LOCALES, FALLBACK_LOCALES } from "../assets/locales/locale_co
 const defaultLocaleData = {
   "app-name": "App",
   "editor-name": "Scene Editor",
-  "contact-email": "app@company.com",
-  "company-name": "Company",
-  "share-hashtag": "#app",
-  "app-description": "Share a virtual room with friends. Watch videos, play with 3D objects, or just hang out.",
-  "app-tagline": "Private social VR in your web browser"
+  "contact-email": "contact@aptero.co",
+  "company-name": "Aptero",
+  "share-hashtag": "#aptero",
+  "app-description": "Secure VR meetings for business.",
+  "app-tagline": "Secure VR meetings for business."
 };
 
 const DEFAULT_LOCALE = "en";

@@ -8,8 +8,8 @@ import { validMaterials } from "../components/hoverable-visuals";
 import { proxiedUrlFor, guessContentType } from "../utils/media-url-utils";
 import Linkify from "linkify-it";
 import tlds from "tlds";
-import { processWebBrowserEntity } from "../aptero/util/media-utils-lib";
-import { WEB_BROWSER_URL_MODE } from "../aptero/util/media-tiles-lib";
+import { processWebBrowserEntity } from "../aptero/react-components/media-utils-lib";
+import { WEB_BROWSER_URL_MODE } from "../aptero/react-components/media-tiles-lib";
 
 import anime from "animejs";
 export const MediaType = {

@@ -55,14 +55,14 @@ export function PlacePopoverContainer({ scene, mediaSearchStore, showNonHistorie
               label: <FormattedMessage id="place-popover.item-type.gif" defaultMessage="GIF" />,
               onSelect: () => mediaSearchStore.sourceNavigate("gifs")
             },
-            (configs.integration("poly") || configs.integration("sketchfab")) && {
+            (configs.integration("objects") ||configs.integration("poly") || configs.integration("sketchfab")) && {
               id: "model",
               icon: ObjectIcon,
               color: "orange",
               label: <FormattedMessage id="place-popover.item-type.model" defaultMessage="3D Model" />,
-              onSelect: () => mediaSearchStore.sourceNavigate(configs.integration("poly") ? "poly" : "sketchfab")
+              onSelect: () => mediaSearchStore.sourceNavigate(configs.integration("objects") ? "objects" : "sketchfab")
             },
-            {
+            /*{
               id: "avatar",
               icon: AvatarIcon,
               color: "red",
@@ -75,7 +75,7 @@ export function PlacePopoverContainer({ scene, mediaSearchStore, showNonHistorie
               color: "red",
               label: <FormattedMessage id="place-popover.item-type.scene" defaultMessage="Scene" />,
               onSelect: () => mediaSearchStore.sourceNavigate("scenes")
-            },
+            },*/
             // TODO: Launch system file prompt directly
             {
               id: "upload",

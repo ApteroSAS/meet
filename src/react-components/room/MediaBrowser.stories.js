@@ -5,7 +5,7 @@ import { IconButton } from "../input/IconButton";
 import { ReactComponent as LinkIcon } from "../icons/Link.svg";
 import { CreateTile, MediaTile } from "./MediaTiles";
 import backgroundUrl from "../../assets/images/home-hero-background-unbranded.png";
-import { createAvatarCustomTileV2 } from "../../aptero/util/media-tiles-lib";
+import { createAvatarCustomTileV2 } from "../../aptero/react-components/media-tiles-lib";
 
 export default {
   title: "MediaBrowser",

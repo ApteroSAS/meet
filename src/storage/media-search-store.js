@@ -37,8 +37,9 @@ export const MEDIA_SOURCE_DEFAULT_FILTERS = {
   sketchfab: "featured",
   scenes: "featured",
   favorites: "my-favorites",
-  objects: "my-objects",
-  video360: "my-videos-360"
+  objects: "model/gltf-binary",
+  videos2d: "my-videos-2d",
+  videos360: "my-videos-360"
 };
 
 const SEARCH_CONTEXT_PARAMS = ["q", "filter", "cursor", "similar_to"];
@@ -125,7 +126,7 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
-    processResponse(result.entries);
+    await processResponse(result.entries);//aptero
 
     if (this.requestIndex != currentRequestIndex) return;
 
@@ -249,7 +250,6 @@ export default class MediaSearchStore extends EventTarget {
       });
     });
   }
-
 
   sourceNavigateWithNoNav = (source, selectAction) => {
     this._sourceNavigate(source, true, false, selectAction);

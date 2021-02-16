@@ -65,7 +65,6 @@ export default class ThumbnailRenderer {
     });
   }
 
-
   generateThumbnailFromUrlRemote = async (glbFileUrl) => {
     return new Promise((resolve, reject) => {
       axios.post(propertiesService.PROTOCOL + propertiesService.RETICULUM_SERVER + "/thumbnail/compute/hash", { url: glbFileUrl }).then(data => {
