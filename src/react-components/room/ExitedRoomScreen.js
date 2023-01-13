@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { LoadingScreenLayout } from "../layout/LoadingScreenLayout";
+import { Button } from "../input/Button";
 
 export const ExitReason = {
   exited: "exited",
@@ -54,7 +55,7 @@ const messages = defineMessages({
   }
 });
 
-export function ExitedRoomScreen({ reason, showTerms, termsUrl, logoSrc, showSourceLink }) {
+export function ExitedRoomScreen({ reason, showTerms, termsUrl, showSourceLink }) {
   const intl = useIntl();
 
   let subtitle = null;
@@ -65,7 +66,7 @@ export function ExitedRoomScreen({ reason, showTerms, termsUrl, logoSrc, showSou
       <>
         <b>
           <FormattedMessage
-            id="exited-room-screen.no-longer-availible"
+            id="exited-room-screen.no-longer-available"
             defaultMessage="Sorry, this room is no longer available."
           />
         </b>
@@ -104,6 +105,10 @@ export function ExitedRoomScreen({ reason, showTerms, termsUrl, logoSrc, showSou
             />
           </p>
         )}
+
+        <Button as="a" preset="accept" href="/">
+          <FormattedMessage id="exited-room-screen.home-button" defaultMessage="Back to Home" />
+        </Button>
       </>
     );
   } else {
@@ -140,17 +145,20 @@ export function ExitedRoomScreen({ reason, showTerms, termsUrl, logoSrc, showSou
             />
           </p>
         )}
+
+        <Button as="a" preset="accept" href={window.location.href}>
+          <FormattedMessage id="exited-room-screen.refresh-page-button" defaultMessage="Refresh Page" />
+        </Button>
       </>
     );
   }
 
-  return <LoadingScreenLayout center={subtitle} logoSrc={logoSrc} />;
+  return <LoadingScreenLayout center={subtitle} />;
 }
 
 ExitedRoomScreen.propTypes = {
   reason: PropTypes.string.isRequired,
   showTerms: PropTypes.bool,
   termsUrl: PropTypes.string,
-  logoSrc: PropTypes.string,
   showSourceLink: PropTypes.bool
 };

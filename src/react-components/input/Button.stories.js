@@ -1,12 +1,10 @@
 /* eslint-disable @calm/react-intl/missing-formatted-message */
 import React from "react";
-import { withDesign } from "storybook-addon-designs";
 import { Column } from "../layout/Column";
 import { Button, presets } from "./Button";
 
 export default {
-  title: "Button",
-  decorators: [withDesign]
+  title: "Input/Button"
 };
 
 export const All = () => (
@@ -21,9 +19,42 @@ export const All = () => (
   </Column>
 );
 
-All.parameters = {
-  design: {
-    type: "figma",
-    url: "https://www.figma.com/file/Xag5qaEgYs3KzXvoxx5m8y/Hubs-Redesign?node-id=70%3A2186"
-  }
-};
+export const Sizes = () => (
+  <Column padding>
+    <Button preset="primary" sm>
+      Small
+    </Button>
+    <Button preset="primary" lg>
+      Large? (lg)
+    </Button>
+    <Button preset="primary" xl>
+      xlarge
+    </Button>
+    <Button preset="primary" thin>
+      thin
+    </Button>
+    <Button disabled>Disabled</Button>
+  </Column>
+);
+
+export const Tokens = () => (
+  <Column padding>
+    <Button preset="primary" sm thin>
+      Create Token
+    </Button>
+    <Button disabled sm thin>
+      Revoke all
+    </Button>
+  </Column>
+);
+
+export const Landing = () => (
+  <Column padding>
+    <Button preset="signin" thick>
+      Sign in/Sign up
+    </Button>
+    <Button preset="landing" thick>
+      Get Started
+    </Button>
+  </Column>
+);

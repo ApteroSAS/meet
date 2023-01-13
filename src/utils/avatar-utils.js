@@ -1,6 +1,6 @@
 import { fetchReticulumAuthenticated } from "./phoenix-utils";
 import { proxiedUrlFor } from "./media-url-utils";
-import configs from "./configs";
+import avatarUnavailableImage from "../assets/images/avatar_unavailable.png";
 
 const AVATARS_API = "/api/v1/avatars";
 
@@ -51,7 +51,7 @@ export async function getAvatarThumbnailUrl(avatarId) {
     case AVATAR_TYPES.SKINNABLE:
       return fetchAvatar(avatarId).then(avatar => avatar.files.thumbnail);
     default:
-      return configs.PROTOCOL+configs.RETICULUM_SERVER+"/bots/avatar_unavailable.png";
+      return avatarUnavailableImage;
   }
 }
 

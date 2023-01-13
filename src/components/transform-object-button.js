@@ -1,6 +1,6 @@
 import { paths } from "../systems/userinput/paths";
 import { waitForDOMContentLoaded } from "../utils/async-utils";
-const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
+import { COLLISION_LAYERS } from "../constants";
 const AMMO_BODY_ATTRIBUTES = { type: "kinematic", collisionFilterMask: COLLISION_LAYERS.HANDS };
 
 export const TRANSFORM_MODE = {
@@ -64,8 +64,8 @@ AFRAME.registerComponent("transform-button", {
         e.object3D.el.id === "right-cursor"
           ? rightHand.object3D
           : e.object3D.el.id === "left-cursor"
-            ? leftHand.object3D
-            : e.object3D,
+          ? leftHand.object3D
+          : e.object3D,
         this.data
       );
     };
@@ -131,7 +131,7 @@ AFRAME.registerSystem("transform-selected-object", {
     this.el.object3D.add(this.planarInfo.plane);
   },
 
-  stopTransform: (function() {
+  stopTransform: (function () {
     const q = new THREE.Quaternion();
     const PI_AROUND_Y = new THREE.Quaternion(0, 1, 0, 0);
     const pInv = new THREE.Quaternion();
@@ -142,7 +142,7 @@ AFRAME.registerSystem("transform-selected-object", {
         if (qAlmostEquals(q, this.startQ)) {
           q.multiply(PI_AROUND_Y);
           this.target.parent.getWorldQuaternion(pInv);
-          pInv.inverse();
+          pInv.invert();
           this.target.quaternion.copy(pInv).multiply(q);
           this.target.matrixNeedsUpdate = true;
         }
@@ -216,7 +216,7 @@ AFRAME.registerSystem("transform-selected-object", {
     if (this.mode === TRANSFORM_MODE.PUPPET) {
       this.target.getWorldQuaternion(this.puppet.initialObjectOrientation);
       this.hand.getWorldQuaternion(this.puppet.initialControllerOrientation);
-      this.puppet.initialControllerOrientation_inverse.copy(this.puppet.initialControllerOrientation).inverse();
+      this.puppet.initialControllerOrientation_inverse.copy(this.puppet.initialControllerOrientation).invert();
       return;
     }
 
@@ -244,15 +244,8 @@ AFRAME.registerSystem("transform-selected-object", {
   },
 
   cursorAxisOrScaleTick() {
-    const {
-      plane,
-      normal,
-      intersections,
-      previousPointOnPlane,
-      currentPointOnPlane,
-      deltaOnPlane,
-      finalProjectedVec
-    } = this.planarInfo;
+    const { plane, normal, intersections, previousPointOnPlane, currentPointOnPlane, deltaOnPlane, finalProjectedVec } =
+      this.planarInfo;
     this.target.getWorldPosition(plane.position);
     //    this.el.camera.getWorldQuaternion(plane.quaternion);
     this.el.camera.getWorldPosition(v);
@@ -276,10 +269,10 @@ AFRAME.registerSystem("transform-selected-object", {
     finalProjectedVec
       .copy(deltaOnPlane)
       .projectOnPlane(normal)
-      .applyQuaternion(q.copy(plane.quaternion).inverse())
+      .applyQuaternion(q.copy(plane.quaternion).invert())
       .multiplyScalar(SENSITIVITY / cameraToPlaneDistance);
     if (this.mode === TRANSFORM_MODE.CURSOR) {
-      const modify = AFRAME.scenes[0].systems.userinput.get(paths.actions.transformModifier);
+      const modify = !AFRAME.scenes[0].systems.userinput.get(paths.actions.transformModifier);
 
       this.dyAll = this.dyStore + finalProjectedVec.y;
       this.dyApplied = modify ? this.dyAll : Math.round(this.dyAll / STEP_LENGTH) * STEP_LENGTH;

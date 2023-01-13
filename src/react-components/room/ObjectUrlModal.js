@@ -15,27 +15,21 @@ import { FormattedMessage } from "react-intl";
 export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, onSubmit, onClose }) {
   const { handleSubmit, register, watch, setValue } = useForm();
 
-  useEffect(
-    () => {
-      register("url");
-    },
-    [register]
-  );
+  useEffect(() => {
+    register("url");
+  }, [register]);
 
   const file = watch("file");
   const hasFile = file && file.length > 0;
   const fileName = hasFile ? file[0].name : undefined;
 
-  const onClear = useCallback(
-    () => {
-      if (hasFile) {
-        setValue("file", undefined);
-      } else {
-        setValue("url", "");
-      }
-    },
-    [hasFile, setValue]
-  );
+  const onClear = useCallback(() => {
+    if (hasFile) {
+      setValue("file", undefined);
+    } else {
+      setValue("url", "");
+    }
+  }, [hasFile, setValue]);
 
   const onChange = useCallback(
     e => {
@@ -62,7 +56,7 @@ export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, on
           {showModelCollectionLink ? (
             <FormattedMessage
               id="object-url-modal.message-with-collection"
-              defaultMessage="Upload or paste a URL to an image, video, model, or scene. Models can be found on <sketchfablink>Sketchfab</sketchfablink> and <polylink>Google Poly</polylink>, or our <collectionlink>collection</collectionlink>."
+              defaultMessage="Upload or paste a URL to an image, video, model, or scene. Models can be found on <sketchfablink>Sketchfab</sketchfablink> or our <collectionlink>collection</collectionlink>."
               values={{
                 // eslint-disable-next-line react/display-name
                 sketchfablink: chunks => (
@@ -71,12 +65,6 @@ export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, on
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {chunks}
-                  </a>
-                ),
-                // eslint-disable-next-line react/display-name
-                polylink: chunks => (
-                  <a href="http://poly.google.com/" target="_blank" rel="noopener noreferrer">
                     {chunks}
                   </a>
                 ),
@@ -91,7 +79,7 @@ export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, on
           ) : (
             <FormattedMessage
               id="object-url-modal.message"
-              defaultMessage="Upload or paste a URL to an image, video, model, or scene. Models can be found on <sketchfablink>Sketchfab</sketchfablink> and <polylink>Google Poly</polylink>."
+              defaultMessage="Upload or paste a URL to an image, video, model, or scene. Models can be found on <sketchfablink>Sketchfab</sketchfablink>."
               values={{
                 // eslint-disable-next-line react/display-name
                 sketchfablink: chunks => (
@@ -100,12 +88,6 @@ export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, on
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {chunks}
-                  </a>
-                ),
-                // eslint-disable-next-line react/display-name
-                polylink: chunks => (
-                  <a href="http://poly.google.com/" target="_blank" rel="noopener noreferrer">
                     {chunks}
                   </a>
                 )
@@ -123,7 +105,11 @@ export function ObjectUrlModal({ showModelCollectionLink, modelCollectionUrl, on
           afterInput={
             <>
               {showCloseButton && <CloseButton onClick={onClear} />}
-              <IconButton as="label" className={classNames({ [styles.hidden]: showCloseButton })} htmlFor="file">
+              <IconButton
+                as="label"
+                className={classNames({ [styles.hidden]: showCloseButton }, styles.urlInput)}
+                htmlFor="file"
+              >
                 <AttachIcon />
                 <input id="file" className={styles.hidden} name="file" type="file" ref={register} />
               </IconButton>

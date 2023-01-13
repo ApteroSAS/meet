@@ -1,4 +1,3 @@
-import "./webxr-bypass-hacks";
 // We should technically be able to just include three here, but our dependancies are tangled such that not having aframe is a bit difficult
 import "./utils/theme";
 console.log(`Hubs version: ${process.env.BUILD_VERSION || "?"}`);
@@ -18,19 +17,20 @@ import configs from "./utils/configs";
 import { disableiOSZoom } from "./utils/disable-ios-zoom";
 disableiOSZoom();
 
-import { App } from "./App";
-
 import AvatarPreview from "./react-components/avatar-preview";
 
 import { fetchAvatar, remixAvatar } from "./utils/avatar-utils";
 
+import "./react-components/styles/global.scss";
 import styles from "./assets/stylesheets/avatar.scss";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClone } from "@fortawesome/free-solid-svg-icons/faClone";
+import { ThemeProvider } from "./react-components/styles/theme";
+import Store from "./storage/store";
 
 const qs = new URLSearchParams(location.search);
-window.APP = new App();
+window.APP = { store: new Store() };
 
 class AvatarPage extends React.Component {
   static propTypes = {
@@ -107,7 +107,7 @@ class AvatarPage extends React.Component {
                 {copyState === "copying" ? (
                   <FormattedMessage id="avatar-page.copying-avatar" defaultMessage="Copying..." />
                 ) : (
-                  <FormattedMessage id="avatar-page.copyied-avatar" defaultMessage="Copied" />
+                  <FormattedMessage id="avatar-page.copied-avatar" defaultMessage="Copied" />
                 )}
               </div>
             ) : (
@@ -149,7 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log(`Avatar ID: ${avatarId}`);
   ReactDOM.render(
     <WrappedIntlProvider>
-      <AvatarPage avatarId={avatarId} store={window.APP.store} />
+      <ThemeProvider store={window.APP.store}>
+        <AvatarPage avatarId={avatarId} store={window.APP.store} />
+      </ThemeProvider>
     </WrappedIntlProvider>,
     document.getElementById("ui-root")
   );

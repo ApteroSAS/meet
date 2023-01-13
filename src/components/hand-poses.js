@@ -1,3 +1,4 @@
+import { LoopOnce } from "three/src/constants";
 import { findAncestorWithComponent } from "../utils/scene-graph";
 
 const POSES = {
@@ -66,18 +67,29 @@ AFRAME.registerComponent("hand-pose", {
   },
 
   animatePose(prev, curr) {
-    this.from.stop();
-    this.to.stop();
+    if (this.from) {
+      this.from.stop();
+    }
+    if (this.to) {
+      this.to.stop();
+    }
 
     const duration = 0.065;
     const suffix = this.id == "left" ? "_L" : "_R";
     this.from = this.mixer.clipAction(prev + suffix);
     this.to = this.mixer.clipAction(curr + suffix);
-
-    this.from.fadeOut(duration);
-    this.to.fadeIn(duration);
-    this.to.play();
-    this.from.play();
+    if (this.from) {
+      this.from.setLoop(LoopOnce, -1);
+      this.from.clampWhenFinished = true;
+      this.from.fadeOut(duration);
+      this.from.play();
+    }
+    if (this.to) {
+      this.to.setLoop(LoopOnce, -1);
+      this.to.clampWhenFinished = true;
+      this.to.fadeIn(duration);
+      this.to.play();
+    }
 
     this.mixer.update(0.001);
   }
@@ -94,19 +106,19 @@ AFRAME.registerComponent("hand-pose-controller", {
     eventSrc: { type: "selector" },
     networkedAvatar: { type: "selector" }
   },
-  init: function() {
+  init: function () {
     this.setHandPose = this.setHandPose.bind(this);
   },
 
-  play: function() {
+  play: function () {
     this.data.eventSrc.addEventListener("hand-pose", this.setHandPose);
   },
 
-  pause: function() {
+  pause: function () {
     this.data.eventSrc.removeEventListener("hand-pose", this.setHandPose);
   },
 
-  setHandPose: function(evt) {
+  setHandPose: function (evt) {
     this.data.networkedAvatar.setAttribute(
       "networked-avatar",
       `${this.id}_hand_pose`,

@@ -1,8 +1,9 @@
+/* eslint-disable @calm/react-intl/missing-formatted-message*/
 import React from "react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import LaunchIcon from "@material-ui/icons/Launch";
-import { getReticulumFetchUrl } from "hubs/src/utils/phoenix-utils";
+import { getReticulumFetchUrl, getUploadsUrl } from "hubs/src/utils/phoenix-utils";
 import { ReferenceField } from "react-admin";
 
 const styles = {
@@ -39,7 +40,7 @@ ConditionalReferenceField.propTypes = {
 };
 
 const OwnedFileImageInternal = withStyles(styles)(({ record = {}, aspect = "wide", classes }) => {
-  const src = getReticulumFetchUrl(`/files/${record.owned_file_uuid}`);
+  const src = getUploadsUrl(`/files/${record.owned_file_uuid}`);
   return <img src={src} className={classes[`ownedFileImageAspect_${aspect}`]} />;
 });
 
@@ -67,7 +68,7 @@ function OwnedFileDownloadFieldInternal({ fileName, record, source }) {
   return (
     <a
       download={fileName || true}
-      href={getReticulumFetchUrl(`/files/${record[source]}`)}
+      href={getUploadsUrl(`/files/${record[source]}`)}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -122,6 +123,11 @@ function formatFileSize(bytes) {
 function OwnedFileSizeFieldInternal({ record }) {
   return <span>{formatFileSize(record.content_length)}</span>;
 }
+OwnedFileSizeFieldInternal.propTypes = {
+  record: {
+    content_length: PropTypes.number
+  }
+};
 
 export const OwnedFileSizeField = withStyles(styles)(({ label, basePath, record, source }) => {
   return (

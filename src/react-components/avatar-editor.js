@@ -15,6 +15,11 @@ import { ensureAvatarMaterial } from "../utils/avatar-utils";
 import AvatarPreview from "./avatar-preview";
 import styles from "../assets/stylesheets/avatar-editor.scss";
 
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
+import dropdownArrowUrl from "../assets/images/dropdown_arrow.png";
+import dropdownArrow2xUrl from "../assets/images/dropdown_arrow@2x.png";
+
 const delistAvatarInfoMessage = defineMessage({
   id: "avatar-editor.delist-avatar-info",
   defaultMessage:
@@ -24,10 +29,8 @@ const delistAvatarInfoMessage = defineMessage({
 const AVATARS_API = "/api/v1/avatars";
 
 const defaultEditors = [
-  {
-    name: "Quilt",
-    url: "https://tryquilt.io/?gltf=$AVATAR_GLTF"
-  }
+  // TODO This previously contain tryquilt.io.  We should re-evaluate whether these types of editors are still desired,
+  // and change the related code accordingly.
 ];
 const useAllowedEditors = true;
 const allowedEditors = [
@@ -46,6 +49,40 @@ const fetchAvatar = async avatarId => {
   const { avatars } = await fetchReticulumAuthenticated(`${AVATARS_API}/${avatarId}`);
   return avatars[0];
 };
+
+// GLTFLoader plugin for splitting glTF and bin from glb.
+class GLTFBinarySplitterPlugin {
+  constructor(parser) {
+    this.parser = parser;
+    this.gltf = null;
+    this.bin = null;
+  }
+
+  beforeRoot() {
+    const parser = this.parser;
+    const { body } = parser.extensions.KHR_binary_glTF;
+    const content = JSON.stringify(ensureAvatarMaterial(parser.json));
+
+    this.gltf = new File([content], "file.gltf", {
+      type: "model/gltf"
+    });
+    this.bin = new File([body], "file.bin", {
+      type: "application/octet-stream"
+    });
+
+    // This plugin just wants to split gltf and bin from glb and
+    // doesn't want to start the parse. But glTF loader plugin API
+    // doesn't have an ability to cancel the parse. So overriding
+    // parser.json with very light glTF data as workaround.
+    parser.json = { asset: { version: "2.0" } };
+  }
+
+  afterRoot(result) {
+    result.files = result.files || {};
+    result.files.gltf = this.gltf;
+    result.files.bin = this.bin;
+  }
+}
 
 class AvatarEditor extends Component {
   static propTypes = {
@@ -113,42 +150,25 @@ class AvatarEditor extends Component {
     e.preventDefault();
 
     if (this.inputFiles.glb && this.inputFiles.glb instanceof File) {
-      const gltfLoader = new THREE.GLTFLoader();
+      const gltfLoader = new GLTFLoader().register(parser => new GLTFBinarySplitterPlugin(parser));
       const gltfUrl = URL.createObjectURL(this.inputFiles.glb);
       const onProgress = console.log;
-      const parser = await new Promise((resolve, reject) =>
-        gltfLoader.createParser(gltfUrl, resolve, onProgress, reject)
-      );
+
+      await new Promise((resolve, reject) => {
+        // GLTFBinarySplitterPlugin saves gltf and bin in gltf.files
+        gltfLoader.load(
+          gltfUrl,
+          result => {
+            this.inputFiles.gltf = result.files.gltf;
+            this.inputFiles.bin = result.files.bin;
+            resolve(result);
+          },
+          onProgress,
+          reject
+        );
+      });
+
       URL.revokeObjectURL(gltfUrl);
-
-      const { body } = parser.extensions.KHR_binary_glTF;
-      const content = JSON.stringify(ensureAvatarMaterial(parser.json));
-      // Inject hubs components on upload. Used to create base avatar
-      // const gltf = parser.json;
-      // Object.assign(gltf.scenes[0], {
-      //   extensions: {
-      //     MOZ_hubs_components: {
-      //       "loop-animation": {
-      //         clip: "idle_eyes"
-      //       }
-      //     }
-      //   }
-      // });
-      // Object.assign(gltf.nodes.find(n => n.name === "Head"), {
-      //   extensions: {
-      //     MOZ_hubs_components: {
-      //       "scale-audio-feedback": ""
-      //     }
-      //   }
-      // });
-      // content = JSON.stringify(gltf);
-
-      this.inputFiles.gltf = new File([content], "file.gltf", {
-        type: "model/gltf"
-      });
-      this.inputFiles.bin = new File([body], "file.bin", {
-        type: "application/octet-stream"
-      });
     }
 
     this.inputFiles.thumbnail = new File([await this.preview.snapshot()], "thumbnail.png", {
@@ -346,11 +366,7 @@ class AvatarEditor extends Component {
           <FormattedMessage id="avatar-editor.custom-avatar-option" defaultMessage="Custom GLB..." />
         </option>
       </select>
-      <img
-        className="arrow"
-        src="../assets/images/dropdown_arrow.png"
-        srcSet="../assets/images/dropdown_arrow@2x.png 2x"
-      />
+      <img className="arrow" src={dropdownArrowUrl} srcSet={`${dropdownArrow2xUrl} 2x`} />
     </div>
   );
 
@@ -585,7 +601,7 @@ class AvatarEditor extends Component {
                 {this.checkbox(
                   "allow_remixing",
                   intl.formatMessage({
-                    id: "avatar-editor.field.alllow-remixing",
+                    id: "avatar-editor.field.allow-remixing",
                     defaultMessage: "Allow others to edit and re-publish your avatar as long as they give you credit."
                   }),
                   <span>

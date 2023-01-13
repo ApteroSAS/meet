@@ -1,22 +1,20 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
 import classNames from "classnames";
+import PropTypes from "prop-types";
+import React, { Component } from "react";
 import { FormattedMessage, injectIntl } from "react-intl";
-import configs from "../utils/configs";
-import IfFeature from "./if-feature";
 import styles from "../assets/stylesheets/scene-ui.scss";
+import configs from "../utils/configs";
 import { createAndRedirectToNewHub, getReticulumFetchUrl } from "../utils/phoenix-utils";
-import CreateRoomDialog from "./create-room-dialog.js";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisH } from "@fortawesome/free-solid-svg-icons/faEllipsisH";
-import { faCodeBranch } from "@fortawesome/free-solid-svg-icons/faCodeBranch";
-import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
+import { ReactComponent as CodeBranch } from "./icons/CodeBranch.svg";
+import { ReactComponent as Pen } from "./icons/Pen.svg";
+import { ReactComponent as Twitter } from "./icons/Twitter.svg";
+import IfFeature from "./if-feature";
+import { AppLogo } from "./misc/AppLogo";
 
 class SceneUI extends Component {
   static propTypes = {
     intl: PropTypes.object,
-    scene: PropTypes.object,
-    sceneLoaded: PropTypes.bool,
+    store: PropTypes.object,
     sceneId: PropTypes.string,
     sceneName: PropTypes.string,
     sceneDescription: PropTypes.string,
@@ -30,32 +28,12 @@ class SceneUI extends Component {
     parentScene: PropTypes.object
   };
 
-  state = {
-    showScreenshot: false,
-    showCustomRoomDialog: false
-  };
-
   constructor(props) {
     super(props);
-
-    // Show screenshot if scene isn't loaded in 5 seconds
-    setTimeout(() => {
-      if (!this.props.sceneLoaded) {
-        this.setState({ showScreenshot: true });
-      }
-    }, 5000);
-  }
-
-  componentDidMount() {
-    this.props.scene.addEventListener("loaded", this.onSceneLoaded);
-  }
-
-  componentWillUnmount() {
-    this.props.scene.removeEventListener("loaded", this.onSceneLoaded);
   }
 
   createRoom = () => {
-    createAndRedirectToNewHub(this.state.customRoomName, this.props.sceneId);
+    createAndRedirectToNewHub(undefined, this.props.sceneId);
   };
 
   render() {
@@ -72,7 +50,6 @@ class SceneUI extends Component {
     }
 
     const { sceneAllowRemixing, isOwner, sceneProjectId, parentScene, sceneId, intl } = this.props;
-
     const sceneUrl = [location.protocol, "//", location.host, location.pathname].join("");
     const tweetText = intl.formatMessage(
       {
@@ -88,23 +65,21 @@ class SceneUI extends Component {
       tweetText
     )}`;
 
-    const unknownAuthor = intl.formatMessage({ id: "scene-page.unknown-author", defaultMessage: "unknown" });
+    const unknown = intl.formatMessage({ id: "scene-page.unknown", defaultMessage: "unknown" });
 
     let attributions;
 
     const toAttributionSpan = ({ title, name, url, author, remix }) => {
       let source = "";
 
-      const _name = name || title;
-      const _author = author || unknownAuthor;
-
-      if (url) {
-        if (url.includes("sketchfab.com")) {
-          source = "Sketchfab";
-        } else if (url.includes("poly.google.com")) {
-          source = "Google Poly";
-        }
+      if (!author && !url) {
+        return null;
       }
+
+      const _name = name || title || unknown;
+      const _author = author || unknown;
+
+      source = url && url.includes("sketchfab.com") ? "Sketchfab" : "";
 
       if (remix) {
         <span className="remix">
@@ -180,7 +155,7 @@ class SceneUI extends Component {
                 <FormattedMessage
                   id="scene-page.scene-attribution"
                   defaultMessage="by {creator}"
-                  values={{ creator: this.props.sceneAttributions.creator || unknownAuthor }}
+                  values={{ creator: this.props.sceneAttributions.creator || unknown }}
                 />
               ) : (
                 ""
@@ -196,7 +171,9 @@ class SceneUI extends Component {
                 remix: true
               })}
             <br />
-            {this.props.sceneAttributions.content && this.props.sceneAttributions.content.map(toAttributionSpan)}
+            <div className={styles.attribution}>
+              {this.props.sceneAttributions.content && this.props.sceneAttributions.content.map(toAttributionSpan)}
+            </div>
           </span>
         );
       } else {
@@ -204,108 +181,73 @@ class SceneUI extends Component {
         attributions = <span>{this.props.sceneAttributions.extras}</span>;
       }
     }
-
     return (
       <div className={styles.ui}>
         <div
           className={classNames({
-            [styles.screenshot]: true,
-            [styles.screenshotHidden]: this.props.sceneLoaded
+            [styles.screenshot]: true
           })}
         >
-          {this.state.showScreenshot && <img src={this.props.sceneScreenshotURL} />}
+          {<img src={this.props.sceneScreenshotURL} />}
         </div>
-        <div className={styles.whiteOverlay} />
         <div className={styles.grid}>
           <div className={styles.mainPanel}>
             <a href="/" className={styles.logo}>
-              <img
-                src={configs.image("logo")}
-                alt={<FormattedMessage id="scene-page.logo-alt" defaultMessage="Logo" />}
-              />
+              <AppLogo />
             </a>
             <div className={styles.logoTagline}>{configs.translation("app-tagline")}</div>
-            {this.props.showCreateRoom && (
-              <div className={styles.createButtons}>
-                <button className={styles.createButton} onClick={this.createRoom}>
+            <div className={styles.scenePreviewButtonWrapper}>
+              {this.props.showCreateRoom && (
+                <button className={styles.scenePreviewButton} onClick={this.createRoom}>
                   <FormattedMessage id="scene-page.create-button" defaultMessage="Create a room with this scene" />
                 </button>
-                <button className={styles.optionsButton} onClick={() => this.setState({ showCustomRoomDialog: true })}>
-                  <FontAwesomeIcon icon={faEllipsisH} />
-                </button>
-              </div>
-            )}
-            <IfFeature name="enable_spoke">
-              {isOwner && sceneProjectId ? (
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={getReticulumFetchUrl(`/spoke/projects/${sceneProjectId}`)}
-                  className={styles.spokeButton}
-                >
-                  <FontAwesomeIcon icon={faPencilAlt} />
-                  <FormattedMessage
-                    id="scene-page.edit-button"
-                    defaultMessage="Edit in {editorName}"
-                    values={{ editorName: configs.translation("editor-name") }}
-                  />
-                </a>
-              ) : (
-                sceneAllowRemixing && (
+              )}
+              <IfFeature name="enable_spoke">
+                {isOwner && sceneProjectId ? (
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href={getReticulumFetchUrl(`/spoke/projects/new?sceneId=${sceneId}`)}
-                    className={styles.spokeButton}
+                    href={getReticulumFetchUrl(`/spoke/projects/${sceneProjectId}`)}
+                    className={styles.scenePreviewButton}
                   >
-                    <FontAwesomeIcon icon={faCodeBranch} />
+                    <Pen />
                     <FormattedMessage
-                      id="scene-page.remix-button"
-                      defaultMessage="Remix in {editorName}"
+                      id="scene-page.edit-button"
+                      defaultMessage="Edit in {editorName}"
                       values={{ editorName: configs.translation("editor-name") }}
                     />
                   </a>
-                )
-              )}
-            </IfFeature>
-            <a href={tweetLink} rel="noopener noreferrer" target="_blank" className={styles.tweetButton}>
-              <img src="../assets/images/twitter.svg" />
-              <div>
-                <FormattedMessage id="scene-page.tweet-button" defaultMessage="Share on Twitter" />
-              </div>
-            </a>
-          </div>
-        </div>
-        <div className={styles.info}>
-          <div className={styles.name}>{this.props.sceneName}</div>
-          <div className={styles.attribution}>{attributions}</div>
-        </div>
-        <IfFeature name="enable_spoke">
-          <div className={styles.spoke}>
-            <div className={styles.madeWith}>
-              <FormattedMessage
-                id="scene-page.made-with"
-                defaultMessage="made with <a/>"
-                values={{
-                  a: () => (
-                    <a href="/spoke">
-                      <img src={configs.image("editor_logo")} />
+                ) : (
+                  sceneAllowRemixing && (
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={getReticulumFetchUrl(`/spoke/projects/new?sceneId=${sceneId}`)}
+                      className={styles.scenePreviewButton}
+                    >
+                      <CodeBranch />
+                      <FormattedMessage
+                        id="scene-page.remix-button"
+                        defaultMessage="Remix in {editorName}"
+                        values={{ editorName: configs.translation("editor-name") }}
+                      />
                     </a>
                   )
-                }}
-              />
+                )}
+              </IfFeature>
+              <a href={tweetLink} rel="noopener noreferrer" target="_blank" className={styles.scenePreviewButton}>
+                <Twitter />
+                <div>
+                  <FormattedMessage id="scene-page.tweet-button" defaultMessage="Share on Twitter" />
+                </div>
+              </a>
             </div>
           </div>
-        </IfFeature>
-        {this.state.showCustomRoomDialog && (
-          <CreateRoomDialog
-            includeScenePrompt={false}
-            onClose={() => this.setState({ showCustomRoomDialog: false })}
-            onCustomScene={name => {
-              this.setState({ showCustomRoomDialog: false, customRoomName: name }, () => this.createRoom());
-            }}
-          />
-        )}
+          <div className={styles.info}>
+            <div className={styles.name}>{this.props.sceneName}</div>
+            <div className={styles.attribution}>{attributions}</div>
+          </div>
+        </div>
       </div>
     );
   }

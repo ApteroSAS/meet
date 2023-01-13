@@ -1,3 +1,4 @@
+@use "../../react-components/styles/theme.scss";
 @import 'shared.scss';
 
 :local(.presence-log) {
@@ -22,8 +23,8 @@
     -webkit-user-select: text;
     -ms-user-select: text;
 
-    background-color: var(--lobby-overlay-widget-background-color);
-    color: var(--lobby-overlay-widget-text-color);
+    background-color: theme.$overlay-bg-color;
+    color: theme.$overlay-text-color;
     margin-bottom: 8px;
     font-size: 0.8em;
     padding: 8px 16px;
@@ -36,11 +37,20 @@
       margin-bottom: 0;
     }
 
+    &:not(:last-child) {
+      margin-bottom: 16px;
+    }
+
     :local(.message-body) {
       margin-left: 4px;
       overflow-wrap: break-word;
       overflow: hidden;
       max-width: 500px;
+      padding-bottom: 8px;
+    }
+    /* this checks if a sibling has the message source for when have chat closed and resets padding */
+    :local(.message-source + .message-body) {
+      padding-bottom: 0px;
     }
 
     :local(.message-body-multi) {
@@ -76,7 +86,7 @@
     }
 
     a {
-      color: $action-label-color;
+      color: theme.$link-color;
     }
 
     :local(.icon-button) {
@@ -101,7 +111,7 @@
 
       &:hover {
         @media (pointer: fine) {
-          background-color: $action-color;
+          background-color: theme.$primary-color;
         }
       }
     }
@@ -128,9 +138,22 @@
       img {
         height: 35px;
         margin-left: 8px;
-        border: 2px solid var(--lobby-overlay-widget-thumbnail-border-color);
+        border: 2px solid theme.$overlay-border-color;
         display: block;
         border-radius: 5px;
+      }
+    }
+
+    &:local(.permission) {
+      display: flex;
+      align-items: center;
+      min-height: 35px;
+
+      :local(.permissionBody) {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
       }
     }
   }
@@ -150,11 +173,11 @@
 :local(.presence-log-in-room) {
   position: absolute;
   left: 20px;
-  bottom: 20px;
+  bottom: 8px;
 
   :local(.presence-log-entry) {
-    background-color: var(--hud-panel-background);
-    color: var(--hud-panel-text-color);
+    background-color: theme.$overlay-bg-color;
+    color: theme.$overlay-text-color;
     min-height: 18px;
 
     // If this is selectable, tap holding on mobile anywhere on the screen will result
@@ -165,21 +188,21 @@
     -ms-user-select: none;
 
     a {
-      color: var(--hud-panel-link-color);
+      color: theme.$link-color;
     }
   }
 }
 
 :local(.presence-log-spawn) {
   position: absolute;
-  top: 0;
+  bottom: 0;
   z-index: -10;
   width: auto;
   margin: 0;
 
   :local(.presence-log-entry) {
-    background-color: var(--spawned-overlay-widget-background-color);
-    color: var(--spawned-overlay-widget-text-color);
+    background-color: black;
+    color: white;
     min-height: 18px;
     padding: 8px 16px;
     border-radius: 16px;
@@ -192,7 +215,7 @@
     }
 
     a {
-      color: var(--spawned-overlay-widget-link-color);
+      color: white;
     }
   }
 
@@ -216,12 +239,39 @@
     font-weight: normal;
     font-size: 0.7em;
     white-space: nowrap;
-    color: var(--spawned-overlay-widget-source-text-color);
+    color: white;
   }
 
   :local(.message-source-link) {
     cursor: pointer;
     text-decoration: underline;
+  }
+}
+
+:local(.presence-log-notifications) {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  align-items: center;
+
+  :local(.presence-log-entry) {
+    background-color: theme.$overlay-bg-color;
+    color: theme.$overlay-text-color;
+    min-height: 18px;
+
+    // If this is selectable, tap holding on mobile anywhere on the screen will result
+    // in a selection.
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    &:first-child {
+      margin-top: 16px;
+    }
+
+    a {
+      color: theme.$link-color;
+    }
   }
 }
 

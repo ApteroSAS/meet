@@ -1,31 +1,36 @@
 import { useEffect, useReducer, useRef, useCallback } from "react";
 import { useIntl, defineMessages } from "react-intl";
+import { waitForPreloads } from "../../utils/preload";
+import qsTruthy from "../../utils/qs_truthy";
 
 function reducer(state, action) {
   switch (action.type) {
+    case "done-preloading":
+      return { ...state, donePreloading: true };
     case "object-loading":
-      return { ...state, objectCount: state.objectCount + 1, messageKey: "loadingObjects" };
+      return { ...state, objectCount: state.objectCount + 1 };
     case "object-loaded":
       return { ...state, loadedCount: state.loadedCount + 1 };
     case "all-objects-loaded":
       return {
         ...state,
-        allObjectsLoaded: true,
-        loading: !(state.environmentLoaded && state.networkConnected),
-        messageKey: state.environmentLoaded ? "enteringRoom" : "loadingObjects"
+        allObjectsLoaded: true
       };
-    case "environment-loaded":
+    case "environment-loaded": {
       return {
         ...state,
-        environmentLoaded: true,
-        loading: !(state.allObjectsLoaded && state.networkConnected),
-        messageKey: state.allObjectsLoaded ? "enteringRoom" : "loadingObjects"
+        environmentLoaded: true
       };
+    }
     case "network-connected":
       return {
         ...state,
-        networkConnected: true,
-        loading: !(state.environmentLoaded && state.allObjectsLoaded)
+        networkConnected: true
+      };
+    case "dialog-connected":
+      return {
+        ...state,
+        dialogConnected: true
       };
   }
 }
@@ -42,97 +47,148 @@ const messages = defineMessages({
     description: "The loading progress. How many objects have finished loading?",
     defaultMessage: "Loading objects {loadedCount}/{objectCount}"
   },
+  connectingScene: {
+    id: "loading-screen.connecting",
+    description: "The scene is loaded, we are waiting for the networked scene to be connected to enter.",
+    defaultMessage: "Connecting to the scene..."
+  },
   enteringRoom: {
     id: "loading-screen.entering-room",
     description:
-      "Once the scene has finished loading, this message tells uses that they will be entering the room shortly.",
+      "Once the scene has finished loading, this message tells users that they will be entering the room shortly.",
     defaultMessage: "Entering room..."
   }
 });
 
+const newLoader = qsTruthy("newLoader");
 export function useRoomLoadingState(sceneEl) {
   // Holds the id of the current
   const loadingTimeoutRef = useRef();
+  const lazyLoadMedia = APP.store.state.preferences.lazyLoadSceneMedia;
 
-  const [{ loading, messageKey, objectCount, loadedCount }, dispatch] = useReducer(reducer, {
-    loading: !sceneEl.is("loaded"),
-    messageKey: "default",
+  const [
+    {
+      environmentLoaded,
+      networkConnected,
+      dialogConnected,
+      allObjectsLoaded,
+      donePreloading,
+      objectCount,
+      loadedCount
+    },
+    dispatch
+  ] = useReducer(reducer, {
     objectCount: 0,
     loadedCount: 0,
     allObjectsLoaded: false,
     environmentLoaded: false,
-    networkConnected: false
+    networkConnected: false,
+    dialogConnected: false,
+    donePreloading: false,
+    lazyLoadMedia
   });
+  // Skip object loading callbacks for the newLoader, since they don't yet fire events we can listen to.
+  const doneLoadingObjects = lazyLoadMedia || newLoader || allObjectsLoaded;
+  const done =
+    sceneEl.is("loaded") ||
+    (environmentLoaded && networkConnected && dialogConnected && doneLoadingObjects && donePreloading);
 
-  const onObjectLoading = useCallback(
-    () => {
-      clearTimeout(loadingTimeoutRef.current);
-      dispatch({ type: "object-loading" });
-    },
-    [dispatch]
-  );
+  let messageKey = "default";
+  if (!environmentLoaded) {
+    messageKey = "default";
+  } else if (!networkConnected || !dialogConnected) {
+    messageKey = "connectingScene";
+  } else if (!doneLoadingObjects) {
+    messageKey = "loadingObjects";
+  } else {
+    messageKey = "enteringRoom";
+  }
 
-  const onObjectLoaded = useCallback(
-    () => {
-      clearTimeout(loadingTimeoutRef.current);
+  const onObjectLoading = useCallback(() => {
+    clearTimeout(loadingTimeoutRef.current);
+    dispatch({ type: "object-loading" });
+  }, [dispatch]);
 
-      dispatch({ type: "object-loaded" });
+  const onObjectLoaded = useCallback(() => {
+    clearTimeout(loadingTimeoutRef.current);
 
-      // Objects can start loading as a result of loading another object. Wait 1.5 seconds before calling
-      // all-objects-loaded to try to catch loading all objects.
-      // TODO: Determine a better way to ensure the object dependency chain has resolved, or switch to a
-      // progressive loading model where all objects don't have to be loaded to enter the room.
-      loadingTimeoutRef.current = setTimeout(() => {
-        dispatch({ type: "all-objects-loaded" });
-      }, 1500);
-    },
-    [dispatch]
-  );
+    dispatch({ type: "object-loaded" });
 
-  const onEnvironmentLoaded = useCallback(
-    () => {
-      dispatch({ type: "environment-loaded" });
-    },
-    [dispatch]
-  );
+    // Objects can start loading as a result of loading another object. Wait 1.5 seconds before calling
+    // all-objects-loaded to try to catch loading all objects.
+    // TODO: Determine a better way to ensure the object dependency chain has resolved, or switch to a
+    // progressive loading model where all objects don't have to be loaded to enter the room.
+    loadingTimeoutRef.current = setTimeout(() => {
+      dispatch({ type: "all-objects-loaded" });
+    }, 1500);
+  }, [dispatch]);
 
-  const onNetworkConnected = useCallback(
-    () => {
-      dispatch({ type: "network-connected" });
-    },
-    [dispatch]
-  );
+  const onEnvironmentLoaded = useCallback(() => {
+    dispatch({ type: "environment-loaded" });
+  }, [dispatch]);
 
-  useEffect(
-    () => {
-      // Once the scene has loaded the dependencies to this hook will change,
-      // the event listeners will be removed, and we can prevent adding them again.
-      if (loading) {
+  const onNetworkConnected = useCallback(() => {
+    dispatch({ type: "network-connected" });
+  }, [dispatch]);
+
+  const onDialogConnected = useCallback(() => {
+    dispatch({ type: "dialog-connected" });
+  }, [dispatch]);
+
+  useEffect(() => {
+    waitForPreloads().then(() => {
+      // TODO: Is this OK to do? Seems bad to be async here somehow
+      dispatch({ type: "done-preloading" });
+    });
+    return () => {};
+  }, []);
+
+  useEffect(() => {
+    // Once the scene has loaded the dependencies to this hook will change,
+    // the event listeners will be removed, and we can prevent adding them again.
+    if (!done) {
+      if (!lazyLoadMedia) {
         sceneEl.addEventListener("model-loading", onObjectLoading);
         sceneEl.addEventListener("image-loading", onObjectLoading);
         sceneEl.addEventListener("pdf-loading", onObjectLoading);
+        sceneEl.addEventListener("video-loading", onObjectLoading);
         sceneEl.addEventListener("model-loaded", onObjectLoaded);
         sceneEl.addEventListener("image-loaded", onObjectLoaded);
         sceneEl.addEventListener("pdf-loaded", onObjectLoaded);
+        sceneEl.addEventListener("video-loaded", onObjectLoaded);
         sceneEl.addEventListener("model-error", onObjectLoaded);
-        sceneEl.addEventListener("environment-scene-loaded", onEnvironmentLoaded);
-        sceneEl.addEventListener("didConnectToNetworkedScene", onNetworkConnected);
       }
+      sceneEl.addEventListener("environment-scene-loaded", onEnvironmentLoaded);
+      sceneEl.addEventListener("didConnectToNetworkedScene", onNetworkConnected);
+      sceneEl.addEventListener("didConnectToDialog", onDialogConnected);
+    }
 
-      return () => {
+    return () => {
+      if (!lazyLoadMedia) {
         sceneEl.removeEventListener("model-loading", onObjectLoading);
         sceneEl.removeEventListener("image-loading", onObjectLoading);
         sceneEl.removeEventListener("pdf-loading", onObjectLoading);
+        sceneEl.removeEventListener("video-loading", onObjectLoading);
         sceneEl.removeEventListener("model-loaded", onObjectLoaded);
         sceneEl.removeEventListener("image-loaded", onObjectLoaded);
         sceneEl.removeEventListener("pdf-loaded", onObjectLoaded);
+        sceneEl.removeEventListener("video-loaded", onObjectLoaded);
         sceneEl.removeEventListener("model-error", onObjectLoaded);
-        sceneEl.removeEventListener("environment-scene-loaded", onEnvironmentLoaded);
-        sceneEl.removeEventListener("didConnectToNetworkedScene", onNetworkConnected);
-      };
-    },
-    [sceneEl, loading, onObjectLoaded, onObjectLoading, onEnvironmentLoaded, onNetworkConnected]
-  );
+      }
+      sceneEl.removeEventListener("environment-scene-loaded", onEnvironmentLoaded);
+      sceneEl.removeEventListener("didConnectToNetworkedScene", onNetworkConnected);
+      sceneEl.removeEventListener("didConnectToDialog", onDialogConnected);
+    };
+  }, [
+    sceneEl,
+    done,
+    onObjectLoaded,
+    onObjectLoading,
+    onEnvironmentLoaded,
+    onNetworkConnected,
+    onDialogConnected,
+    lazyLoadMedia
+  ]);
 
   const intl = useIntl();
 
@@ -142,16 +198,13 @@ export function useRoomLoadingState(sceneEl) {
     objectCount
   });
 
-  useEffect(
-    () => {
-      if (!loading) {
-        // The loaded state on the scene signifies that the loading screen is no longer visible,
-        // the initial scene was loaded, and the network connection is established.
-        sceneEl.addState("loaded");
-      }
-    },
-    [sceneEl, loading]
-  );
+  useEffect(() => {
+    if (done) {
+      // The loaded state on the scene signifies that the loading screen is no longer visible,
+      // the initial scene was loaded, and the network connection is established.
+      sceneEl.addState("loaded");
+    }
+  }, [sceneEl, done]);
 
   // Ensure timeout is cleared on unmount.
   useEffect(() => {
@@ -160,5 +213,5 @@ export function useRoomLoadingState(sceneEl) {
     };
   }, []);
 
-  return { loading, message };
+  return { loading: !done, message };
 }

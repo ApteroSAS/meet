@@ -27,7 +27,7 @@ AFRAME.registerComponent("scene-preview-camera", {
     positionOnly: { default: false, type: "boolean" }
   },
 
-  init: function() {
+  init: function () {
     const systems = AFRAME.scenes[0].systems["hubs-systems"] || AFRAME.scenes[0].systems["scene-systems"];
 
     if (systems) {
@@ -51,7 +51,7 @@ AFRAME.registerComponent("scene-preview-camera", {
     this.ranOnePass = false;
   },
 
-  tick2: function() {
+  tick2: function () {
     const hubsSystems = this.el.sceneEl.systems["hubs-systems"];
 
     let streamerCamera;
@@ -80,7 +80,7 @@ AFRAME.registerComponent("scene-preview-camera", {
       const fromRot = this.backwards ? this.targetRotation : this.startRotation;
       const toRot = this.backwards ? this.startRotation : this.targetRotation;
 
-      THREE.Quaternion.slerp(fromRot, toRot, newRot, t);
+      newRot.slerpQuaternions(fromRot, toRot, t);
 
       this.el.object3D.position.set(lerp(from.x, to.x, t), lerp(from.y, to.y, t), lerp(from.z, to.z, t));
 
@@ -98,8 +98,8 @@ AFRAME.registerComponent("scene-preview-camera", {
     }
   },
 
-  remove: function() {
-    const systems = AFRAME.scenes[0].systems["hubs-systems"] || AFRAME.scenes[0].systems["scene-systems"];
+  remove: function () {
+    const systems = AFRAME.scenes[0]?.systems["hubs-systems"] || AFRAME.scenes[0]?.systems["scene-systems"];
 
     if (systems) {
       systems.scenePreviewCameraSystem.unregister(this.el);

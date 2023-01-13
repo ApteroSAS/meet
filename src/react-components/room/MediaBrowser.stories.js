@@ -8,7 +8,7 @@ import backgroundUrl from "../../assets/images/home-hero-background-unbranded.pn
 import { createAvatarCustomTileV2 } from "../../aptero/react-components/media-tiles-lib";
 
 export default {
-  title: "MediaBrowser",
+  title: "Room/MediaBrowser",
   parameters: {
     layout: "fullscreen"
   }
@@ -36,25 +36,16 @@ const FACETS = {
     { text: "Sports", params: { filter: "sports-fitness" } },
     { text: "Weapons", params: { filter: "weapons-military" } }
   ],
-  poly: [
-    { text: "Featured", params: { filter: "" } },
-    { text: "Animals", params: { filter: "animals" } },
-    { text: "Architecture", params: { filter: "architecture" } },
-    { text: "Art", params: { filter: "art" } },
-    { text: "Food", params: { filter: "food" } },
-    { text: "Nature", params: { filter: "nature" } },
-    { text: "Objects", params: { filter: "objects" } },
-    { text: "People", params: { filter: "people" } },
-    { text: "Scenes", params: { filter: "scenes" } },
-    { text: "Transport", params: { filter: "transport" } }
-  ],
   avatars: [
     { text: "Featured", params: { filter: "featured" } },
     { text: "My Avatars", params: { filter: "my-avatars" } },
     { text: "Newest", params: { filter: "" } }
   ],
   favorites: [],
-  scenes: [{ text: "Featured", params: { filter: "featured" } }, { text: "My Scenes", params: { filter: "my-scenes" } }]
+  scenes: [
+    { text: "Featured", params: { filter: "featured" } },
+    { text: "My Scenes", params: { filter: "my-scenes" } }
+  ]
 };
 
 const room = {
@@ -226,8 +217,7 @@ const sketchfabModel = {
   id: "a4c500d7358a4a199b6a5cd35f416466",
   images: {
     preview: {
-      url:
-        "https://media.sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466/thumbnails/6b41b00f0f474c058bea071db62097fd/d3a6f64b461f4cc8af7331a220a4122c.jpeg"
+      url: "https://media.sketchfab.com/models/a4c500d7358a4a199b6a5cd35f416466/thumbnails/6b41b00f0f474c058bea071db62097fd/d3a6f64b461f4cc8af7331a220a4122c.jpeg"
     }
   },
   name: "Ducky_MozillaHubs",
@@ -251,7 +241,7 @@ const gif = {
   url: "https://media.tenor.com/videos/004424225acc15896c846f6ab3740ad0/mp4"
 };
 
-const mediaSources = ["objects","poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
+const mediaSources = ["sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
 
 export const Favorites = () => (
   <MediaBrowser selectedSource={"favorites"}>
@@ -308,29 +298,29 @@ export const AvatarListings = () => (
   <React.Fragment>
     {createAvatarCustomTileV2()}
     <div> AVATEST2 </div>
-    <MediaBrowser
-      searchPlaceholder="Search Avatars..."
-      mediaSources={mediaSources}
-      selectedSource={"avatars"}
-      activeFilter={"featured"}
-      facets={FACETS.avatars}
-      headerRight={
-        <IconButton lg>
-          <LinkIcon />
-          <p>Custom Avatar</p>
-        </IconButton>
-      }
-      hasNext
-    >
+  <MediaBrowser
+    searchPlaceholder="Search Avatars..."
+    mediaSources={mediaSources}
+    selectedSource={"avatars"}
+    activeFilter={"featured"}
+    facets={FACETS.avatars}
+    headerRight={
+      <IconButton lg>
+        <LinkIcon />
+        <p>Custom Avatar</p>
+      </IconButton>
+    }
+    hasNext
+  >
       {createAvatarCustomTileV2()}
       {/*<CreateTile label="Create Avatar" type="avatar" />*/}
-      <MediaTile entry={avatarListing} />
-      <MediaTile entry={avatarListing} />
-      <MediaTile entry={avatarListing} />
-      <MediaTile entry={avatarListing} />
-      <MediaTile entry={avatarListing} />
-      <MediaTile entry={avatarListing} />
-    </MediaBrowser>
+    <MediaTile entry={avatarListing} />
+    <MediaTile entry={avatarListing} />
+    <MediaTile entry={avatarListing} />
+    <MediaTile entry={avatarListing} />
+    <MediaTile entry={avatarListing} />
+    <MediaTile entry={avatarListing} />
+  </MediaBrowser>
   </React.Fragment>
 );
 
@@ -338,28 +328,28 @@ export const Avatars = () => (
   <React.Fragment>
     {createAvatarCustomTileV2()}
     <div> AVATEST </div>
-    <MediaBrowser
-      searchPlaceholder="Search Avatars..."
-      mediaSources={mediaSources}
-      selectedSource={"avatars"}
-      activeFilter={"my-avatars"}
-      facets={FACETS.avatars}
-      headerRight={
-        <IconButton lg>
-          <LinkIcon />
-          <p>Custom Avatar</p>
-        </IconButton>
-      }
-      hasNext
-    >
+  <MediaBrowser
+    searchPlaceholder="Search Avatars..."
+    mediaSources={mediaSources}
+    selectedSource={"avatars"}
+    activeFilter={"my-avatars"}
+    facets={FACETS.avatars}
+    headerRight={
+      <IconButton lg>
+        <LinkIcon />
+        <p>Custom Avatar</p>
+      </IconButton>
+    }
+    hasNext
+  >
       {/*<CreateTile label="Create Avatar" type="avatar" />*/}
-      <MediaTile entry={avatar} />
-      <MediaTile entry={avatar} />
-      <MediaTile entry={avatar} />
-      <MediaTile entry={avatar} />
-      <MediaTile entry={avatar} />
-      <MediaTile entry={avatar} />
-    </MediaBrowser>
+    <MediaTile entry={avatar} />
+    <MediaTile entry={avatar} />
+    <MediaTile entry={avatar} />
+    <MediaTile entry={avatar} />
+    <MediaTile entry={avatar} />
+    <MediaTile entry={avatar} />
+  </MediaBrowser>
   </React.Fragment>
 );
 

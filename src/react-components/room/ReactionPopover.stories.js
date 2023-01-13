@@ -10,9 +10,17 @@ import emoji6Particle from "../../assets/images/emojis/emoji_6.png";
 import { ReactionPopoverButton } from "./ReactionPopover";
 
 export default {
-  title: "ReactionPopover",
+  title: "Room/ReactionPopover",
   parameters: {
     layout: "fullscreen"
+  },
+  argTypes: {
+    onToggleHandRaised: {
+      action: "Hand Raised Changed",
+      table: {
+        category: "Events"
+      }
+    }
   }
 };
 
@@ -26,4 +34,18 @@ const items = [
   { id: "cry", label: "Cry", src: emoji6Particle }
 ];
 
-export const Base = () => <RoomLayout toolbarCenter={<ReactionPopoverButton items={items} />} />;
+export const Base = args => (
+  <RoomLayout
+    toolbarCenter={
+      <ReactionPopoverButton
+        presence={{ hand_raised: args.handRaised }}
+        items={items}
+        onToggleHandRaised={args.onToggleHandRaised}
+      />
+    }
+  />
+);
+
+Base.args = {
+  handRaised: false
+};

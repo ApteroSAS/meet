@@ -18,12 +18,11 @@ const URL_SOURCE_TO_TO_API_SOURCE = {
   youtube: "youtube_videos",
   gifs: "tenor",
   sketchfab: "sketchfab",
-  poly: "poly",
   twitch: "twitch",
   favorites: "favorites"
 };
 
-const desiredSources = ["objects", "videos360", "videos2d", "poly", "sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
+const desiredSources = ["sketchfab", "videos", "scenes", "avatars", "gifs", "images"];
 const availableSources = desiredSources.filter(source => {
   const apiSource = URL_SOURCE_TO_TO_API_SOURCE[source];
   return configs.integration(apiSource);
@@ -110,13 +109,13 @@ export default class MediaSearchStore extends EventTarget {
 
     let fetch = true;
 
-    if (isMy) {
-      if (window.APP.store.credentialsAccountId) {
-        searchParams.set("user", window.APP.store.credentialsAccountId);
-      } else {
-        fetch = false; // Don't fetch my-* if not signed in
+      if (isMy) {
+        if (window.APP.store.credentialsAccountId) {
+          searchParams.set("user", window.APP.store.credentialsAccountId);
+        } else {
+          fetch = false; // Don't fetch my-* if not signed in
+        }
       }
-    }
 
     const path = `/api/v1/media/search?${searchParams.toString()}`;
     const url = getReticulumFetchUrl(path);

@@ -17,14 +17,12 @@ import { ReactComponent as ExternalLinkIcon } from "../icons/ExternalLink.svg";
 
 const PUBLISHER_FOR_ENTRY_TYPE = {
   sketchfab_model: "Sketchfab",
-  poly_model: "Google Poly",
   objects : "Objects",
   twitch_stream: "Twitch"
 };
 
 function useThumbnailSize(isImage, isAvatar, imageAspect) {
-  return useMemo(
-    () => {
+  return useMemo(() => {
       let imageHeight = 220;
       if (isAvatar) imageHeight = Math.floor(imageHeight * 1.5);
 
@@ -39,9 +37,7 @@ function useThumbnailSize(isImage, isAvatar, imageAspect) {
       }
 
       return [imageWidth, imageHeight];
-    },
-    [isImage, isAvatar, imageAspect]
-  );
+  }, [isImage, isAvatar, imageAspect]);
 }
 
 function useThumbnail(entry, processThumbnailUrl) {
@@ -51,14 +47,9 @@ function useThumbnail(entry, processThumbnailUrl) {
 
   const [thumbnailWidth, thumbnailHeight] = useThumbnailSize(isImage, isAvatar, imageAspect);
 
-  const thumbnailUrl = useMemo(
-    () => {
-      return processThumbnailUrl
-        ? processThumbnailUrl(entry, thumbnailWidth, thumbnailHeight)
-        : entry.images.preview.url;
-    },
-    [entry, thumbnailWidth, thumbnailHeight, processThumbnailUrl]
-  );
+  const thumbnailUrl = useMemo(() => {
+    return processThumbnailUrl ? processThumbnailUrl(entry, thumbnailWidth, thumbnailHeight) : entry.images.preview.url;
+  }, [entry, thumbnailWidth, thumbnailHeight, processThumbnailUrl]);
 
   return [thumbnailUrl, thumbnailWidth, thumbnailHeight];
 }
@@ -151,9 +142,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
         <>
           {creator && creator.name === undefined && <span>{creator}</span>}
           {creator && creator.name && !creator.url && <span>{creator.name}</span>}
-          {creator &&
-            creator.name &&
-            creator.url && (
+          {creator && creator.name && creator.url && (
               <a href={creator.url} target="_blank" rel="noopener noreferrer">
                 {creator.name}
               </a>
@@ -216,8 +205,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
             <PenIcon />
           </TileAction>
         )*/}
-        {entry.type === "scene" &&
-          entry.project_id && (
+        {entry.type === "scene" && entry.project_id && (
             <TileAction
               onClick={onEdit}
               title={intl.formatMessage({ id: "media-tile.action.edit-scene", defaultMessage: "Edit scene" })}
@@ -236,8 +224,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
             <SearchIcon />
           </TileAction>
         )*/}
-        {/*APTERO entry.type === "avatar_listing" &&
-          entry.allow_remixing && (
+        {/*APTERO entry.type === "avatar_listing" && entry.allow_remixing && (
             <TileAction
               title={intl.formatMessage({
                 id: "media-tile.action.copy-avatar",
@@ -248,8 +235,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
               <DuplicateIcon />
             </TileAction>
           )*/}
-        {entry.type === "scene_listing" &&
-          entry.allow_remixing && (
+        {entry.type === "scene_listing" && entry.allow_remixing && (
             <TileAction
               title={intl.formatMessage({
                 id: "media-tile.action.copy-scene",
@@ -260,9 +246,7 @@ export function MediaTile({ entry, processThumbnailUrl, onClick, onEdit, onShowS
               <DuplicateIcon />
             </TileAction>
           )}
-        {entry.type === "room" &&
-          onInfo &&
-          entry.description && (
+        {entry.type === "room" && onInfo && entry.description && (
             <TileAction
               title={intl.formatMessage({
                 id: "media-tile.action.room-info",

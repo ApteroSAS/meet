@@ -32,7 +32,9 @@ pipeline {
           def jobName = env.JOB_NAME
           def gitCommit = env.GIT_COMMIT
           def disableDeploy = env.DISABLE_DEPLOY
-          def promoteToChannel = env.PROMOTE_TO_CHANNEL
+          def showQAPromoteCommand = env.SHOW_QA_PROMOTE_COMMAND
+          def qaBuildsSlackChannel = env.QA_BUILDS_SLACK_CHANNEL
+          def uploadsHost = env.UPLOADS_HOST
 
           def habCommand = (
             "/bin/bash scripts/hab-build-and-push.sh "
@@ -48,6 +50,7 @@ pipeline {
             + "\\\"${buildNumber}\\\" "
             + "\\\"${gitCommit}\\\" "
             + "\\\"${disableDeploy}\\\" "
+            + "\\\"${uploadsHost}\\\" "
           )
           runCommand(habCommand)
 
@@ -66,16 +69,15 @@ pipeline {
           def gitMessage = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'[%an] %s'").trim()
           def gitSha = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
 
-          if (promoteToChannel != null && promoteToChannel != "") {
-            runCommand("sudo /usr/bin/hab-ret-pkg-promote ${packageIdent} ${promoteToChannel}")
-
+          if (showQAPromoteCommand == "true") {
             def text = (
               "*<http://localhost:8080/job/${jobName}/${buildNumber}|#${buildNumber}>* *${jobName}* " +
-              "<https://bldr.reticulum.io/#/pkgs/${packageIdent}|${packageIdent}>\n" +
-              "<https://github.com/mozilla/hubs/commit/$gitSha|$gitSha> " +
-              "Promoted ${hubsVersion} to ${promoteToChannel}: ```${gitSha} ${gitMessage}```\n"
+              "<https://github.com/mozilla/hubs/commit/$gitSha|$gitSha> ${hubsVersion} " +
+              "Hubs: ```${gitSha} ${gitMessage}```\n" +
+              "${packageIdent} built and uploaded - to promote:\n" +
+              "`/mr promote-hubs-qa ${packageIdent}`"
             )
-            sendSlackMessage(text, "#mr-builds", ":gift:", slackURL)
+            sendSlackMessage(text, qaBuildsSlackChannel, ":gift:", slackURL)
           } else {
             def text = (
               "*<http://localhost:8080/job/${jobName}/${buildNumber}|#${buildNumber}>* *${jobName}* " +

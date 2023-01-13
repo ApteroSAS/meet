@@ -1,4 +1,3 @@
-/* global THREE */
 /**
  * Networked Drawing
  * Creates procedurally generated 'lines' (or tubes) that are networked.
@@ -51,7 +50,7 @@ AFRAME.registerComponent("networked-drawing", {
     this.networkBufferInitialized = false;
 
     const options = {
-      vertexColors: THREE.VertexColors
+      vertexColors: true
     };
 
     this.color = new THREE.Color();
@@ -60,7 +59,7 @@ AFRAME.registerComponent("networked-drawing", {
 
     let material = new THREE.MeshStandardMaterial(options);
 
-    const quality = window.APP.store.materialQualitySetting;
+    const quality = window.APP.store.state.preferences.materialQualitySetting;
     material = convertStandardMaterial(material, quality);
 
     this.sharedBufferGeometryManager = new SharedBufferGeometryManager();
@@ -89,11 +88,6 @@ AFRAME.registerComponent("networked-drawing", {
     this.drawing = this.sharedBuffer.drawing;
 
     this.el.setObject3D("mesh", this.drawing);
-
-    const environmentMapComponent = this.el.sceneEl.components["environment-map"];
-    if (environmentMapComponent) {
-      environmentMapComponent.applyEnvironmentMap(this.drawing);
-    }
 
     this.prevIdx = Object.assign({}, this.sharedBuffer.idx);
     this.idx = Object.assign({}, this.sharedBuffer.idx);
@@ -189,8 +183,9 @@ AFRAME.registerComponent("networked-drawing", {
       }
     };
 
-    const glb = await new Promise(resolve => {
-      exporter.parse(mesh, resolve, {
+    // TODO: Proper error handling
+    const glb = await new Promise((resolve, reject) => {
+      exporter.parse(mesh, resolve, reject, {
         binary: true,
         includeCustomExtensions: true
       });
@@ -352,8 +347,9 @@ AFRAME.registerComponent("networked-drawing", {
           this.invalidPointRead = true;
 
           console.error(
-            `Draw networking error: ID ${this.drawingId} expected point ${this.lastReadPointCount +
-              1} but received ${pointCount}`
+            `Draw networking error: ID ${this.drawingId} expected point ${
+              this.lastReadPointCount + 1
+            } but received ${pointCount}`
           );
         }
 
@@ -618,7 +614,7 @@ AFRAME.registerComponent("networked-drawing", {
     const datum = {
       networkBufferCount: this.networkBufferCount,
       idxLength: this.vertexCount - 1,
-      time: this.el.sceneEl.clock.elapsedTime * 1000
+      time: APP.world.time.elapsed
     };
     this.networkBufferHistory.push(datum);
     this.vertexCount = 0;
@@ -717,12 +713,12 @@ AFRAME.registerComponent("networked-drawing", {
     let segmentIndex = 0;
     for (let i = 0; i < this.segments * 2 - (this.segments % 2); i++) {
       if ((i - 2) % 4 === 0) {
-        this._addVertex({ position: point, normal: normal });
+    this._addVertex({ position: point, normal: normal });
       } else {
         this._addVertex(segments[segmentIndex % this.segments]);
         if ((i + 1) % 5 !== 0) {
           ++segmentIndex;
-        }
+    }
       }
     }
   },
@@ -813,7 +809,7 @@ AFRAME.registerComponent("deserialize-drawing-button", {
         addMeshScaleAnimation(drawingManager.drawing.el.object3DMap.mesh, { x: 0.001, y: 0.001, z: 0.001 });
 
         if (this.targetEl.components.pinnable && this.targetEl.components.pinnable.data.pinned) {
-          this.targetEl.setAttribute("pinnable", "pinned", false);
+          window.APP.pinningHelper.setPinned(this.targetEl, false);
         }
         this.targetEl.parentEl.removeChild(this.targetEl);
         this.el.sceneEl.systems["hubs-systems"].soundEffectsSystem.playSoundOneShot(SOUND_PEN_START_DRAW);

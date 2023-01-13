@@ -5,10 +5,26 @@ import styles from "./Button.scss";
 import textInputStyles from "./TextInput.scss";
 import { FormattedMessage } from "react-intl";
 
-export const presets = ["transparent", "basic", "accept", "cancel", "red", "orange", "green", "blue", "purple"];
+export const presets = [
+  "transparent",
+  "basic",
+  "primary",
+  "accept",
+  "cancel",
+  "accent1",
+  "accent2",
+  "accent3",
+  "accent4",
+  "accent5",
+  "accent6",
+  "landing",
+  "signin",
+  "text"
+];
 
+/* eslint-disable-next-line react/display-name */
 export const Button = memo(
-  forwardRef(({ as, sm, lg, xl, preset, className, children, ...rest }, ref) => {
+  forwardRef(({ as, sm, lg, xl, thin, thick, preset, className, children, ...rest }, ref) => {
     const ButtonComponent = as;
     const buttonProps = ButtonComponent === "button" ? { type: "button" } : {};
 
@@ -18,7 +34,13 @@ export const Button = memo(
           styles.button,
           textInputStyles.button,
           styles[preset],
-          { [styles.sm]: sm, [styles.lg]: lg, [styles.xl]: xl },
+          {
+            [styles.sm]: sm,
+            [styles.lg]: lg,
+            [styles.xl]: xl,
+            [styles.thin]: thin,
+            [styles.thick]: thick
+          },
           className
         )}
         {...buttonProps}
@@ -36,7 +58,11 @@ Button.propTypes = {
   preset: PropTypes.oneOf(presets),
   className: PropTypes.string,
   children: PropTypes.node,
-  sm: PropTypes.bool
+  sm: PropTypes.bool,
+  lg: PropTypes.bool,
+  xl: PropTypes.bool,
+  thin: PropTypes.bool,
+  thick: PropTypes.bool
 };
 
 Button.defaultProps = {

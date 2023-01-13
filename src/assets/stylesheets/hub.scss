@@ -1,4 +1,3 @@
-@import 'root-vars';
 @import 'shared';
 
 html, body {
@@ -52,4 +51,12 @@ a-entity {
   font-size: inherit;
   vertical-align: -0.125em;
   height: 1em;
+}
+
+// Dat GUI
+.dg select {
+  color: black;
+}
+.dg input {
+  line-height: normal;
 }

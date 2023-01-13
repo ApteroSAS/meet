@@ -3,7 +3,16 @@ import { RoomLayout } from "../layout/RoomLayout";
 import { PeopleSidebar } from "./PeopleSidebar";
 
 export default {
-  title: "PeopleSidebar"
+  title: "Room/PeopleSidebar",
+  parameters: {
+    layout: "fullscreen"
+  },
+  argTypes: {
+    voiceChatEnabled: {
+      control: "boolean",
+      defaultValue: false
+    }
+  }
 };
 
 const people = [
@@ -60,8 +69,10 @@ const people = [
   }
 ];
 
-export const Base = () => <RoomLayout sidebar={<PeopleSidebar people={people} />} />;
+export const Base = args => (
+  <RoomLayout sidebar={<PeopleSidebar people={people} canVoiceChat={args.voiceChatEnabled} />} />
+);
 
-Base.parameters = {
-  layout: "fullscreen"
+Base.args = {
+  voiceChatEnabled: false
 };

@@ -11,11 +11,10 @@ import styles from "./RoomEntryModal.scss";
 import styleUtils from "../styles/style-utils.scss";
 import { useCssBreakpoints } from "react-use-css-breakpoints";
 import { Column } from "../layout/Column";
+import { AppLogo } from "../misc/AppLogo";
 import { FormattedMessage } from "react-intl";
 
 export function RoomEntryModal({
-  appName,
-  logoSrc,
   className,
   roomName,
   showJoinRoom,
@@ -32,12 +31,11 @@ export function RoomEntryModal({
   return (
     <Modal className={classNames(styles.roomEntryModal, className)} disableFullscreen {...rest}>
       <Column center className={styles.content}>
-        {breakpoint !== "sm" &&
-          breakpoint !== "md" && (
-            <div className={styles.logoContainer}>
-              <img src={logoSrc} alt={appName} />
-            </div>
-          )}
+        {breakpoint !== "sm" && breakpoint !== "md" && (
+          <div className={styles.logoContainer}>
+            <AppLogo />
+          </div>
+        )}
         <div className={styles.roomName}>
           <h5>
             <FormattedMessage id="room-entry-modal.room-name-label" defaultMessage="Room Name" />
@@ -46,7 +44,7 @@ export function RoomEntryModal({
         </div>
         <Column center className={styles.buttons}>
           {showJoinRoom && (
-            <Button preset="blue" onClick={onJoinRoom}>
+            <Button preset="accent4" onClick={onJoinRoom}>
               <EnterIcon />
               <span>
                 <FormattedMessage id="room-entry-modal.join-room-button" defaultMessage="Join Room" />
@@ -54,7 +52,7 @@ export function RoomEntryModal({
             </Button>
           )}
           {showEnterOnDevice && (
-            <Button preset="purple" onClick={onEnterOnDevice}>
+            <Button preset="accent5" onClick={onEnterOnDevice}>
               <VRIcon />
               <span>
                 <FormattedMessage id="room-entry-modal.enter-on-device-button" defaultMessage="Enter On Device" />
@@ -62,25 +60,24 @@ export function RoomEntryModal({
             </Button>
           )}
           {showSpectate && (
-            <Button preset="orange" onClick={onSpectate}>
+            <Button preset="accent2" onClick={onSpectate}>
               <ShowIcon />
               <span>
                 <FormattedMessage id="room-entry-modal.spectate-button" defaultMessage="Spectate" />
               </span>
             </Button>
           )}
-          {showOptions &&
-            breakpoint !== "sm" && (
-              <>
-                <hr className={styleUtils.showLg} />
-                <Button preset="transparent" className={styleUtils.showLg} onClick={onOptions}>
-                  <SettingsIcon />
-                  <span>
-                    <FormattedMessage id="room-entry-modal.options-button" defaultMessage="Options" />
-                  </span>
-                </Button>
-              </>
-            )}
+          {showOptions && breakpoint !== "sm" && (
+            <>
+              <hr className={styleUtils.showLg} />
+              <Button preset="transparent" className={styleUtils.showLg} onClick={onOptions}>
+                <SettingsIcon />
+                <span>
+                  <FormattedMessage id="room-entry-modal.options-button" defaultMessage="Options" />
+                </span>
+              </Button>
+            </>
+          )}
         </Column>
       </Column>
     </Modal>
@@ -88,8 +85,6 @@ export function RoomEntryModal({
 }
 
 RoomEntryModal.propTypes = {
-  appName: PropTypes.string,
-  logoSrc: PropTypes.string,
   className: PropTypes.string,
   roomName: PropTypes.string.isRequired,
   showJoinRoom: PropTypes.bool,

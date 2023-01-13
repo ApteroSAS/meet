@@ -6,9 +6,12 @@
 // - Sync is bidirectional, however, elB is assumed to be a 'derivate of' elA. this means:
 //   - for the video case, elA will have its volume set to zero and restored if elB is removed
 //   - when elA is removed, elB will be removed (done in media-loader) but not vice-versa
+
+import { updateAudioSettings } from "../update-audio-settings";
+
 //
 AFRAME.registerSystem("linked-media", {
-  init: function() {
+  init: function () {
     this.handlers = [];
     this.addLinkageHandler = this.addLinkageHandler.bind(this);
     this.syncLinkage = this.syncLinkage.bind(this);
@@ -39,7 +42,7 @@ AFRAME.registerSystem("linked-media", {
     return handler;
   },
 
-  registerLinkage: function(elA, elB) {
+  registerLinkage: function (elA, elB) {
     this.syncLinkage(elA, elB);
 
     const handlerA = this.addLinkageHandler(elA, elB);
@@ -47,15 +50,17 @@ AFRAME.registerSystem("linked-media", {
     elA.setAttribute("linked-media", "");
     elB.setAttribute("linked-media", "");
 
-    // As a convenience, if elA is a video, we turn its volume off so we don't hear it twice
-    if (elA.components["media-video"]) {
-      elA.setAttribute("media-video", "volume", 0);
+    // As a convenience, if elA has audio, we turn its volume off so we don't hear it twice
+    APP.mutedState.add(elA);
+    const audio = APP.audios.get(elA);
+    if (audio) {
+      updateAudioSettings(elA, audio);
     }
 
     this.handlers.push([elA, elB, handlerA, handlerB]);
   },
 
-  deregisterLinkage: function(el) {
+  deregisterLinkage: function (el) {
     // Deregister elA -> elB, get list of elBs, and remove them
     for (const [elA, elB, handlerA, handlerB] of this.handlers) {
       if (el === elA || el === elB) {
@@ -63,9 +68,10 @@ AFRAME.registerSystem("linked-media", {
         elB.removeEventListener("componentchanged", handlerB);
       }
 
-      // As a convenience, if elA is a video, we restore its volume to 50% since we muted it upon link.
-      if (elA.components["media-video"]) {
-        elA.setAttribute("media-video", "volume", 0.5);
+      APP.mutedState.delete(elA);
+      const audio = APP.audios.get(elA);
+      if (audio) {
+        updateAudioSettings(elA, audio);
       }
     }
 
@@ -106,7 +112,7 @@ AFRAME.registerSystem("linked-media", {
 });
 
 AFRAME.registerComponent("linked-media", {
-  remove: function() {
+  remove: function () {
     this.system.deregisterLinkage(this.el);
   }
 });

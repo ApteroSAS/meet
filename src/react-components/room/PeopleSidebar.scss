@@ -2,6 +2,7 @@
 
 :local(.person) {
   font-size: theme.$font-size-sm;
+  color: theme.$text1-color;
 
   & > * {
     margin-right: 8px;
@@ -13,13 +14,7 @@
 }
 
 :local(.moderator-icon) {
-  *[stroke=\#000] {
-    stroke: theme.$red;
-  }
-
-  *[fill=\#000] {
-    fill: theme.$red;
-  }
+  color: theme.$admin-color;
 }
 
 :local(.presence) {

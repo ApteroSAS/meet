@@ -9,9 +9,9 @@ export function CreateRoomButton() {
 
   return (
     <Button
-      lg={breakpoint === "sm" || breakpoint === "md"}
+      thick={breakpoint === "sm" || breakpoint === "md"}
       xl={breakpoint !== "sm" && breakpoint !== "md"}
-      preset="blue"
+      preset="landing"
       style={{width: '100%'}}
       onClick={e => {
         e.preventDefault();

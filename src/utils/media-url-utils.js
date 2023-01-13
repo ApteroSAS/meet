@@ -5,7 +5,7 @@ import { proxyURL } from "../aptero/react-components/media-utils-lib";
 
 const nonCorsProxyDomains = (configs.NON_CORS_PROXY_DOMAINS || "").split(",");
 if (configs.CORS_PROXY_SERVER) {
-  nonCorsProxyDomains.push(configs.CORS_PROXY_SERVER);
+  nonCorsProxyDomains.push(configs.CORS_PROXY_SERVER.split(":")[0]);
 }
 nonCorsProxyDomains.push(document.location.hostname);
 
@@ -19,6 +19,7 @@ const commonKnownContentTypes = {
   mp4: "video/mp4",
   mp3: "audio/mpeg",
   basis: "image/basis",
+  ktx2: "image/ktx2",
   m3u8: "application/vnd.apple.mpegurl",
   mpd: "application/dash+xml"
 };
@@ -34,10 +35,7 @@ function b64EncodeUnicode(str) {
 const farsparkEncodeUrl = url => {
   // farspark doesn't know how to read '=' base64 padding characters
   // translate base64 + to - and / to _ for URL safety
-  return b64EncodeUnicode(url)
-    .replace(/=+$/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+  return b64EncodeUnicode(url).replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 
 export const scaledThumbnailUrlFor = (url, width, height) => {
@@ -101,7 +99,33 @@ export function getAbsoluteHref(baseUrl, relativeUrl) {
   return getAbsoluteUrl(baseUrl, relativeUrl).href;
 }
 
+// Note these files are configured in webpack.config.js to be handled with file-loader, so this will be a string containing the file paths
+import basisJsUrl from "three/examples/js/libs/basis/basis_transcoder.js";
+import dracoWrapperJsUrl from "three/examples/js/libs/draco/gltf/draco_wasm_wrapper.js";
+import basisWasmUrl from "three/examples/js/libs/basis/basis_transcoder.wasm";
+import dracoWasmUrl from "three/examples/js/libs/draco/gltf/draco_decoder.wasm";
+
+export const rewriteBasisTranscoderUrls = function (url) {
+  if (url === "basis_transcoder.js") {
+    return basisJsUrl;
+  } else if (url === "basis_transcoder.wasm") {
+    return basisWasmUrl;
+  }
+  return url;
+};
+
 export const getCustomGLTFParserURLResolver = gltfUrl => url => {
+  // Intercept loading of basis transcoder with content hashed urls
+  if (url === "basis_transcoder.js") {
+    return basisJsUrl;
+  } else if (url === "basis_transcoder.wasm") {
+    return basisWasmUrl;
+  } else if (url === "draco_wasm_wrapper.js") {
+    return dracoWrapperJsUrl;
+  } else if (url === "draco_decoder.wasm") {
+    return dracoWasmUrl;
+  }
+
   if (typeof url !== "string" || url === "") return "";
   if (/^(https?:)?\/\//i.test(url)) return proxiedUrlFor(url);
   if (/^data:.*,.*$/i.test(url)) return url;
@@ -164,9 +188,9 @@ async function isHubsServer(url) {
   return isHubsServer;
 }
 
-const hubsSceneRegex = /https?:\/\/[^/]+\/scenes\/(\w+)\/?\S*/;
-const hubsAvatarRegex = /https?:\/\/[^/]+\/avatars\/(?<id>\w+)\/?\S*/;
-const hubsRoomRegex = /(https?:\/\/)?[^/]+\/([a-zA-Z0-9]{7})\/?\S*/;
+const hubsSceneRegex = /https?:\/\/[^/]+\/scenes\/[a-zA-Z0-9]{7}(?:\/|$)/;
+const hubsAvatarRegex = /https?:\/\/[^/]+\/avatars\/(?<id>[a-zA-Z0-9]{7})(?:\/|$)/;
+const hubsRoomRegex = /(https?:\/\/)?[^/]+\/(?<id>[a-zA-Z0-9]{7})(?:\/|$)/;
 
 export const isLocalHubsUrl = async url =>
   (await isHubsServer(url)) && new URL(url).origin === document.location.origin;
@@ -178,7 +202,10 @@ export const isHubsAvatarUrl = async url => (await isHubsServer(url)) && hubsAva
 export const isLocalHubsAvatarUrl = async url => (await isHubsAvatarUrl(url)) && (await isLocalHubsUrl(url));
 
 export const isHubsRoomUrl = async url =>
-  (await isHubsServer(url)) && !(await isHubsAvatarUrl(url)) && !(await isHubsSceneUrl(url)) && hubsRoomRegex.test(url);
+  (await isHubsServer(url)) &&
+  !(await isHubsAvatarUrl(url)) &&
+  !(await isHubsSceneUrl(url)) &&
+  url.match(hubsRoomRegex)?.groups.id;
 
 export const isHubsDestinationUrl = async url =>
   (await isHubsServer(url)) && ((await isHubsSceneUrl(url)) || (await isHubsRoomUrl(url)));

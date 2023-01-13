@@ -16,17 +16,17 @@ AFRAME.registerComponent("in-world-hud", {
     this.mic = this.el.querySelector(".mic");
     this.spawn = this.el.querySelector(".spawn");
     this.pen = this.el.querySelector(".penhud");
-    //this.cameraBtn = this.el.querySelector(".camera-btn");
+    this.cameraBtn = this.el.querySelector(".camera-btn");
     this.inviteBtn = this.el.querySelector(".invite-btn");
     this.background = this.el.querySelector(".bg");
 
-    this.quitbtn = this.el.querySelector(".quitbtn");
-    this.playbtn = this.el.querySelector(".play");
-    this.pausebtn = this.el.querySelector(".pause");
-    this.restartbtn = this.el.querySelector(".restart");
+    this.onMicStateChanged = () => {
+      this.mic.setAttribute("mic-button", "active", APP.dialog.isMicEnabled);
+    };
+    APP.dialog.on("mic-state-changed", this.onMicStateChanged);
 
     this.updateButtonStates = () => {
-      this.mic.setAttribute("mic-button", "active", this.el.sceneEl.is("muted"));
+      this.mic.setAttribute("mic-button", "active", APP.dialog.isMicEnabled);
       this.pen.setAttribute("icon-button", "active", this.el.sceneEl.is("pen"));
       //this.cameraBtn.setAttribute("icon-button", "active", this.el.sceneEl.is("camera"));
       if (window.APP.hubChannel) {
@@ -34,21 +34,15 @@ AFRAME.registerComponent("in-world-hud", {
         this.pen.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_drawing"));
         //this.cameraBtn.setAttribute("icon-button", "disabled", !window.APP.hubChannel.can("spawn_camera"));
       }
-
-      const active = video360Service.isEnable();
-      this.playbtn.setAttribute("icon-button", "disabled", !active);
-      this.pausebtn.setAttribute("icon-button", "disabled", !active);
-      this.restartbtn.setAttribute("icon-button", "disabled", !active);
     };
 
     this.onStateChange = evt => {
-      if (!(evt.detail === "muted" || evt.detail === "frozen" || evt.detail === "pen" || evt.detail === "camera"))
-        return;
+      if (!(evt.detail === "frozen" || evt.detail === "pen" || evt.detail === "camera")) return;
       this.updateButtonStates();
     };
 
     this.onMicClick = () => {
-      this.el.emit("action_mute");
+      APP.mediaDevicesManager.toggleMic();
     };
 
     this.onSpawnClick = () => {
@@ -74,22 +68,6 @@ AFRAME.registerComponent("in-world-hud", {
     this.onHubUpdated = e => {
       this.inviteBtn.object3D.visible = e.detail.hub.entry_mode !== "invite";
     };
-
-    this.onQuitClick = () => {
-      this.el.sceneEl.emit("leave_room_requested");
-    };
-
-    this.onPlayClick = () => {
-      video360Service.play();
-    };
-
-    this.onPauseClick = () => {
-      video360Service.pause();
-    };
-
-    this.onRestartClick = () => {
-      video360Service.setTime(0);
-    };
   },
 
   play() {
@@ -99,15 +77,10 @@ AFRAME.registerComponent("in-world-hud", {
     this.el.sceneEl.addEventListener("hub_updated", this.onHubUpdated);
     this.updateButtonStates();
 
-    this.playbtn.object3D.addEventListener("interact", this.onPlayClick);
-    this.pausebtn.object3D.addEventListener("interact", this.onPauseClick);
-    this.restartbtn.object3D.addEventListener("interact", this.onRestartClick);
-    this.quitbtn.object3D.addEventListener("interact", this.onQuitClick);
-
     this.mic.object3D.addEventListener("interact", this.onMicClick);
     this.spawn.object3D.addEventListener("interact", this.onSpawnClick);
     this.pen.object3D.addEventListener("interact", this.onPenClick);
-    //this.cameraBtn.object3D.addEventListener("interact", this.onCameraClick);
+    this.cameraBtn.object3D.addEventListener("interact", this.onCameraClick);
     this.inviteBtn.object3D.addEventListener("interact", this.onInviteClick);
   },
 
@@ -117,16 +90,10 @@ AFRAME.registerComponent("in-world-hud", {
     window.APP.hubChannel.removeEventListener("permissions_updated", this.updateButtonStates);
     this.el.sceneEl.removeEventListener("hub_updated", this.onHubUpdated);
 
-
-    this.playbtn.object3D.addEventListener("interact", this.onPlayClick);
-    this.pausebtn.object3D.addEventListener("interact", this.onPauseClick);
-    this.restartbtn.object3D.addEventListener("interact", this.onRestartClick);
-    this.quitbtn.object3D.removeEventListener("interact", this.onQuitClick);
-
     this.mic.object3D.removeEventListener("interact", this.onMicClick);
     this.spawn.object3D.removeEventListener("interact", this.onSpawnClick);
     this.pen.object3D.removeEventListener("interact", this.onPenClick);
-    //this.cameraBtn.object3D.removeEventListener("interact", this.onCameraClick);
+    this.cameraBtn.object3D.removeEventListener("interact", this.onCameraClick);
     this.inviteBtn.object3D.removeEventListener("interact", this.onInviteClick);
   }
 });

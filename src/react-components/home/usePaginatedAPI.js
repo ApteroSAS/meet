@@ -16,8 +16,7 @@ export function usePaginatedAPI(apiCallback) {
 
   const [internalState, setInternalState] = useState({ cursor: 0 });
 
-  const loadMore = useCallback(
-    () => {
+  const loadMore = useCallback(() => {
       if (!state.nextCursor || state.isLoading) {
         console.warn("Can't load more results while results are already loading.");
         return;
@@ -33,13 +32,10 @@ export function usePaginatedAPI(apiCallback) {
       }));
 
       setInternalState({ cursor: state.nextCursor });
-    },
-    [state.nextCursor, state.isLoading]
-  );
+  }, [state.nextCursor, state.isLoading]);
 
   // Reset pagination state when paging callback changes
-  useEffect(
-    () => {
+  useEffect(() => {
       if (curApiCallback.current === apiCallback) {
         return;
       }
@@ -57,12 +53,9 @@ export function usePaginatedAPI(apiCallback) {
       curApiCallback.current = apiCallback;
 
       setInternalState({ cursor: 0 });
-    },
-    [apiCallback]
-  );
+  }, [apiCallback]);
 
-  useEffect(
-    () => {
+  useEffect(() => {
       const caller = curApiCallback.current;
 
       curApiCallback
@@ -97,9 +90,7 @@ export function usePaginatedAPI(apiCallback) {
             error
           }));
         });
-    },
-    [internalState]
-  );
+  }, [internalState]);
 
   return { ...state, loadMore };
 }

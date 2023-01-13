@@ -5,6 +5,7 @@ import { ReactComponent as AvatarIcon } from "./Avatar.svg";
 import { ReactComponent as CameraIcon } from "./Camera.svg";
 import { ReactComponent as CaretDownIcon } from "./CaretDown.svg";
 import { ReactComponent as ChatIcon } from "./Chat.svg";
+import { ReactComponent as ChatOffIcon } from "./ChatOff.svg";
 import { ReactComponent as ChevronBackIcon } from "./ChevronBack.svg";
 import { ReactComponent as CloseIcon } from "./Close.svg";
 import { ReactComponent as DeleteIcon } from "./Delete.svg";
@@ -43,6 +44,7 @@ import { ReactComponent as VolumeMutedIcon } from "./VolumeMuted.svg";
 import { ReactComponent as VolumeOffIcon } from "./VolumeOff.svg";
 import { ReactComponent as VRIcon } from "./VR.svg";
 import { ReactComponent as WandIcon } from "./Wand.svg";
+import { ReactComponent as HmcLogo } from "./HmcLogo.svg";
 
 export default {
   title: "Icon",
@@ -59,6 +61,7 @@ export const AllIcons = args => (
     <CameraIcon {...args} />
     <CaretDownIcon {...args} />
     <ChatIcon {...args} />
+    <ChatOffIcon {...args} />
     <ChevronBackIcon {...args} />
     <CloseIcon {...args} />
     <DeleteIcon {...args} />
@@ -70,6 +73,7 @@ export const AllIcons = args => (
     <GoToIcon {...args} />
     <HelpIcon {...args} />
     <HideIcon {...args} />
+    <HmcLogo {...args} />
     <ImageIcon {...args} />
     <InviteIcon {...args} />
     <LeaveIcon {...args} />

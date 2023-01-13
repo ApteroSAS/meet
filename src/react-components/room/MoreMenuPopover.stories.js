@@ -11,9 +11,13 @@ import { ReactComponent as TextDocumentIcon } from "../icons/TextDocument.svg";
 import { ReactComponent as SupportIcon } from "../icons/Support.svg";
 import { ReactComponent as ShieldIcon } from "../icons/Shield.svg";
 import { CompactMoreMenuButton, MoreMenuContextProvider, MoreMenuPopoverButton } from "./MoreMenuPopover";
+import { TERMS, PRIVACY } from "../../constants";
 
 export default {
-  title: "MoreMenuPopover"
+  title: "Room/MoreMenuPopover",
+  parameters: {
+    layout: "fullscreen"
+  }
 };
 
 const menu = [
@@ -55,13 +59,13 @@ const menu = [
         id: "tos",
         label: "Terms of Service",
         icon: TextDocumentIcon,
-        href: "https://github.com/mozilla/hubs/blob/master/TERMS.md"
+        href: TERMS
       },
       {
         id: "privacy",
         label: "Privacy Notice",
         icon: ShieldIcon,
-        href: "https://github.com/mozilla/hubs/blob/master/PRIVACY.md"
+        href: PRIVACY
       }
     ]
   }
@@ -72,7 +76,3 @@ export const Base = () => (
     <RoomLayout viewport={<CompactMoreMenuButton />} toolbarRight={<MoreMenuPopoverButton menu={menu} />} />
   </MoreMenuContextProvider>
 );
-
-Base.parameters = {
-  layout: "fullscreen"
-};

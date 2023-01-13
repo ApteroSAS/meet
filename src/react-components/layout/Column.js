@@ -3,8 +3,12 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import styles from "./Column.scss";
 
+/* eslint-disable-next-line react/display-name */
 export const Column = forwardRef(
-  ({ as: Component, className, gap, padding, center, centerMd, grow, overflow, children, ...rest }, ref) => {
+  (
+    { as: Component, lastChildMargin, className, gap, padding, center, centerMd, grow, overflow, children, ...rest },
+    ref
+  ) => {
     const gapClass = gap === true ? styles.mdGap : styles[`${gap}Gap`];
     const paddingClass = padding === true ? styles.lgPadding : styles[`${padding}Padding`];
 
@@ -22,7 +26,8 @@ export const Column = forwardRef(
             [styles.centerMd]: centerMd === true || centerMd === "horizontal" || centerMd === "both",
             [styles.centerVerticalMd]: centerMd === "vertical" || centerMd === "both",
             [styles.grow]: grow,
-            [styles.overflow]: overflow
+            [styles.overflow]: overflow,
+            [styles.margin0LastChild]: lastChildMargin
           },
           className
         )}
@@ -42,6 +47,7 @@ Column.propTypes = {
   centerMd: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   center: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   grow: PropTypes.bool,
+  lastChildMargin: PropTypes.bool,
   overflow: PropTypes.bool
 };
 
@@ -52,5 +58,6 @@ Column.defaultProps = {
   centerMd: false,
   padding: false,
   grow: false,
-  overflow: false
+  overflow: false,
+  lastChildMargin: true
 };

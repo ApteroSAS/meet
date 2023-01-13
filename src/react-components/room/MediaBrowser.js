@@ -24,7 +24,6 @@ const navTitleMessages = defineMessages({
   scenes: { id: "media-browser.nav_title.scenes", defaultMessage: "Scenes" },
   avatars: { id: "media-browser.nav_title.avatars", defaultMessage: "Avatars" },
   sketchfab: { id: "media-browser.nav_title.sketchfab", defaultMessage: "Sketchfab" },
-  poly: { id: "media-browser.nav_title.poly", defaultMessage: "Google Poly" },
   twitch: { id: "media-browser.nav_title.twitch", defaultMessage: "Twitch" },
   objects: { id: "media-browser.nav_title.objects", defaultMessage: "Objects" },
   videos360: { id: "media-browser.nav_title.videos360", defaultMessage: "Videos 360" },
@@ -83,7 +82,7 @@ export function MediaBrowser({
               ref={searchInputRef}
               placeholder={searchPlaceholder}
               onKeyDown={onSearchKeyDown}
-              beforeInput={<SearchIcon />}
+              beforeInput={<SearchIcon className={styles.searchIcon} />}
               afterInput={
                 <IconButton onClick={onClearSearch}>
                   <CloseIcon height={16} width={16} />
@@ -102,7 +101,7 @@ export function MediaBrowser({
             <Button
               sm
               key={source}
-              preset={selectedSource === source ? "blue" : "transparent"}
+              preset={selectedSource === source ? "primary" : "transparent"}
               onClick={() => onSelectSource(source)}
             >
               {intl.formatMessage(navTitleMessages[source])}
@@ -116,7 +115,7 @@ export function MediaBrowser({
             <Button
               sm
               key={i}
-              preset={activeFilter === facet.params.filter ? "blue" : "transparent"}
+              preset={activeFilter === facet.params.filter ? "primary" : "transparent"}
               onClick={() => onSelectFacet(facet)}
             >
               {facet.text}
