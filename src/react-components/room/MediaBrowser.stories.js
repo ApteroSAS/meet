@@ -5,7 +5,7 @@ import { IconButton } from "../input/IconButton";
 import { ReactComponent as LinkIcon } from "../icons/Link.svg";
 import { CreateTile, MediaTile } from "./MediaTiles";
 import backgroundUrl from "../../assets/images/home-hero-background-unbranded.png";
-import { createAvatarCustomTileV2 } from "../../aptero/react-components/media-tiles-lib";
+import { createAvatarCustomTileV2 } from "../../aptero/module/HubsBridge/react-components/media-tiles-lib";
 
 export default {
   title: "Room/MediaBrowser",
@@ -298,29 +298,29 @@ export const AvatarListings = () => (
   <React.Fragment>
     {createAvatarCustomTileV2()}
     <div> AVATEST2 </div>
-  <MediaBrowser
-    searchPlaceholder="Search Avatars..."
-    mediaSources={mediaSources}
-    selectedSource={"avatars"}
-    activeFilter={"featured"}
-    facets={FACETS.avatars}
-    headerRight={
-      <IconButton lg>
-        <LinkIcon />
-        <p>Custom Avatar</p>
-      </IconButton>
-    }
-    hasNext
-  >
+    <MediaBrowser
+      searchPlaceholder="Search Avatars..."
+      mediaSources={mediaSources}
+      selectedSource={"avatars"}
+      activeFilter={"featured"}
+      facets={FACETS.avatars}
+      headerRight={
+        <IconButton lg>
+          <LinkIcon />
+          <p>Custom Avatar</p>
+        </IconButton>
+      }
+      hasNext
+    >
       {createAvatarCustomTileV2()}
       {/*<CreateTile label="Create Avatar" type="avatar" />*/}
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-    <MediaTile entry={avatarListing} />
-  </MediaBrowser>
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+      <MediaTile entry={avatarListing} />
+    </MediaBrowser>
   </React.Fragment>
 );
 
@@ -328,28 +328,28 @@ export const Avatars = () => (
   <React.Fragment>
     {createAvatarCustomTileV2()}
     <div> AVATEST </div>
-  <MediaBrowser
-    searchPlaceholder="Search Avatars..."
-    mediaSources={mediaSources}
-    selectedSource={"avatars"}
-    activeFilter={"my-avatars"}
-    facets={FACETS.avatars}
-    headerRight={
-      <IconButton lg>
-        <LinkIcon />
-        <p>Custom Avatar</p>
-      </IconButton>
-    }
-    hasNext
-  >
+    <MediaBrowser
+      searchPlaceholder="Search Avatars..."
+      mediaSources={mediaSources}
+      selectedSource={"avatars"}
+      activeFilter={"my-avatars"}
+      facets={FACETS.avatars}
+      headerRight={
+        <IconButton lg>
+          <LinkIcon />
+          <p>Custom Avatar</p>
+        </IconButton>
+      }
+      hasNext
+    >
       {/*<CreateTile label="Create Avatar" type="avatar" />*/}
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-    <MediaTile entry={avatar} />
-  </MediaBrowser>
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+      <MediaTile entry={avatar} />
+    </MediaBrowser>
   </React.Fragment>
 );
 

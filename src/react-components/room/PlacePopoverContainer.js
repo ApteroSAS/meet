@@ -86,7 +86,6 @@ export function PlacePopoverContainer({ scene, mediaSearchStore, showNonHistorie
             onSelect: () => showNonHistoriedDialog(ObjectUrlModalContainer, { scene })
           }
         ];
-<<<<<<< HEAD
 
         if (hubChannel.can("spawn_and_move_media")) {
           nextItems = [
@@ -101,7 +100,7 @@ export function PlacePopoverContainer({ scene, mediaSearchStore, showNonHistorie
               label: <FormattedMessage id="place-popover.item-type.gif" defaultMessage="GIF" />,
               onSelect: () => mediaSearchStore.sourceNavigate("gifs")
             },
-            (configs.integration("objects") ||configs.integration("poly") || configs.integration("sketchfab")) && {
+            (configs.integration("objects") || configs.integration("poly") || configs.integration("sketchfab")) && {
               id: "model",
               icon: ObjectIcon,
               color: "orange",
@@ -134,8 +133,6 @@ export function PlacePopoverContainer({ scene, mediaSearchStore, showNonHistorie
         }
 
         setItems(nextItems);
-=======
->>>>>>> 5929bf56642b84c7872f9bf715a8f544dc58d206
       }
 
       setItems(nextItems);

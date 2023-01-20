@@ -1,0 +1,88 @@
+{
+  "name": "@aptero/axolotis-module-teams",
+  "version": "1.0.0",
+  "description": "Axolotis - Teams module",
+  "module": "src/lib/bundle-MicrosoftService.ts",
+  "exports": {
+    ".": "./dist-index.js",
+    "./*": "./*"
+  },
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "setup:link": "yarn link @aptero/axolotis-module-basic",
+    "build": "rimraf ./lib/ && ttsc && webpack",
+    "start": "cross-env OPEN=true yarn run dev",
+    "build:dev": "cross-env DEVTOOL=eval-source-map yarn run build",
+    "dev:watch": "cross-env DEVTOOL=eval-source-map tsc-watch --onSuccess \"webpack\"",
+    "ci:test": "cross-env NODE_ENV=development npx playwright test",
+    "ci:test:debug": "cross-env NODE_ENV=development npx playwright test --headed",
+    "ci:coverage:serve": "cross-env NODE_ENV=development USE_BABEL_PLUGIN_ISTANBUL=1 webpack --stats-error-details --config webpack.config.demo.js && npx http-server dist -p 9080",
+    "ci:coverage:build": "cross-env NODE_ENV=development USE_BABEL_PLUGIN_ISTANBUL=1 yarn run build",
+    "ci:coverage": "cross-env NODE_ENV=development npx playwright test && nyc --no-clean yarn --version",
+    "ci": "cross-env CI=true start-server-and-test ci:coverage:serve http://localhost:9080 ci:coverage"
+  },
+  "author": "Aptero <admin@aptero.co>",
+  "homepage": "https://aptero.co",
+  "keywords": [
+    "library",
+    "teams",
+    "microsoft",
+    "es6"
+  ],
+  "devDependencies": {
+    "@aptero/axolotis-player": "github:ApteroSAS/axolotis-player.git#semver:^2.1.6",
+    "@babel/cli": "^7.19.3",
+    "@babel/core": "^7.19.3",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-transform-typescript": "^7.19.3",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.19.4",
+    "@babel/preset-typescript": "^7.18.6",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@playwright/test": "^1.27.1",
+    "@typescript-eslint/eslint-plugin": "^5.40.0",
+    "@typescript-eslint/parser": "^5.40.0",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.2.5",
+    "babel-plugin-istanbul": "^6.1.1",
+    "babel-preset-minify": "^0.5.2",
+    "copy-webpack-plugin": "^11.0.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.25.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "html-webpack-plugin": "^5.5.0",
+    "http-server": "^14.1.1",
+    "mini-css-extract-plugin": "^2.6.1",
+    "nyc": "^15.1.0",
+    "playwright": "^1.27.1",
+    "prettier": "^2.7.1",
+    "prettier-webpack-plugin": "^1.2.0",
+    "source-map-support": "^0.5.21",
+    "start-server-and-test": "^1.14.0",
+    "terser-webpack-plugin": "^5.3.6",
+    "ts-node": "^10.9.1",
+    "tsc-watch": "^5.0.3",
+    "ttypescript": "^1.5.13",
+    "typescript": "^4.8.4",
+    "typescript-transform-paths": "^3.3.1",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "4.11.1"
+  },
+  "dependencies": {
+    "@aptero/axolotis-module-basic": "file:./modules/basic-modules",
+    "@azure/msal-browser": "2.30.0",
+    "@microsoft/microsoft-graph-client": "^3.0.2",
+    "@microsoft/teams-js": "^2.4.1",
+    "@microsoft/teamsfx": "^1.2.0",
+    "tsutils": "^3.21.0"
+  },
+  "peerDependencies": {
+    "@aptero/axolotis-player": "github:ApteroSAS/axolotis-player.git#semver:^2.1.6"
+  },
+  "browser": {
+    "[module-name]": false
+  }
+}

@@ -22,6 +22,7 @@ declare module "aframe" {
   }
 
   interface AComponent {
+    data: PromiseLike<T> | T;
     init();
     tick: FnTick;
     tock: FnTick;

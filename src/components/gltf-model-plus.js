@@ -14,7 +14,7 @@ import { promisifyWorker } from "../utils/promisify-worker.js";
 import qsTruthy from "../utils/qs_truthy";
 import { cloneObject3D } from "../utils/three-utils";
 import SketchfabZipWorker from "../workers/sketchfab-zip.worker.js";
-import { gltfExtensionProcessorService } from "../aptero/service/GLTFExtensionProcessorService";
+import { gltfExtensionProcessorService } from "../aptero/module/ButtonAPI/api/GLTFExtensionProcessorService";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -153,7 +153,7 @@ function getHubsComponentsFromMaterial(node) {
 /// or templates associated with any of their nodes.)
 ///
 /// Returns the A-Frame entity associated with the given node, if one was constructed.
-const inflateEntities = function(indexToEntityMap, node, templates, isRoot, modelToWorldScale = 1) {
+const inflateEntities = function (indexToEntityMap, node, templates, isRoot, modelToWorldScale = 1) {
   // TODO: Remove this once we update the legacy avatars to the new node names
   if (node.name === "Chest") {
     node.name = "Spine";
@@ -423,45 +423,43 @@ class GLTFHubsPlugin {
     const parser = this.parser;
     const jsonPreprocessor = this.jsonPreprocessor;
 
-
-  if (jsonPreprocessor) {
-    parser.json = jsonPreprocessor(parser.json);
-  }
+    if (jsonPreprocessor) {
+      parser.json = jsonPreprocessor(parser.json);
+    }
 
     // Ideally Hubs components stuffs should be handled in MozHubsComponents plugin?
-  let version = 0;
-  if (
-    parser.json.extensions &&
-    parser.json.extensions.MOZ_hubs_components &&
+    let version = 0;
+    if (
+      parser.json.extensions &&
+      parser.json.extensions.MOZ_hubs_components &&
       Object.prototype.hasOwnProperty.call(parser.json.extensions.MOZ_hubs_components, "version")
-  ) {
-    version = parser.json.extensions.MOZ_hubs_components.version;
-  }
-  runMigration(version, parser.json);
+    ) {
+      version = parser.json.extensions.MOZ_hubs_components.version;
+    }
+    runMigration(version, parser.json);
 
     // Note: Here may be rewritten with the one with parser.associations
-  const nodes = parser.json.nodes;
-  if (nodes) {
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
+    const nodes = parser.json.nodes;
+    if (nodes) {
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
 
-      if (!node.extras) {
-        node.extras = {};
+        if (!node.extras) {
+          node.extras = {};
+        }
+
+        node.extras.gltfIndex = i;
       }
-
-      node.extras.gltfIndex = i;
     }
-  }
   }
 
   afterRoot(gltf) {
     gltf.scene.traverse(object => {
-  // Mark the special nodes/meshes in json for efficient parse, all json manipulation should happen before this point
+      // Mark the special nodes/meshes in json for efficient parse, all json manipulation should happen before this point
 
       object.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
       convertStandardMaterialsIfNeeded(object);
     });
-
 
     // I assume track name is 'nodename.property'.
     if (gltf.animations) {
@@ -475,14 +473,14 @@ class GLTFHubsPlugin {
               break;
             }
           }
+        }
       }
     }
-  }
 
     gltf.scene.animations = gltf.animations;
   }
 }
-  // Note this is being done in place of parser.parse() which we now no longer call. This gives us more control over the order of execution.
+// Note this is being done in place of parser.parse() which we now no longer call. This gives us more control over the order of execution.
 class GLTFHubsComponentsExtension {
   constructor(parser) {
     this.parser = parser;
@@ -530,10 +528,10 @@ class GLTFHubsComponentsExtension {
           }
         }
       }
-  };
+    };
 
     for (let i = 0; i < scenes.length; i++) {
-  // this is likely a noop since the whole parser will get GCed
+      // this is likely a noop since the whole parser will get GCed
       parser.associations.set(scenes[i], { scenes: i });
       scenes[i].traverse(obj => {
         resolveComponents("scenes", obj);
@@ -545,7 +543,7 @@ class GLTFHubsComponentsExtension {
     return Promise.all(deps);
   }
 }
-    // GLTFLoader sets matrixAutoUpdate on animated objects, we want to keep the defaults
+// GLTFLoader sets matrixAutoUpdate on animated objects, we want to keep the defaults
 class GLTFHubsLightMapExtension {
   constructor(parser) {
     this.parser = parser;
@@ -588,7 +586,7 @@ class GLTFHubsLightMapExtension {
       }
 
       return material;
-  });
+    });
   }
 }
 
@@ -800,10 +798,10 @@ export async function loadGLTF(src, contentType, onProgress, jsonPreprocessor) {
       gltfLoader.load(gltfUrl, onLoad, onProgress, reject);
     }
   }).finally(() => {
-  if (fileMap) {
-    // The GLTF is now cached as a THREE object, we can get rid of the original blobs
-    Object.keys(fileMap).forEach(URL.revokeObjectURL);
-  }
+    if (fileMap) {
+      // The GLTF is now cached as a THREE object, we can get rid of the original blobs
+      Object.keys(fileMap).forEach(URL.revokeObjectURL);
+    }
   });
 }
 
@@ -884,10 +882,10 @@ AFRAME.registerComponent("gltf-model-plus", {
 
   remove() {
     if (this.data.useCache) {
-    const src = resolveAsset(this.data.src);
-    if (src) {
-      gltfCache.release(src);
-    }
+      const src = resolveAsset(this.data.src);
+      if (src) {
+        gltfCache.release(src);
+      }
     }
   },
 
@@ -985,7 +983,7 @@ AFRAME.registerComponent("gltf-model-plus", {
       rewires.forEach(f => f());
 
       object3DToSet.visible = true;
-      gltfExtensionProcessorService.processGltfFile(gltf,this.el);//Aptero entry point for personalized animation library
+      gltfExtensionProcessorService.processGltfFile(gltf, this.el); //Aptero entry point for personalized animation library
       this.el.emit("model-loaded", { format: "gltf", model: object3DToSet });
     } catch (e) {
       gltfCache.release(src);

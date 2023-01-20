@@ -1,0 +1,18 @@
+@use "../../../../react-components/styles/theme";
+
+:local(.underPage)>a {
+    display: none;
+}
+
+html:local(.scrollable) {
+    height: auto;
+    overflow-y: auto;
+
+    #ui-root {
+        position: static;
+
+        :local(.underPage)>a {
+            display: block;
+        }
+    }
+}

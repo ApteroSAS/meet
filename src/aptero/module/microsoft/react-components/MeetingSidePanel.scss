@@ -1,0 +1,196 @@
+@use "./hubs/react-components/styles/theme.scss";
+
+:local(.side-panel-body) {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  background-color: theme.$background1-color;
+  color: theme.$text1-color;
+  scroll-behavior: smooth;
+  width: 100%;
+  min-height: 99vh;
+  font-size: 18px;
+  font-weight: 600;
+  overflow-x: hidden;
+}
+
+:local(.fleche) {
+  width: 50px;
+  margin-top: 5px;
+  margin-right: 60px;
+  float: right;
+}
+
+:local(.main) {
+  padding: 10px;
+  top: 45%;
+  left: 50%;
+}
+
+:local(.cubes) {
+  width: 70px;
+  height: 60px;
+  margin: auto;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+:local(.cubes) img {
+  width: 30px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation-duration: 4s;
+  animation-iteration-count: infinite;
+}
+
+:local(.B) {
+  left: 50%;
+  top: 0%;
+
+  animation-name: cubeB;
+}
+
+:local(.R) {
+  left: 0%;
+  top: 100%;
+
+  animation-name: cubeR;
+}
+
+:local(.J) {
+  left: 100%;
+  top: 100%;
+
+  animation-name: cubeJ;
+}
+
+@keyframes cubeB {
+  0% {
+    left: 50%;
+    top: 0%;
+  }
+  33% {
+    left: 100%;
+    top: 100%;
+  }
+  66% {
+    left: 0%;
+    top: 100%;
+  }
+  100% {
+    left: 50%;
+    top: 0%;
+  }
+}
+
+@keyframes cubeR {
+  0% {
+    left: 0%;
+    top: 100%;
+  }
+  33% {
+    left: 50%;
+    top: 0%;
+  }
+  66% {
+    left: 100%;
+    top: 100%;
+  }
+  100% {
+    left: 0%;
+    top: 100%;
+  }
+}
+
+@keyframes cubeJ {
+  0% {
+    left: 100%;
+    top: 100%;
+  }
+  33% {
+    left: 0%;
+    top: 100%;
+  }
+  66% {
+    left: 50%;
+    top: 0%;
+  }
+  100% {
+    left: 100%;
+    top: 100%;
+  }
+}
+
+:local(.tuto) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 70px;
+  padding: 10px;
+
+  bottom: 20px;
+  left: 50%;
+
+  font-size: 0.8em;
+  line-height: 1em;
+  font-weight: 500;
+}
+
+:local(.tuto) div {
+  width: 100%;
+  height: 100%;
+}
+
+:local(.tuto) p {
+  width: 100%;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+}
+
+:local(.walk) {
+  opacity: 0;
+  animation-name: walk;
+}
+
+:local(.look) {
+  opacity: 1;
+  animation-name: look;
+}
+
+@keyframes look {
+  0% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes walk {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

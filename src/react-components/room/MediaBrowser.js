@@ -14,7 +14,7 @@ import { FullscreenLayout } from "../layout/FullscreenLayout";
 import { Button } from "../input/Button";
 import { Column } from "../layout/Column";
 import { MediaGrid } from "./MediaGrid";
-import { createAvatarCustomTileV2 } from "../../aptero/react-components/media-tiles-lib";
+import { createAvatarCustomTileV2 } from "../../aptero/module/HubsBridge/react-components/media-tiles-lib";
 
 const navTitleMessages = defineMessages({
   youtube: { id: "media-browser.nav_title.youtube", defaultMessage: "YouTube" },
@@ -27,7 +27,7 @@ const navTitleMessages = defineMessages({
   twitch: { id: "media-browser.nav_title.twitch", defaultMessage: "Twitch" },
   objects: { id: "media-browser.nav_title.objects", defaultMessage: "Objects" },
   videos360: { id: "media-browser.nav_title.videos360", defaultMessage: "Videos 360" },
-  videos2d: { id: "media-browser.nav_title.videos2d", defaultMessage: "Videos" },
+  videos2d: { id: "media-browser.nav_title.videos2d", defaultMessage: "Videos" }
 });
 
 export function MediaBrowser({

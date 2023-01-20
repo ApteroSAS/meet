@@ -3,7 +3,7 @@ import appLogoDark from "../assets/images/app-logo-dark.png";
 import companyLogo from "../assets/images/company-logo.png";
 import homeHeroBackground from "../assets/images/home-hero-background-unbranded.png";
 import sceneEditorLogo from "../assets/images/editor-logo.png";
-import { propertiesService } from "../aptero/properties/propertiesService";
+import { propertiesService } from "../aptero/module/properties/propertiesService";
 import { getLocale, getMessage } from "./i18n";
 
 // Read configs from global variable if available, otherwise use the process.env injected from build.
@@ -65,27 +65,27 @@ if (window.APP_CONFIG) {
   }
 } else {
   configs.APP_CONFIG = {
-    features: (propertiesService.APP_CONFIG && propertiesService.APP_CONFIG.features) ? propertiesService.APP_CONFIG.features : {}
+    features:
+      propertiesService.APP_CONFIG && propertiesService.APP_CONFIG.features ? propertiesService.APP_CONFIG.features : {}
   };
 }
 
 configs.feature = featureName => {
   const value = configs.APP_CONFIG.features[featureName];
-    return value;
+  return value;
 };
 
 const localImages = {
-    logo: appLogo,
-    logo_dark: appLogoDark,
-    company_logo: companyLogo,
-    editor_logo: sceneEditorLogo,
-    home_background: homeHeroBackground
-  };
+  logo: appLogo,
+  logo_dark: appLogoDark,
+  company_logo: companyLogo,
+  editor_logo: sceneEditorLogo,
+  home_background: homeHeroBackground
+};
 
 configs.image = (imageName, cssUrl) => {
   const url =
-    (configs.APP_CONFIG && configs.APP_CONFIG.images && configs.APP_CONFIG.images[imageName]) ||
-    localImages[imageName];
+    (configs.APP_CONFIG && configs.APP_CONFIG.images && configs.APP_CONFIG.images[imageName]) || localImages[imageName];
   return url && cssUrl ? `url(${url})` : url;
 };
 

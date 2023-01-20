@@ -2,7 +2,7 @@ import { EventTarget } from "event-target-shim";
 import configs from "../utils/configs";
 import { getReticulumFetchUrl, fetchReticulumAuthenticated, hasReticulumServer } from "../utils/phoenix-utils";
 import { pushHistoryPath, sluglessPath, withSlug } from "../utils/history";
-import { processResponse } from "../aptero/service/EntryAPI";
+import { processResponse } from "../aptero/module/HubsBridge/service/EntryAPI";
 
 const EventEmitter = require("eventemitter3");
 
@@ -29,7 +29,6 @@ const availableSources = desiredSources.filter(source => {
 });
 //export const SOURCES = availableSources;
 export const SOURCES = ["objects", "videos360", "videos2d", "scenes", "avatars"];
-
 
 export const MEDIA_SOURCE_DEFAULT_FILTERS = {
   gifs: "trending",
@@ -86,7 +85,7 @@ export default class MediaSearchStore extends EventTarget {
     let filter = locationSearchParams.get("filter");
     if (urlSource === "objects") {
       filter = "my-objects";
-      searchParams.set("filter", "model/gltf-binary");// filter in request
+      searchParams.set("filter", "model/gltf-binary"); // filter in request
     }
     const isMy = filter && filter.startsWith("my-");
 
@@ -109,13 +108,13 @@ export default class MediaSearchStore extends EventTarget {
 
     let fetch = true;
 
-      if (isMy) {
-        if (window.APP.store.credentialsAccountId) {
-          searchParams.set("user", window.APP.store.credentialsAccountId);
-        } else {
-          fetch = false; // Don't fetch my-* if not signed in
-        }
+    if (isMy) {
+      if (window.APP.store.credentialsAccountId) {
+        searchParams.set("user", window.APP.store.credentialsAccountId);
+      } else {
+        fetch = false; // Don't fetch my-* if not signed in
       }
+    }
 
     const path = `/api/v1/media/search?${searchParams.toString()}`;
     const url = getReticulumFetchUrl(path);
@@ -125,7 +124,7 @@ export default class MediaSearchStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("statechanged"));
     const result = fetch ? await fetchReticulumAuthenticated(path) : EMPTY_RESULT;
 
-    await processResponse(result.entries);//aptero
+    await processResponse(result.entries); //aptero
 
     if (this.requestIndex != currentRequestIndex) return;
 
@@ -236,14 +235,14 @@ export default class MediaSearchStore extends EventTarget {
     this._sourceNavigate(this._stashedSource ? this._stashedSource : SOURCES[0], false, true);
   };
 
-//aptero TODO put in service
+  //aptero TODO put in service
   async sourceNavigateWithResult(source) {
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
       this._sourceNavigate(source, true, false, "result");
-      this.eventEmitter.once("action_selected_media_result_entry", (data) => {
-        if(data.result === "cancel"){
+      this.eventEmitter.once("action_selected_media_result_entry", data => {
+        if (data.result === "cancel") {
           reject("cancel");
-        }else {
+        } else {
           resolve(data.entry);
         }
       });

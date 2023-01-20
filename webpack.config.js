@@ -77,7 +77,6 @@ function getModuleDependencies(moduleName) {
       }
     }
   };
-
   gatherDeps(moduleName);
 
   return arr;
@@ -308,9 +307,9 @@ module.exports = async (env, argv) => {
       // Allows using symlinks in node_modules
       symlinks: false,
       fallback: {
-      // need to specify this manually because some random lodash code will try to access
-      // Buffer on the global object if it exists, so webpack will polyfill on its behalf
-      Buffer: false,
+        // need to specify this manually because some random lodash code will try to access
+        // Buffer on the global object if it exists, so webpack will polyfill on its behalf
+        Buffer: false,
         fs: false,
         stream: require.resolve("stream-browserify"),
         path: require.resolve("path-browserify")
@@ -404,7 +403,7 @@ module.exports = async (env, argv) => {
         // be flexible with people accessing via a local reticulum on another port
         app.use(cors({ origin: /hubs\.local(:\d*)?$/ }));
         // networked-aframe makes HEAD requests to the server for time syncing. Respond with an empty body.
-        app.head("*", function(req, res, next) {
+        app.head("*", function (req, res, next) {
           if (req.method === "HEAD") {
             res.append("Date", new Date().toGMTString());
             res.send("");
@@ -436,7 +435,7 @@ module.exports = async (env, argv) => {
                 { tag: "audio", attribute: "src", type: "src" },
                 { tag: "source", attribute: "src", type: "src" }
               ]
-          }
+            }
           }
         },
         // On legacy browsers we want to show a "unsupported browser" page. That page needs to run on older browsers so w set the targeet to ie11.
@@ -506,7 +505,7 @@ module.exports = async (env, argv) => {
               loader: "css-loader",
               options: {
                 modules: {
-                localIdentName: "[name]__[local]__[hash:base64:5]",
+                  localIdentName: "[name]__[local]__[hash:base64:5]",
                   exportLocalsConvention: "camelCase",
                   // TODO we ideally would be able to get rid of this but we have some global styles and many :local's that would become superfluous
                   mode: "global"
@@ -533,13 +532,13 @@ module.exports = async (env, argv) => {
                       name: "preset-default",
                       params: {
                         overrides: {
-                    removeViewBox: false,
-                    mergePaths: false,
-                    convertShapeToPath: false,
-                    removeHiddenElems: false
-                  }
-                }
-              }
+                          removeViewBox: false,
+                          mergePaths: false,
+                          convertShapeToPath: false,
+                          removeHiddenElems: false
+                        }
+                      }
+                    }
                   ]
                 }
               }
@@ -553,18 +552,18 @@ module.exports = async (env, argv) => {
               test: /\.(png|jpg|gif|glb|ogg|mp3|mp4|wav|woff2|webm|3dl|cube)$/,
               type: "asset/resource",
               generator: {
-              // move required assets to output dir and add a hash for cache busting
-              // Make asset paths relative to /src
+                // move required assets to output dir and add a hash for cache busting
+                // Make asset paths relative to /src
                 filename: function ({ filename }) {
                   let rootPath = path.dirname(filename) + path.sep;
                   if (rootPath.startsWith("src" + path.sep)) {
                     const parts = rootPath.split(path.sep);
                     parts.shift();
                     rootPath = parts.join(path.sep);
-            }
+                  }
                   // console.log(path, name, contenthash, ext);
                   return rootPath + "[name]-[contenthash].[ext]";
-          }
+                }
               }
             }
           ]
@@ -587,8 +586,8 @@ module.exports = async (env, argv) => {
       ]
     },
     optimization: {
-    // We no not want to minimize our code. //TODO activate for prod => minimize: true
-    minimize: false,
+      // We no not want to minimize our code. //TODO activate for prod => minimize: true
+      minimize: false,
       splitChunks: {
         maxAsyncRequests: 10,
         maxInitialRequests: 10,
@@ -699,38 +698,28 @@ module.exports = async (env, argv) => {
       }),
       new CopyWebpackPlugin({
         patterns: [
-        {
-          from: "src/hub.service.js",
-          to: "hub.service.js"
-        }
+          {
+            from: "src/hub.service.js",
+            to: "hub.service.js"
+          },
+          {
+            from: "src/schema.toml",
+            to: "schema.toml"
+          },
+          {
+            from: "src/aptero/module/properties/properties.js",
+            to: "properties.js"
+          },
+          {
+            from: "src/assets/manifest.webmanifest",
+            to: "manifest.webmanifest"
+          },
+          {
+            from: "src/workers/pdfjs-dist@2.1.266/build/pdf.worker.js",
+            to: "workers/pdfjs-dist@2.1.266/build/pdf.worker.js"
+          }
         ]
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-        {
-          from: "src/schema.toml",
-          to: "schema.toml"
-        }
-        ]
-      }),
-    new CopyWebpackPlugin([
-      {
-        from: "src/aptero/properties/properties.js",
-        to: "properties.js"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/assets/manifest.webmanifest",
-        to: "manifest.webmanifest"
-      }
-    ]),
-    new CopyWebpackPlugin([
-      {
-        from: "src/workers/pdfjs-dist@2.1.266/build/pdf.worker.js",
-        to: "workers/pdfjs-dist@2.1.266/build/pdf.worker.js"
-      }
-    ]),
       // Extract required css and add a content hash.
       new MiniCssExtractPlugin({
         filename: "assets/stylesheets/[name]-[contenthash].css"
@@ -739,19 +728,19 @@ module.exports = async (env, argv) => {
       new webpack.DefinePlugin({
         "process.env": JSON.stringify({
           /*NODE_ENV: argv.mode,
-          SHORTLINK_DOMAIN: process.env.SHORTLINK_DOMAIN,
-          RETICULUM_SERVER: process.env.RETICULUM_SERVER,
-          RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
-          THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
-          CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
-          NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,*/
-          BUILD_VERSION: process.env.BUILD_VERSION,
+                    SHORTLINK_DOMAIN: process.env.SHORTLINK_DOMAIN,
+                    RETICULUM_SERVER: process.env.RETICULUM_SERVER,
+                    RETICULUM_SOCKET_SERVER: process.env.RETICULUM_SOCKET_SERVER,
+                    THUMBNAIL_SERVER: process.env.THUMBNAIL_SERVER,
+                    CORS_PROXY_SERVER: process.env.CORS_PROXY_SERVER,
+                    NON_CORS_PROXY_DOMAINS: process.env.NON_CORS_PROXY_DOMAINS,*/
+          BUILD_VERSION: process.env.BUILD_VERSION
           /*SENTRY_DSN: process.env.SENTRY_DSN,
-          GA_TRACKING_ID: process.env.GA_TRACKING_ID,
-          POSTGREST_SERVER: process.env.POSTGREST_SERVER,
-          UPLOADS_HOST: process.env.UPLOADS_HOST,
-          BASE_ASSETS_PATH: process.env.BASE_ASSETS_PATH,
-          APP_CONFIG: appConfig*/
+                    GA_TRACKING_ID: process.env.GA_TRACKING_ID,
+                    POSTGREST_SERVER: process.env.POSTGREST_SERVER,
+                    UPLOADS_HOST: process.env.UPLOADS_HOST,
+                    BASE_ASSETS_PATH: process.env.BASE_ASSETS_PATH,
+                    APP_CONFIG: appConfig*/
         })
       })
     ]

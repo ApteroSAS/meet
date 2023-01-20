@@ -11,7 +11,7 @@ export enum COLLISION_LAYERS {
   DEFAULT_INTERACTABLE = INTERACTABLES | ENVIRONMENT | AVATAR | HANDS | MEDIA_FRAMES,
   UNOWNED_INTERACTABLE = INTERACTABLES | HANDS | MEDIA_FRAMES,
   DEFAULT_SPAWNER = INTERACTABLES | HANDS
-};
+}
 
 export enum AAModes {
   NONE = "NONE",
@@ -21,5 +21,5 @@ export enum AAModes {
   MSAA_8X = "MSAA_8X"
 }
 
-export const PRIVACY = "https://www.mozilla.org/en-US/privacy/hubs/";
-export const TERMS = "https://www.mozilla.org/en-US/about/legal/terms/hubs/";
+export const PRIVACY = "https://www.aptero.co/legal-notice.html";
+export const TERMS = "https://www.aptero.co/legal-notice.html";

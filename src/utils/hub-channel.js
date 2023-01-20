@@ -3,7 +3,7 @@ import { EventTarget } from "event-target-shim";
 import { Presence } from "phoenix";
 import { migrateChannelToSocket, discordBridgesForPresences, migrateToChannel } from "./phoenix-utils";
 import configs from "./configs";
-import { roomParameters } from "../aptero/service/RoomParameters";
+import { roomParameters } from "../aptero/module/HubsBridge/service/RoomParameters";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const MS_PER_MONTH = 1000 * 60 * 60 * 24 * 30;
@@ -26,19 +26,18 @@ const HUB_CREATOR_PERMISSIONS = [
   "kick_users",
   "amplify_audio"
 ];
-const VALID_PERMISSIONS = HUB_CREATOR_PERMISSIONS.concat([
-  "tweet",
-  "spawn_camera",
-  "spawn_drawing",
-  "spawn_and_move_media",
-  "pin_objects",
-  "spawn_emoji",
-  "fly",
-  "voice_chat",
-  "text_chat"
-]) +
-  roomParameters.customPermission()+//aptero
-;
+const VALID_PERMISSIONS =
+  HUB_CREATOR_PERMISSIONS.concat([
+    "tweet",
+    "spawn_camera",
+    "spawn_drawing",
+    "spawn_and_move_media",
+    "pin_objects",
+    "spawn_emoji",
+    "fly",
+    "voice_chat",
+    "text_chat"
+  ]) + roomParameters.customPermission(); //aptero
 
 export default class HubChannel extends EventTarget {
   constructor(store, hubId) {
@@ -106,9 +105,9 @@ export default class HubChannel extends EventTarget {
         onSync: this.presence.caller.onSync
       };
 
-      this.presence.onJoin(function() {});
-      this.presence.onLeave(function() {});
-      this.presence.onSync(function() {});
+      this.presence.onJoin(function () {});
+      this.presence.onLeave(function () {});
+      this.presence.onSync(function () {});
     }
 
     this.channel = await migrateChannelToSocket(this.channel, socket, params);
@@ -132,7 +131,7 @@ export default class HubChannel extends EventTarget {
         onJoin: this.presence.caller.onJoin,
         onLeave: this.presence.caller.onLeave,
         onSync: this.presence.caller.onSync
-  };
+      };
 
       this.presence.onJoin(function () {});
       this.presence.onLeave(function () {});
@@ -160,9 +159,9 @@ export default class HubChannel extends EventTarget {
 
     configs.setIsAdmin(this._permissions.postgrest_role === "ret_admin");
     //aptero delayed permission set
-    ( async () => {
-      this._permissions = await roomParameters.applyPermissionAsync(this._permissions,configs.isAdmin());
-    this.dispatchEvent(new CustomEvent("permissions_updated"));
+    (async () => {
+      this._permissions = await roomParameters.applyPermissionAsync(this._permissions, configs.isAdmin());
+      this.dispatchEvent(new CustomEvent("permissions_updated"));
     })();
 
     // Refresh the token 1 minute before it expires.

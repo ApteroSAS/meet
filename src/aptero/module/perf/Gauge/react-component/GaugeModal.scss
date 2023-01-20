@@ -1,0 +1,33 @@
+@use "../../../../../react-components/styles/theme";
+
+:local(.gauge-ui) {
+    pointer-events: all;
+    max-width: 570px;
+}
+
+
+:local(.Low) {
+    border-color: theme.$green;
+    color: theme.$green;
+    border-width: 4px;
+}
+:local(.LowTitle) {
+    color: theme.$green;
+}
+
+:local(.Medium) {
+    border-color: theme.$orange;
+    color: theme.$orange;
+    border-width: 8px;
+}
+:local(.MediumTitle) {
+    color: theme.$orange;
+}
+:local(.High) {
+    border-color: theme.$red;
+    color: theme.$red;
+    border-width: 14px;
+}
+:local(.HighTitle) {
+    color: theme.$red;
+}

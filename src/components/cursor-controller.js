@@ -12,7 +12,7 @@ import { paths } from "../systems/userinput/paths";
 import { sets } from "../systems/userinput/sets";
 import { getLastWorldPosition } from "../utils/three-utils";
 import { Layers } from "../camera-layers";
-import {remoteControlService} from "../aptero/service/RemoteControlService";
+import { remoteControlServiceV2 as remoteControlService } from "../aptero/module/RemoteScreen/RemoteControlServiceV2";
 
 export function findRemoteHoverTarget(world, object3D) {
   if (!object3D) return null;
@@ -39,7 +39,7 @@ AFRAME.registerComponent("cursor-controller", {
     minDistance: { default: 0.18 }
   },
 
-  init: function() {
+  init: function () {
     this.enabled = false;
 
     this.cursorVisual = new THREE.Mesh(
@@ -48,7 +48,7 @@ AFRAME.registerComponent("cursor-controller", {
         depthTest: false,
         uniforms: {
           color: { value: new THREE.Color(0x2f80ed) }
-      },
+        },
         vertexShader: `
           varying vec2 vPos;
           void main() {
@@ -124,7 +124,7 @@ AFRAME.registerComponent("cursor-controller", {
     this.el.setObject3D("line", this.line);
   },
 
-  update: function() {
+  update: function () {
     this.raycaster.far = this.data.far;
     this.raycaster.near = this.data.near;
   },
@@ -134,7 +134,7 @@ AFRAME.registerComponent("cursor-controller", {
     const cameraPos = new THREE.Vector3();
     const v = new THREE.Vector3();
 
-    return function(t, left) {
+    return function (t, left) {
       const userinput = AFRAME.scenes[0].systems.userinput;
       const cursorPose = userinput.get(left ? paths.actions.cursor.left.pose : paths.actions.cursor.right.pose);
       const hideLine = userinput.get(left ? paths.actions.cursor.left.hideLine : paths.actions.cursor.right.hideLine);

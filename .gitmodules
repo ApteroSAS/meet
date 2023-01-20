@@ -1,0 +1,10 @@
+[submodule "modules/basic-modules"]
+	path = modules/basic-modules
+	url = https://github.com/ApteroSAS/basic-modules.git
+	branch = main
+	update = merge
+[submodule "modules/teams-module"]
+	path = modules/teams-module
+	url = https://github.com/ApteroSAS/teams-module.git
+	branch = main
+	update = merge

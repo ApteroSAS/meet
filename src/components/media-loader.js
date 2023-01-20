@@ -26,8 +26,8 @@ import { waitForDOMContentLoaded } from "../utils/async-utils";
 import { SHAPE } from "three-ammo/constants";
 import { addComponent, entityExists, removeComponent } from "bitecs";
 import { MediaLoading } from "../bit-components";
-import { MICROSOFT_AUTH_ERROR, microsoftService } from "../aptero/service/MicrosoftService";
-import { IN_APP_WEB_BROWSER_PROTOCOL } from "../aptero/react-components/media-utils-lib";
+import { IN_APP_WEB_BROWSER_PROTOCOL } from "../aptero/module/HubsBridge/react-components/media-utils-lib";
+import {msTeamsAPILight} from "@aptero/axolotis-module-teams";
 
 let loadingObject;
 
@@ -81,7 +81,7 @@ AFRAME.registerComponent("media-loader", {
     }
   },
 
-  updateScale: (function() {
+  updateScale: (function () {
     const center = new THREE.Vector3();
     const originalMeshMatrix = new THREE.Matrix4();
     const desiredObjectMatrix = new THREE.Matrix4();
@@ -89,7 +89,7 @@ AFRAME.registerComponent("media-loader", {
     const quaternion = new THREE.Quaternion();
     const scale = new THREE.Vector3();
     const box = new THREE.Box3();
-    return function(fitToBox, moveTheParentNotTheMesh) {
+    return function (fitToBox, moveTheParentNotTheMesh) {
       this.el.object3D.updateMatrices();
       const mesh = this.el.getObject3D("mesh");
       mesh.updateMatrices();
@@ -235,10 +235,10 @@ AFRAME.registerComponent("media-loader", {
     this.removeShape("loader");
   },
 
-  updateHoverableVisuals: (function() {
+  updateHoverableVisuals: (function () {
     const boundingBox = new THREE.Box3();
     const boundingSphere = new THREE.Sphere();
-    return function() {
+    return function () {
       const hoverableVisuals = this.el.components["hoverable-visuals"];
 
       if (hoverableVisuals) {
@@ -318,14 +318,16 @@ AFRAME.registerComponent("media-loader", {
     this.el.setAttribute("media-loader", { version: Math.floor(Date.now() / 1000) });
   },
 
-//aptero
+  //aptero
   reloadSrc(newSrc) {
-    console.log("reloadSrc media view "+newSrc);
+    console.log("reloadSrc media view " + newSrc);
     const oldData = { ...this.data };
-    this.el.components["media-loader"].contentChanged =(this.el.components["media-loader"].contentChanged?this.el.components["media-loader"].contentChanged:oldData.src);
+    this.el.components["media-loader"].contentChanged = this.el.components["media-loader"].contentChanged
+      ? this.el.components["media-loader"].contentChanged
+      : oldData.src;
     this.data.src = newSrc;
-    this.el.setAttribute("media-loader",{src:newSrc});
-    this.update(oldData,true);
+    this.el.setAttribute("media-loader", { src: newSrc });
+    this.update(oldData, true);
   },
 
   async update(oldData, forceLocalRefresh) {
@@ -334,9 +336,9 @@ AFRAME.registerComponent("media-loader", {
     if (!src) return;
 
     //aptero change content code
-    const isOriginalContent = this.el.components["media-loader"].contentChanged===src;
-    if(isOriginalContent){
-      this.el.setAttribute("media-loader","src", oldData.src);
+    const isOriginalContent = this.el.components["media-loader"].contentChanged === src;
+    if (isOriginalContent) {
+      this.el.setAttribute("media-loader", "src", oldData.src);
       this.data.src = oldData.src;
       src = oldData.src;
       return;
@@ -382,13 +384,17 @@ AFRAME.registerComponent("media-loader", {
       let thumbnail;
 
       //aptero feature video 360
-      if((this.data.contentSubtype && this.data.contentSubtype.includes("360")) || (contentType && contentType.includes("360")) || (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))){
-        this.networkedEl.setAttribute("media-loader","contentSubtype", "360-equirectangular");
-        this.el.setAttribute("media-loader","contentSubtype", "360-equirectangular");
-        this.el.setAttribute("media-loader","type", "360-equirectangular");
+      if (
+        (this.data.contentSubtype && this.data.contentSubtype.includes("360")) ||
+        (contentType && contentType.includes("360")) ||
+        (this.data.mediaOptions.type && this.data.mediaOptions.type.includes("360"))
+      ) {
+        this.networkedEl.setAttribute("media-loader", "contentSubtype", "360-equirectangular");
+        this.el.setAttribute("media-loader", "contentSubtype", "360-equirectangular");
+        this.el.setAttribute("media-loader", "type", "360-equirectangular");
       }
       const attrType = this.el.components["media-loader"].data.type;
-      if( attrType && attrType.includes("360")){
+      if (attrType && attrType.includes("360")) {
         this.data.mediaOptions.projection = "360-equirectangular";
       }
 
@@ -399,7 +405,13 @@ AFRAME.registerComponent("media-loader", {
       const isLocalModelAsset =
         isNonCorsProxyDomain(parsedUrl.hostname) && (guessContentType(src) || "").startsWith("model/gltf");
 
-      if (this.data.resolve && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL) && !src.startsWith("data:") && !src.startsWith("hubs:") && !isLocalModelAsset) {
+      if (
+        this.data.resolve &&
+        !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL) &&
+        !src.startsWith("data:") &&
+        !src.startsWith("hubs:") &&
+        !isLocalModelAsset
+      ) {
         const is360 = !!(this.data.mediaOptions.projection && this.data.mediaOptions.projection.startsWith("360"));
         const quality = getDefaultResolveQuality(is360);
         const result = await resolveUrl(src, quality, version, forceLocalRefresh);
@@ -418,15 +430,15 @@ AFRAME.registerComponent("media-loader", {
         contentType = (result.meta && result.meta.expected_content_type) || contentType;
         thumbnail = result.meta && result.meta.thumbnail && proxiedUrlFor(result.meta.thumbnail);
         //TOD still necessary?
-        if(!thumbnail){
-          thumbnail = window.APP_CONFIG.GLOBAL_ASSETS_PATH+"app-thumbnail.png";
+        if (!thumbnail) {
+          thumbnail = window.APP_CONFIG.GLOBAL_ASSETS_PATH + "app-thumbnail.png";
         }
       }
 
       // todo: we don't need to proxy for many things if the canonical URL has permissive CORS headers
       accessibleUrl = proxiedUrlFor(canonicalUrl);
 
-      if(accessibleUrl.endsWith(MICROSOFT_AUTH_ERROR)){
+      if (accessibleUrl.endsWith(MICROSOFT_AUTH_ERROR)) {
         if (this.el.components["position-at-border__freeze"]) {
           this.el.setAttribute("position-at-border__freeze", { isFlat: true });
         }
@@ -617,9 +629,7 @@ AFRAME.registerComponent("media-loader", {
         this.el.addEventListener(
           "image-loaded",
           async () => {
-            //aptero change scene permission //TODO still necessary?
-            //const mayChangeScene = this.el.sceneEl.systems.permissions.can("update_hub");
-            const mayChangeScene = true;
+            const mayChangeScene = this.el.sceneEl.systems.permissions.can("update_hub");
 
             if (await isLocalHubsAvatarUrl(src)) {
               this.el.setAttribute("hover-menu__hubs-item", {
@@ -710,7 +720,9 @@ AFRAME.registerComponent("media-pager", {
       })
       .catch(() => {}); //ignore exception, entity might not be networked
 
-    this.el.addEventListener("pdf-loaded", this.update);
+    this.el.addEventListener("pdf-loaded", async () => {
+      this.update();
+    });
   },
 
   async update(oldData) {

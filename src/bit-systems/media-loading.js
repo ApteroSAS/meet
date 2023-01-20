@@ -52,7 +52,7 @@ function resizeAndRecenter(world, media, eid) {
   }
 }
 
-function* animateScale(world, media) {
+export function* animateScale(world, media) {
   const mediaObj = world.eid2obj.get(media);
 
   const onAnimate = ([position, scale]) => {

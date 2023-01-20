@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { changeTheme as changeTheme2 } from "./../../utils/theme";
 import configs from "../../utils/configs";
 import { tryGetTheme, getCurrentTheme, registerDarkModeQuery } from "../../utils/theme";
 
@@ -53,6 +54,12 @@ export function useTheme(themeId) {
       document.head.removeChild(styleTag);
     };
   }, [themeId, darkMode]);
+}
+
+export function changeTheme(newThemeId) {
+  currentTheme = newThemeId;
+  changeTheme2(newThemeId);
+  window.theme.requestChangeTheme(newThemeId);
 }
 
 function getAppLogo(darkMode) {

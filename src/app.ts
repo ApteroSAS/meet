@@ -3,13 +3,18 @@ import { addEntity, createWorld, IWorld } from "bitecs";
 import "./aframe-to-bit-components";
 import { AEntity, Networked, Object3DTag, Owned } from "./bit-components";
 import MediaSearchStore from "./storage/media-search-store";
+// eslint-disable-next-line no-unused-vars
 import Store from "./storage/store";
 import qsTruthy from "./utils/qs_truthy";
 
+// eslint-disable-next-line no-unused-vars
 import type { AElement, AScene } from "aframe";
+// eslint-disable-next-line no-unused-vars
 import HubChannel from "./utils/hub-channel";
+// eslint-disable-next-line no-unused-vars
 import MediaDevicesManager from "./utils/media-devices-manager";
 
+// eslint-disable-next-line no-unused-vars
 import { EffectComposer, EffectPass } from "postprocessing";
 import {
   Audio,
@@ -26,6 +31,7 @@ import { createEffectsComposer } from "./effects";
 import { DialogAdapter } from "./naf-dialog-adapter";
 import { mainTick } from "./systems/hubs-systems";
 import { waitForPreloads } from "./utils/preload";
+// eslint-disable-next-line no-unused-vars
 import SceneEntryManager from "./scene-entry-manager";
 import { store } from "./utils/store-instance";
 

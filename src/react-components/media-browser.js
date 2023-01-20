@@ -17,7 +17,11 @@ import { fetchReticulumAuthenticated, getReticulumFetchUrl } from "../utils/phoe
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { CreateTile, MediaTile } from "./room/MediaTiles";
 import { SignInMessages } from "./auth/SignInModal";
-import { createAvatarCustomTileV2, MediaTilesLib, mlHandleEntryClicked } from "../aptero/react-components/media-tiles-lib";
+import {
+  createAvatarCustomTileV2,
+  MediaTilesLib,
+  mlHandleEntryClicked
+} from "../aptero/module/HubsBridge/react-components/media-tiles-lib";
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 
@@ -232,7 +236,7 @@ class MediaBrowserContainer extends Component {
   handleEntryClicked = (evt, entry) => {
     evt.preventDefault();
 
-    mlHandleEntryClicked(evt, entry,this)
+    mlHandleEntryClicked(evt, entry, this);
     /*if (!entry.lucky_query) {
       this.selectEntry(entry);
     } else {
@@ -354,7 +358,7 @@ class MediaBrowserContainer extends Component {
   };
 
   render() {
-    mediaTilesLib.setPropsAndState(this,this.props,this.state);
+    mediaTilesLib.setPropsAndState(this, this.props, this.state);
     const intl = this.props.intl;
     const searchParams = new URLSearchParams(this.props.history.location.search);
     const urlSource = this.getUrlSource(searchParams);
@@ -364,7 +368,8 @@ class MediaBrowserContainer extends Component {
       !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
-    const showEmptyStringOnNoResult = urlSource == "avatars" || urlSource == "scenes" || mediaTilesLib.showEmptyStringOnNoResult();
+    const showEmptyStringOnNoResult =
+      urlSource == "avatars" || urlSource == "scenes" || mediaTilesLib.showEmptyStringOnNoResult();
 
     const facets = this.state.facets && this.state.facets.length > 0 ? this.state.facets : undefined;
 
@@ -437,13 +442,13 @@ class MediaBrowserContainer extends Component {
 
     return (
       <MediaBrowser
-        banner = {()=>{
-          if(urlSource === "avatars"){
-            return createAvatarCustomTileV2((evt,entry)=> {
+        banner={() => {
+          if (urlSource === "avatars") {
+            return createAvatarCustomTileV2((evt, entry) => {
               this.handleEntryClicked(evt, entry);
-            })
-          }else{
-            return <div></div>
+            });
+          } else {
+            return <div></div>;
           }
         }}
         browserRef={r => (this.browserDiv = r)}
@@ -502,7 +507,7 @@ class MediaBrowserContainer extends Component {
         entries.length > 0 ||
         !showEmptyStringOnNoResult ? (
           <>
-            {configs.feature("create_avatar") &&  urlSource === "avatars" && (
+            {configs.feature("create_avatar") && urlSource === "avatars" && (
               <CreateTile
                 type="avatar"
                 onClick={this.onCreateAvatar}
@@ -510,21 +515,21 @@ class MediaBrowserContainer extends Component {
               />
             )}
             {urlSource === "scenes" && configs.feature("enable_spoke") && (
-                <CreateTile
-                  as="a"
-                  href="/spoke/new"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  type="scene"
-                  label={
-                    <FormattedMessage
-                      id="media-browser.create-scene"
-                      defaultMessage="Create Scene with {editorName}"
-                      values={{ editorName: configs.translation("editor-name") }}
-                    />
-                  }
-                />
-              )}
+              <CreateTile
+                as="a"
+                href="/spoke/new"
+                rel="noopener noreferrer"
+                target="_blank"
+                type="scene"
+                label={
+                  <FormattedMessage
+                    id="media-browser.create-scene"
+                    defaultMessage="Create Scene with {editorName}"
+                    values={{ editorName: configs.translation("editor-name") }}
+                  />
+                }
+              />
+            )}
             {mediaTilesLib.createAdditionalTiles()}
             {entries.map((entry, idx) => {
               const isAvatar = entry.type === "avatar" || entry.type === "avatar_listing";

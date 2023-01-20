@@ -59,5 +59,6 @@ Column.defaultProps = {
   padding: false,
   grow: false,
   overflow: false,
-  lastChildMargin: true
+  lastChildMargin: true,
+  children: undefined
 };

@@ -10,8 +10,8 @@ import { isIOS as detectIOS } from "./is-mobile";
 import Linkify from "linkify-it";
 import tlds from "tlds";
 import { mediaTypeFor } from "./media-type";
-import { processWebBrowserEntity } from "../aptero/react-components/media-utils-lib";
-import { WEB_BROWSER_URL_MODE } from "../aptero/react-components/media-tiles-lib";
+import { processWebBrowserEntity } from "../aptero/module/HubsBridge/react-components/media-utils-lib";
+import { WEB_BROWSER_URL_MODE } from "../aptero/module/HubsBridge/react-components/media-tiles-lib";
 
 import anime from "animejs";
 export const MediaType = {
@@ -56,28 +56,33 @@ export const resolveUrl = async (url, quality = null, version = 1, bustCache) =>
   const key = `${url}_${version}`;
   if (!bustCache && resolveUrlCache.has(key)) return resolveUrlCache.get(key);
 
-
-  if(url.startsWith("https://localhost")){
-    return {"origin":url};
+  if (url.startsWith("https://localhost")) {
+    return { origin: url };
   }
-  if(url.startsWith("http://")){
+  if (url.startsWith("http://")) {
     //auto promote anythings to https since we cannot serve on http
-    url = url.replace("http://","https://");
+    url = url.replace("http://", "https://");
   }
   let urlWithoutParams = url.split("?")[0];
   urlWithoutParams = urlWithoutParams.toLowerCase();
-  if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".png")){
-      return {"meta":{"expected_content_type":"image/png"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".jpg")|| urlWithoutParams.endsWith(".jpeg"))){
-      return {"meta":{"expected_content_type":"image/jpeg"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".mp4")){
-      return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".m3u8")){
-    return {"meta":{"expected_content_type":"video/mp4"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && (urlWithoutParams.endsWith(".glb")|| urlWithoutParams.endsWith(".gltf"))){
-    return {"meta":{"expected_content_type":"model/gltf-binary"},"origin":url}
-  }else if(urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".pdf")){
-    return {"meta":{"expected_content_type":"application/pdf"},"origin":url}
+  if (urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".png")) {
+    return { meta: { expected_content_type: "image/png" }, origin: url };
+  } else if (
+    urlWithoutParams.startsWith("https://") &&
+    (urlWithoutParams.endsWith(".jpg") || urlWithoutParams.endsWith(".jpeg"))
+  ) {
+    return { meta: { expected_content_type: "image/jpeg" }, origin: url };
+  } else if (urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".mp4")) {
+    return { meta: { expected_content_type: "video/mp4" }, origin: url };
+  } else if (urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".m3u8")) {
+    return { meta: { expected_content_type: "video/mp4" }, origin: url };
+  } else if (
+    urlWithoutParams.startsWith("https://") &&
+    (urlWithoutParams.endsWith(".glb") || urlWithoutParams.endsWith(".gltf"))
+  ) {
+    return { meta: { expected_content_type: "model/gltf-binary" }, origin: url };
+  } else if (urlWithoutParams.startsWith("https://") && urlWithoutParams.endsWith(".pdf")) {
+    return { meta: { expected_content_type: "application/pdf" }, origin: url };
   }
   const resultPromise = fetch(mediaAPIEndpoint, {
     method: "POST",
@@ -120,7 +125,7 @@ export const upload = (file, desiredContentType) => {
 // https://stackoverflow.com/questions/7584794/accessing-jpeg-exif-rotation-data-in-javascript-on-the-client-side/32490603#32490603
 function getOrientation(file, callback) {
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     const view = new DataView(e.target.result);
     if (view.getUint16(0, false) != 0xffd8) {
       return callback(-2);
@@ -237,7 +242,7 @@ export const addMedia = (
 
   (parentEl || scene).appendChild(entity);
 
-  const orientation = new Promise(function(resolve) {
+  const orientation = new Promise(function (resolve) {
     if (needsToBeUploaded) {
       getOrientation(src, x => {
         resolve(x);
@@ -252,10 +257,10 @@ export const addMedia = (
 
     upload(src, desiredContentType)
       .then(response => {
-      //aptero
-        if(!response.origin.startsWith("https://") && response.origin.startsWith("http://")){
+        //aptero
+        if (!response.origin.startsWith("https://") && response.origin.startsWith("http://")) {
           //upgrade url to https in anycases
-          response.origin = response.origin.replace("http://","https://");
+          response.origin = response.origin.replace("http://", "https://");
         }
         const srcUrl = new URL(proxiedUrlFor(response.origin));
         srcUrl.searchParams.set("token", response.meta.access_token);
@@ -270,9 +275,9 @@ export const addMedia = (
       });
   } else if (src instanceof MediaStream) {
     entity.setAttribute("media-loader", { src: `hubs://clients/${NAF.clientId}/video` });
-  } else if (src === WEB_BROWSER_URL_MODE){
+  } else if (src === WEB_BROWSER_URL_MODE) {
     //aptero
-    processWebBrowserEntity(entity,mediaOptions);
+    processWebBrowserEntity(entity, mediaOptions);
   }
 
   if (contentOrigin) {
@@ -329,7 +334,7 @@ export function injectCustomShaderChunks(obj) {
       if (
         object.el &&
         (object.el.classList.contains("ui") ||
-        object.el.classList.contains("hud") ||
+          object.el.classList.contains("hud") ||
           object.el.getAttribute("text-button"))
       )
         return material;
@@ -471,7 +476,7 @@ export const textureLoader = new HubsTextureLoader().setCrossOrigin("anonymous")
 export async function createImageTexture(url, filter) {
   let texture;
 
-    url = url.replace("http://","https://");
+  url = url.replace("http://", "https://");
   if (filter) {
     const image = new Image();
     image.crossOrigin = "anonymous";
@@ -512,9 +517,9 @@ export function createVideoOrAudioEl(type) {
   const el = document.createElement(type);
   el.setAttribute("playsinline", "");
   el.setAttribute("webkit-playsinline", "");
-          // Delete texture data once it has been uploaded to the GPU
+  // Delete texture data once it has been uploaded to the GPU
   el.autoplay = true;
-        // texture.anisotropy = 4;
+  // texture.anisotropy = 4;
   // allow the user to unmute it with an interaction in the unmute-video-button component.
   el.muted = isIOS;
   el.preload = "auto";
@@ -525,9 +530,9 @@ export function createVideoOrAudioEl(type) {
 }
 
 export function addMeshScaleAnimation(mesh, initialScale, onComplete) {
-  const step = (function() {
+  const step = (function () {
     const lastValue = {};
-    return function(anim) {
+    return function (anim) {
       const value = anim.animatables[0].target;
 
       value.x = Math.max(Number.MIN_VALUE, value.x);

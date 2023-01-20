@@ -1,0 +1,6 @@
+@use "./hubs/react-components/styles/theme.scss";
+
+.themed-background{
+  background-color: theme.$background1-color;
+  color: theme.$text1-color;
+}

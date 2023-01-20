@@ -25,7 +25,10 @@ import { isSafari } from "../utils/detect-safari";
 import { isIOS as detectIOS } from "../utils/is-mobile";
 import { Layers } from "../camera-layers";
 import qsTruthy from "../utils/qs_truthy";
-import { IN_APP_WEB_BROWSER_PROTOCOL, remoteWebBrowser } from "../aptero/react-components/media-utils-lib";
+import {
+  IN_APP_WEB_BROWSER_PROTOCOL,
+  remoteWebBrowser
+} from "../aptero/module/HubsBridge/react-components/media-utils-lib";
 
 const ONCE_TRUE = { once: true };
 const TYPE_IMG_PNG = { type: "image/png" };
@@ -61,16 +64,16 @@ errorImage.onload = () => {
 
 //aptero microsoft feature
 function getErrorTexture(src) {
-  if(typeof src === 'string' && src.endsWith("microsoft_not_authorized")){
+  if (typeof src === "string" && src.endsWith("microsoft_not_authorized")) {
     return microsoftErrorTexture;
-  }else{
+  } else {
     return errorTexture;
   }
 }
 
 //aptero microsoft feature
-function getErrorCacheItem(src){
-const errorCacheItem = { texture: errorTexture, ratio: 1 };
+function getErrorCacheItem(src) {
+  const errorCacheItem = { texture: errorTexture, ratio: 1 };
 }
 
 //aptero microsoft feature
@@ -213,7 +216,7 @@ AFRAME.registerComponent("media-video", {
     this.onPreferenceChanged = () => {
       const newDisableLeftRightPanning = APP.store.state.preferences.disableLeftRightPanning;
       const newAudioPanningQuality = APP.store.state.preferences.audioPanningQuality;
-    // from a-sound
+      // from a-sound
       const shouldRecreateAudio =
         disableLeftRightPanning !== newDisableLeftRightPanning && this.audio && this.mediaElementAudioSource;
       const shouldUpdateAudioSettings = audioPanningQuality !== newAudioPanningQuality;
@@ -388,7 +391,7 @@ AFRAME.registerComponent("media-video", {
 
     const shouldUpdateSrc = this.data.src && this.data.src !== oldData.src;
     if (shouldUpdateSrc) {
-    //aptero
+      //aptero
       this.lastUpdate = 0;
       this.videoIsLive = null; // value null until we've determined if the video is live or not.
       this.updateSrc(oldData);
@@ -481,7 +484,7 @@ AFRAME.registerComponent("media-video", {
       this.video.addEventListener("play", this.onPauseStateChange);
 
       //aptero livescream bugfix //TODO still necessary?
-      if (src.startsWith("hubs://")  && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL) ) {
+      if (src.startsWith("hubs://") && !src.startsWith(IN_APP_WEB_BROWSER_PROTOCOL)) {
         setTimeout(() => {
           this.video.play();
         }, 2000);
@@ -585,7 +588,7 @@ AFRAME.registerComponent("media-video", {
       }
 
       let resolved = false;
-      const failLoad = function(e) {
+      const failLoad = function (e) {
         if (resolved) return;
         resolved = true;
         clearTimeout(pollTimeout);
@@ -625,8 +628,8 @@ AFRAME.registerComponent("media-video", {
 
       if (url.startsWith(IN_APP_WEB_BROWSER_PROTOCOL)) {
         //APTERO
-        texture = remoteWebBrowser(this.el,texture,this.data);
-      }else if (url.startsWith("hubs://")) {
+        texture = remoteWebBrowser(this.el, texture, this.data);
+      } else if (url.startsWith("hubs://")) {
         const streamClientId = url.substring(7).split("/")[1]; // /clients/<client id>/video is only URL for now
         const stream = await APP.dialog.getMediaStream(streamClientId, "video");
         // We subscribe to video stream notifications for this peer to update the video element
@@ -650,7 +653,7 @@ AFRAME.registerComponent("media-video", {
         // If hls.js is supported we always use it as it gives us better events
       } else if (contentType.startsWith("application/dash")) {
         const dashPlayer = MediaPlayer().create();
-        dashPlayer.extend("RequestModifier", function() {
+        dashPlayer.extend("RequestModifier", function () {
           return { modifyRequestHeader: xhr => xhr, modifyRequestURL: proxiedUrlFor };
         });
         dashPlayer.on(MediaPlayer.events.ERROR, failLoad);
@@ -701,7 +704,7 @@ AFRAME.registerComponent("media-video", {
             hls.loadSource(url);
             hls.attachMedia(videoEl);
 
-            hls.on(HLS.Events.ERROR, function(event, data) {
+            hls.on(HLS.Events.ERROR, function (event, data) {
               //console.error("hls error:", data);
               if (data.fatal) {
                 switch (data.type) {
@@ -742,7 +745,7 @@ AFRAME.registerComponent("media-video", {
           // There seems no way to detect whether the error is caused by the problem mentioned above.
           // So always retrying.
           videoEl.onerror = async () => {
-        videoEl.onerror = failLoad;
+            videoEl.onerror = failLoad;
             try {
               const res = await fetch(url);
               videoEl.srcObject = await res.blob();
@@ -753,7 +756,6 @@ AFRAME.registerComponent("media-video", {
         } else {
           videoEl.onerror = failLoad;
         }
-
 
         if (this.data.audioSrc) {
           // If there's an audio src, create an audio element to play it that we keep in sync
@@ -808,9 +810,12 @@ AFRAME.registerComponent("media-video", {
       this.volumeDownButton.object3D.visible =
         this.hasAudioTracks && !this.data.hidePlaybackControls && !!this.video;
 
-    this.changeButton.object3D.visible = (window.APP.hubChannel.can("spawn_camera")||window.APP.hubChannel.can("change_screen")) && !this.videoIsLive;//aptero change object feature
+    this.changeButton.object3D.visible =
+      (window.APP.hubChannel.can("spawn_camera") || window.APP.hubChannel.can("change_screen")) && !this.videoIsLive; //aptero change object feature
     this.snapButton.object3D.visible =
-      !!this.video && !this.data.contentType.startsWith("audio/") && window.APP.hubChannel.can("show_spawn_and_move_media");
+      !!this.video &&
+      !this.data.contentType.startsWith("audio/") &&
+      window.APP.hubChannel.can("show_spawn_and_move_media");
     this.seekForwardButton.object3D.visible = !!this.video && !this.videoIsLive;
 
     const mayModifyPlayHead =
@@ -838,7 +843,7 @@ AFRAME.registerComponent("media-video", {
   },
 
   tick: (() => {
-    return function() {
+    return function () {
       if (!this.video) return;
 
       const userinput = this.el.sceneEl.systems.userinput;
@@ -931,7 +936,7 @@ AFRAME.registerComponent("media-video", {
       this.volumeDownButton.object3D.removeEventListener("interact", this.volumeDown);
       this.seekForwardButton.object3D.removeEventListener("interact", this.seekForward);
       this.seekBackButton.object3D.removeEventListener("interact", this.seekBack);
-      this.changeButton.object3D.removeEventListener("interact", this.changeVideo);//aptero change object feature
+      this.changeButton.object3D.removeEventListener("interact", this.changeVideo); //aptero change object feature
       this.snapButton.object3D.removeEventListener("interact", this.snap);
     }
 
